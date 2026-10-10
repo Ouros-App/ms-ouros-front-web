@@ -20,3 +20,16 @@ body {
 #root {
   min-height: 100vh;
 }
+
+:root{
+  --gold: #f5b82e;
+  --gold-border: #e0a82e;
+  --indigo: #0a0a6b;
+  --ink-soft: #475569;
+  --danger: #b91c1c;
+}
+
+:focus-visible{
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
