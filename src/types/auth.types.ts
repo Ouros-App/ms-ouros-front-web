@@ -11,8 +11,8 @@ export interface LoginLocationsState{
     from?: string;
 }
 
-export interface LoginCardProps{
+export interface LoginCardProps {
     status: LoginStatus;
     message: string;
-    onSubmited: (values: LoginValues) => void;
+    onSubmit: (values: LoginValues) => void;
 }
