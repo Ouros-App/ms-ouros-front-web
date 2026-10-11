@@ -1,0 +1,229 @@
+.login-card{
+    margin: 0 auto;
+    width: 100%;
+    max-width: 470px;
+    border: 1px solid var(--golf-border);
+    border-radius: 28px;
+    background: #fff;
+    padding: 40px 24px;
+    color: var(--ink);
+    box-shadow: 0 30px 80px -30px rgba(0,0,0,0.7);
+}
+
+.login-card-header{
+    text-align: center;
+}
+
+.login-card-title{
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--indigo);
+}
+
+.login-card-subtitle{
+    margin-top: 12px;
+    font-size: 14px;
+    color: var(--ink-soft);
+}
+
+.login-card-label--error{
+    color: var(--danger);
+}
+
+.login-card-input{
+    width: 100%;
+    height: 48px;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    background: #fff;
+    padding: 0 16px;
+    font-size: 14px;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.login-card-input:hover,
+.login-card-input:focus{
+    border-color: #1b1538;
+}
+
+.login-card__input:focus{
+    box-shadow: 0 0 0 3px rgba(10, 10, 107, 0.35);
+}
+
+.login-card__input:disabled{
+    background: #f1f5f9;
+    cursor: not-allowed;
+}
+
+.login-card__input--error,
+.login-card__input--error:hover,
+.login-card__input--error:focus{
+    border-color: var(--danger);
+}
+
+.login-card__error{
+    margin-top: 6px;
+    padding-left: 4px;
+    font-size: 12px;
+    color: var(--danger);
+}
+
+.login-card-forgot{
+    margin: 12px 0 8px;
+    text-align: right;
+}
+
+.login-card-link{
+    border: 0;
+    border-radius: 4px;
+    background: none;
+    padding: 0;
+    font-size: 12px;
+    color: var(--indigo);
+    cursor: pointer;
+}
+
+.login-card-link:hover{
+    text-decoration: underline;
+}
+
+.login-card-link:focus-visible,
+.login-card-google:focus-visible{
+    outline-color: var(--indigo);
+}
+
+.login-card-status{
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.login-card-status--loading{
+    background: #eff6ff;
+    color: #1e3a8a;
+}
+
+.login-card-status--success{
+    background: #dcfce7;
+    color: #14532d;
+}
+
+.login-card-status--error{
+    background: #fee2e2;
+    color: #7f1d1d;
+}
+
+.login-card-spinner{
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: login-card-rotate 0.8s linear infinite;
+}
+
+@keyframes login-card-rotate{
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.login-card-submit{
+    margin-top: 32px;
+    display: flex;
+    width: 100%;
+    height: 48px;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 12px;
+    background: #1b1538;
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.login-card-status + .login-card-submit{
+    margin-top: 16px;
+}
+
+.login-card-submit:hover:not(:disabled){
+    background: #2a2150;
+}
+
+.login-card-submit:focus-visible{
+    outline-color: #1b1538;
+}
+
+.login-card-submit:disabled{
+    cursor: not-allowed;
+    opacity: 0.65;
+}
+
+.login-card-divider{
+    margin: 32px 0;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 12px;
+    color: var(--ink-soft);
+}
+
+.login-card__divider-line{
+    height: 1px;
+    flex: 1;
+    background: #cbd5e1;
+}
+
+.login-card-footer{
+    margin-top: 40px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--ink-soft);
+}
+
+.login-card-help{
+    margin-top: 20px;
+    border-radius: 10px;
+    background: #eff6ff;
+    padding: 10px 14px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #1e3a8a;
+}
+
+@media (min-width: 640px){
+    .login-card {
+        padding-left: 40px;
+        padding-right: 40px;
+    }
+
+    .login-card__title {
+        font-size: 26px;
+    }
+}
+
+@media (min-width: 768px){
+    .login-card {
+        max-width: none;
+        padding-top: 56px;
+        padding-bottom: 56px;
+    }
+}
+
+@media (min-width: 1024px){
+    .login-card {
+        padding-left: 56px;
+        padding-right: 56px;
+    }
+}
