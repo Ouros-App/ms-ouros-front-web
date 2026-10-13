@@ -82,6 +82,16 @@ export function LoginCard({ status, message, onSubmit }: LoginCardProps) {
                         Senha
                     </label>
 
+                    <div className="login-card-forgot">
+                        <button
+                            type="button"
+                            className="login-card__link"
+                            onClick={() => setHelp('senha')}
+                        >
+                            Esqueceu sua senha?
+                        </button>
+                    </div>
+
                     <input
                         id="password"
                         type="password"
