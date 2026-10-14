@@ -39,7 +39,7 @@ export function LoginCard({ status, message, onSubmit }: LoginCardProps) {
                 className="login-card__form"
             >
                 <div className="login-card-field">
-                    <label htmlFor="email" className="login-card__label">
+                    <label htmlFor="email" className="login-card__label_email">
                         E-mail
                     </label>
 
@@ -75,7 +75,7 @@ export function LoginCard({ status, message, onSubmit }: LoginCardProps) {
                 <div className="login-card-field">
                     <label
                         htmlFor="password"
-                        className={`login-card__label ${
+                        className={`login-card__label_senha ${
                             errors.password ? 'login-card__label--error' : ''
                         }`.trim()}
                     >
