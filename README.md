@@ -1,4 +1,4 @@
-# MS Webfront Template
+# Ouros
 
 <!-- REPO-METADATA:START -->
 <div align="center">

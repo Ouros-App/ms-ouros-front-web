@@ -4,8 +4,7 @@ import { conteudoNaoEncontrada } from '@/components/complex/ErrorPage/errorConte
 export default function NotFoundPage() {
   return <ErrorPage 
   titulo={conteudoNaoEncontrada.titulo} 
-  descricao={conteudoNaoEncontrada.descricao} 
-  onTentarNovamente={function (): void {
+  descricao={conteudoNaoEncontrada.descricao} onTentarNovamente={function (): void {
     throw new Error('Function not implemented.');
   } } />;
 }
