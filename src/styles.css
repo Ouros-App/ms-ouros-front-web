@@ -1,3 +1,19 @@
+html,
+body,
+#root {
+    width: 100%;
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-height: 100vh;
+}
+
+* {
+    box-sizing: border-box;
+}
 
 :root {
   --gold: #f5b82e;

@@ -9,7 +9,7 @@ const arquivos = import.meta.glob('/src/assets/*', {
     return Object.entries(arquivos).find(([caminho]) => padrao.test(caminho))?.[1];
   }
   
-  export const efeitoEsquerdo = buscarImagem('efeito-dourado-esquerdo');
-  export const efeitoDireito = buscarImagem('efeito-dourado-direito');
+  export const efeitoEsquerdo = buscarImagem('efeito-dourado-direito');
+  export const efeitoDireito = buscarImagem('efeito-dourado-esquerdo');
   export const mascote = buscarImagem('midas-pintinho-login');
   export const logo = buscarImagem('logo-ouros');
