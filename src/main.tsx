@@ -6,15 +6,18 @@ import { AppProvider } from './context/AppContext';
 import { AuthProvider } from './context/AuthContext';
 import { Loading } from './components/common/Loading/Loading';
 import './styles.css';
+import { Error } from './components/Error';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter>
       <AppProvider>
         <AuthProvider>
-          <Suspense fallback={<Loading fullScreen label="Carregando aplicação..." />}>
-            <App />
-          </Suspense>
+          <Error>
+            <Suspense fallback={<Loading fullScreen label="Carregando aplicação..." />}>
+              <App />
+            </Suspense>
+          </Error>
         </AuthProvider>
       </AppProvider>
     </BrowserRouter>

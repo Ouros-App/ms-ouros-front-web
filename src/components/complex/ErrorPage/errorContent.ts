@@ -5,7 +5,7 @@ export const conteudoRede: ErrorContent ={
     descricao: 'Parece que sua conexão com a internet caiu. Verifique se o Wi-Fi ou a rede móvel estão funcionando.',
 };
 
-export const conteundoNaoEncontrada: ErrorContent ={
+export const conteudoNaoEncontrada: ErrorContent ={
     titulo: 'Página Não encontrada',
     descricao: 'O endereço que você tentou acessar não existe ou foi movido. Volte para início e tente novamente',
 };

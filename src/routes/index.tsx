@@ -48,6 +48,12 @@ export function AppRoutes() {
         />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
+      <Route element={<SiteLayout />}>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/products" element={<PrivateRoute><ProductsPage /></PrivateRoute>} />
+        <Route path="/products/:id" element={<PrivateRoute><ProductDetailPage /></PrivateRoute>} />
+      </Route>
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }
