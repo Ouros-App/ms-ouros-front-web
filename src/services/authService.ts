@@ -14,7 +14,7 @@ interface UsuarioCdastrado extends User{
 }
 
 const usuarios: UsuarioCdastrado[] = [
-    { id: 'u-1', name: 'Gestor OUROS', email: 'gestor@ouros.com', password: 'ouros123', role: 'admin' },
+    { id: 'u-1', name: 'Vera Marcelina', email: 'gestor@ouros.com', password: 'ouros123', role: 'admin' },
 ];
 
 function toServiceError(error: unknown, fallback:string): Error{
