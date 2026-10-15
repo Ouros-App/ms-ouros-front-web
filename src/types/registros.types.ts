@@ -11,6 +11,7 @@ export interface Registro{
 export type RegistroNovo = Omit<Registro, 'id'>;
 export type CampoOrdenacao = 'padrao' | 'hidrometro' | 'custo' | 'entraram' | 'sairam' | 'atuais';
 export type RegistrosStatus = 'carregando' | 'pronto' | 'erro';
+export type RegistroErrors = Partial<Record<keyof RegistroValores, string>>;
 
 export interface RegistroValores{
     idLote: string;
@@ -21,7 +22,7 @@ export interface RegistroValores{
     sairam: string;
 }
 
-export interface RegistroCardProps{
+export interface RegistroCardsProps{
     registros: Registro[];
     status: RegistrosStatus;
     mensagemErro: string;
