@@ -2,14 +2,14 @@ import { useCallback, useState } from "react";
 import type { CampoOrdenacao, Registro, RegistroNovo, RegistrosCardProps} from "@/types/registros.types";
 import { opcoesOrdenacao } from "@/utils/registros";
 import { sanitizeBusca } from "@/utils/sanitizadores";
-import { ConfirmarExclusao } from './ConfirmarExclusao';
-import { RegistroModal } from './RegistroModal';
-import { RegistrosTabela } from './RegistrosTabela';
+import { ConfirmarExclusao } from "./ConfirmarExclusão";
+import { RegistroModal } from "./RegistroModal";
+import { RegistrosTabela } from "./RegistrosTabela";
 import './RegistrosCard.css';
 
 type DialogoAberto = {tipo: 'form'; registro: Registro | null} | {tipo: 'excluir'; registro: Registro} | null;
 
-export function RegistrosCard({registros, status, mensagemErro, busca, ordenacao, onBuscar, onOrdenar, onSalvar, onExcluir, onRecarregar,}:RegistroCardsProps){
+export function RegistrosCard({registros, status, mensagemErro, busca, ordenacao, onBuscar, onOrdenar, onSalvar, onExcluir, onRecarregar,}:RegistrosCardProps){
     const [dialogo, setDialogo] = useState<DialogoAberto>(null);
     const [aviso, setAviso] = useState('');
     const fechar = useCallback(() => setDialogo(null), []);
