@@ -1,0 +1,83 @@
+.perfil-usuario{
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    font-family: 'Poppins', sans-serif;
+}
+
+.perfil-usuario__sino{
+    position: relative;
+    display: inline-flex;
+    height: 40px;
+    width: 40px;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: #0b0b3b;
+    cursor: pointer;
+}
+
+.perfil-usuario__selo{
+    position: absolute;
+    top: 2px;
+    right: 0;
+    display: flex;
+    min-width: 16px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: var(--danger);
+    padding: 0 4px;
+    color: #fff;
+    font-size: 0.62rem;
+    font-weight:700px;
+}
+
+.perfil-usuario__link{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: 10px;
+    padding: 4px 6px;
+    color: var(--indigo);
+    text-decoration: none;
+}
+
+.perfil-usuario__link:hover{
+    background: #f8fafc;
+}
+
+.perfil-usuario__avatar{
+    display: inline-flex;
+    height: 40px;
+    width: 40px;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.perfil-usuario__avatar--inicial{
+    background-color: #d9a441;
+    color: #fff;
+    font-weight: 700;
+}
+
+.perfil-usuario__identidade{
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.perfil-usuario__none{
+    font-size: 0.95rem;
+    font-weight: 0.7rem;
+}
+
+.perfil-usuario__cargo{
+    color: #4b5563;
+    font-size: 0.7rem;
+}
