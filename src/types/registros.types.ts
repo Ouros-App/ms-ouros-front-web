@@ -22,16 +22,17 @@ export interface RegistroValores{
     sairam: string;
 }
 
-export interface RegistroCardsProps{
-    registros: Registro[];
-    status: RegistrosStatus;
-    mensagemErro: string;
-    busca: string;
-    ordenacao: CampoOrdenacao;
-    onBuscar: (valor: string) => void;
-    onOrdenar: (campo: CampoOrdenacao) => void;
-    onExcluir: (id: string) => Promise<void>;
-    onRecarregar: () => void;
+export type RegistrosCardProps ={
+    registros: Registro[]
+    status: RegistrosStatus
+    mensagemErro: string
+    busca: string
+    ordenacao: CampoOrdenacao
+    onBuscar: (valor: string) => void
+    onOrdenar: (campo: CampoOrdenacao) => void
+    onSalvar: (valores: RegistroNovo, id?: string) => Promise<void>
+    onExcluir: (id: string) => Promise<void>
+    onRecarregar: () => void
 }
 
 export interface RegistroModalProps{
