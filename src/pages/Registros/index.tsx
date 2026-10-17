@@ -1,5 +1,5 @@
 import { PerfilUsuario } from '@/components/complex/PerfilUsuario';
-import { RegistrosCard } from '@/components/complex/RegistroCard';
+import { RegistroCard } from '@/components/complex/RegistroCard';
 import { Sidebar } from '@/components/complex/Sidebar';
 import { useRegistros } from '@/hooks/useRegistros';
 import { asaFundo } from './RegistrosAssets';
@@ -24,7 +24,7 @@ export default function RegistrosPage() {
             </header>
             
             <main id="conteudo-principal" className="registros-page__conteudo" tabIndex={-1}>
-                <RegistrosCard
+                <RegistroCard
                 registros={registros.registros}
                 status={registros.status}
                 mensagemErro={registros.mensagemErro}

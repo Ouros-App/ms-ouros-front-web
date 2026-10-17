@@ -5,11 +5,11 @@ import { sanitizeBusca } from "@/utils/sanitizadores";
 import { ConfirmarExclusao } from "./ConfirmarExclusão";
 import { RegistroModal } from "./RegistroModal";
 import { RegistrosTabela } from "./RegistrosTabela";
-import './RegistrosCard.css';
+import './RegistroCard.css';
 
 type DialogoAberto = {tipo: 'form'; registro: Registro | null} | {tipo: 'excluir'; registro: Registro} | null;
 
-export function RegistrosCard({registros, status, mensagemErro, busca, ordenacao, onBuscar, onOrdenar, onSalvar, onExcluir, onRecarregar,}:RegistrosCardProps){
+export function RegistroCard({registros, status, mensagemErro, busca, ordenacao, onBuscar, onOrdenar, onSalvar, onExcluir, onRecarregar,}:RegistrosCardProps){
     const [dialogo, setDialogo] = useState<DialogoAberto>(null);
     const [aviso, setAviso] = useState('');
     const fechar = useCallback(() => setDialogo(null), []);
