@@ -189,11 +189,11 @@
     color: #111827;
     cursor: pointer;
 }
-  
+
 .registros-tabela__acao:hover{
     background: #f1f5f9;
 }
-  
+
 .dialogo{
     width: min(520px, calc(100vw - 32px));
     max-height: calc(100vh - 32px);
