@@ -9,6 +9,8 @@ const HomePage = lazy(() => import('@/pages/Home'));
 const ProductsPage = lazy(() => import('@/pages/Products'));
 const ProductDetailPage = lazy(() => import('@/pages/ProductDetail'));
 const LoginPage = lazy(() => import('@/pages/Login'));
+const RegistrosPage = lazy(() => import('@/pages/Registros'))
+const RegistroDetalhePage = lazy(()=> import('@/pages/RegistroDetalhe'))
 const NotFoundPage = lazy(() => import('@/pages/NotFound'));
 
 function SiteLayout() {
@@ -28,6 +30,8 @@ export function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/registros" element={<PrivateRoute><RegistrosPage /></PrivateRoute>} />
+      <Route path="/registros/:id" element={<PrivateRoute><RegistroDetalhePage /></PrivateRoute>} />
       <Route element={<SiteLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route

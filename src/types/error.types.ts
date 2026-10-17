@@ -6,7 +6,7 @@ export interface ErrorContent{
 export interface ErrorPageProps{
     titulo: string;
     descricao: string;
-    onTentarNovamente: () => void;
+    onTentarNovamente?: () => void;
 }
 
 export interface ErrorProps{
