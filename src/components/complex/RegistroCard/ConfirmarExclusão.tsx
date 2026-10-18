@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { ConfirmarExclusaoProps } from "@/types/registros.types";
 import { isAbortError } from "@/utils/delay";
 import { Dialogo } from "./Dialogo";
-
+import './RegistroCard.css';
 export function ConfirmarExclusao({ registro, onFechar, onExcluir }: ConfirmarExclusaoProps){
     const [excluindo, setExcluindo] = useState(false);
     const [falha, setFalha] = useState('');
@@ -37,7 +37,7 @@ export function ConfirmarExclusao({ registro, onFechar, onExcluir }: ConfirmarEx
                     Cancelar
                 </button>
 
-                <button type="button" className="registro-botao registro-botao-perigo" onClick={confirmar} disabled={excluindo}>
+                <button type="button" className="registro-botao registro-botao--perigo" onClick={confirmar} disabled={excluindo}>
                     {excluindo ? 'Excluindo...' : 'Excluir'}
                 </button>
             </div>

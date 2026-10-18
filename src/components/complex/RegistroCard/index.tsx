@@ -36,9 +36,6 @@ export function RegistroCard({registros, status, mensagemErro, busca, ordenacao,
         <section className="registros-card" aria-label="Registros de lotes">
             <div className="registros-card__ferramentas">
                 <div className="registros_card__busca">
-                    <label htmlFor="registros-busca" className="registros-card__oculto">
-                        Pesquisar lote específico
-                    </label>
                     <svg className="registros-card__lupa" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true" focusable="false">
                         <circle cx="11" cy="11" r="7" />
                         <path d="m20 20-3.5-3.5" />
@@ -59,9 +56,6 @@ export function RegistroCard({registros, status, mensagemErro, busca, ordenacao,
                 </button>
 
                 <div>
-                    <label htmlFor="registros-ordenar" className="registros-card__oculto">
-                        Ordenar registros por
-                    </label>
                     <select
                     id="registros-ordenar"
                     className="registros-card__ordenar"

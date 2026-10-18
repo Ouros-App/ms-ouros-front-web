@@ -20,9 +20,6 @@ function RegistrosTabelaBase({ registros, onEditar, onExcluir}: RegistrosTabelaP
         <div className="registros-tabela__moldura">
             <div className="registros-tabela__rolagem" tabIndex={0} role="region" aria-label="Tabela de registros de lotes">
                 <table className="registros-tabela">
-                    <caption className="registros-card__oculto">
-                        Registros de lotes
-                    </caption>
                     <thead>
                         <tr>
                             {colunas.map((coluna) => (

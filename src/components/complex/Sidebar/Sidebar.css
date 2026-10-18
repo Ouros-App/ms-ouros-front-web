@@ -4,13 +4,14 @@
     z-index: 20;
     display: flex;
     height: calc(100vh - 12px);
-    width: 56px;
+    width: 70px;
     flex-shrink: 0;
     flex-direction: column;
     align-items: center;
     margin: 6px 0 6px 6px;
     border-radius: 12px;
-    background: linear-gradient(180deg, #0a1f5c 0%, #04103a 55%, #020a2e 100%);
+    background: linear-gradient( 180deg,#071228 0%,#071531 17%,#091f4d 50%,#071531 72%, #071228 100%
+);
     padding: 18px 0;
 }
 
@@ -22,7 +23,7 @@
 }
 
 .sidebar__logo-img{
-    width: 34px;
+    width: 48px;
     height: auto;
 }
 
