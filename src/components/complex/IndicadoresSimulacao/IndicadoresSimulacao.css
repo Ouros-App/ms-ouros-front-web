@@ -1,0 +1,75 @@
+.indicadores-simulacao{
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 22px;
+    margin-bottom: 28px;
+    font-family: 'Poppins', sans-serif;
+}
+
+.indicadores-simulacao--estado{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px;
+    border: 1px solid #fecaca;
+    border-radius: 10px;
+    background: #fef2f2;
+    padding: 16px 20px;
+}
+
+.indicadores-simulacao__mensagem{
+    margin: 0;
+    color: var(--danger);
+    font-size: 0.85rem;
+}
+
+.indicadores-simulacao__botao{
+    min-height: 36px;
+    border: 1px solid var(--gold-border);
+    border-radius: 6px;
+    background: #deab55;
+    padding: 0 16px;
+    color: #1a1a1a;
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.indicadores-simulacao__botao:hover{
+    background: #d49d3f;
+}
+
+.indicadores-simulacao__esqueleto{
+    height: 84px;
+    border-radius: 10px;
+    background: linear-gradient(100deg, #e2e8f0 30%, #f1f5f9 50%, #e2e8f0 70%);
+    background-size: 200% 100%;
+    animation: indicadores-brilho 1.4s ease-in-out infinite;
+}
+
+.indicadores-simulacao__oculto{
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+@keyframes indicadores-brilho{
+    from {
+        background-position: 100% 0;
+    }
+    to {
+        background-position: -100% 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce){
+    .indicadores-simulacao__esqueleto {
+        animation: none;
+    }
+}

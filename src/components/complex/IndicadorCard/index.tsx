@@ -17,4 +17,4 @@ function IndicadorCardBase({rotulo, valor, icone}: IndicadorCardProps){
     );
 }
 
-export const IndicadoresCard = memo(IndicadorCardBase);
+export const IndicadorCard = memo(IndicadorCardBase);
