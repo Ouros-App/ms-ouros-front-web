@@ -1,0 +1,327 @@
+.simulacoes-card{
+    position: relative;
+    z-index: 1;
+    border: 1px solid #e6e9f2;
+    border-radius: 14px;
+    background: #ffffff;
+    padding: 24px 18px;
+    box-shadow: 0 10px 30px rgba(10, 20, 80, 0.08);
+    font-family: 'Poppins', sans-serif;
+}
+  
+.simulacoes-card__oculto{
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+.simulacoes-card__ferramentas{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 22px;
+}
+
+.simulacoes-card__busca{
+    position: relative;
+    flex: 1 1 240px;
+    max-width: 250px;
+}
+
+.simulacoes-card__lupa{
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    color: #6b7280;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.simulacoes-card__campo{
+    width: 100%;
+    height: 38px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    background: #f3f4f6;
+    padding: 0 12px 0 32px;
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 0.8rem;
+}
+
+.simulacoes-card__campo::placeholder{
+    color: #6b7280;
+}
+
+.simulacoes-card__ordenar{
+    width: 190px;
+    max-width: 100%;
+    height: 38px;
+    border: 1px solid var(--gold-border);
+    border-radius: 6px;
+    background: #ffffff;
+    padding: 0 10px;
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+.simulacoes-botao{
+    display: inline-flex;
+    min-height: 38px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--gold-border);
+    border-radius: 6px;
+    background: #deab55;
+    padding: 0 18px;
+    color: #1a1a1a;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.simulacoes-botao__icone{
+    margin-right: 6px;
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.simulacoes-botao:hover:not(:disabled){
+    background: #d49d3f;
+}
+
+.simulacoes-botao:disabled{
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.simulacoes-botao--secundario{
+    background: #ffffff;
+    color: var(--ink);
+    border-color: #cbd5e1;
+}
+
+.simulacoes-botao--secundario:hover:not(:disabled) {
+    background: #f1f5f9;
+}
+
+.simulacoes-botao--perigo{
+    background: var(--danger);
+    border-color: var(--danger);
+    color: #ffffff;
+}
+
+.simulacoes-botao--perigo:hover:not(:disabled) {
+    background: #991b1b;
+}
+
+.simulacoes-card__estado{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin: 32px 0;
+    color: var(--ink-soft);
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.simulacoes-tabela__moldura{
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+}
+
+.simulacoes-tabela__rolagem{
+    overflow-x: auto;
+}
+
+.simulacoes-tabela{
+    width: 100%;
+    min-width: 820px;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+    text-align: center;
+}
+
+.simulacoes-tabela thead th{
+    background: #f3f4f6;
+    padding: 12px 8px;
+    color: #4b5563;
+    font-weight: 500;
+    border-right: 1px solid #e5e7eb;
+}
+
+.simulacoes-tabela thead th:last-child{
+    border-right: 0;
+}
+
+.simulacoes-tabela tbody th,
+.simulacoes-tabela tbody td{
+    height: 52px;
+    padding: 0 8px;
+    border-right: 1px solid #eef0f4;
+    color: #111827;
+    font-weight: 600;
+}
+
+.simulacoes-tabela tbody td:last-child{
+    border-right: 0;
+}
+
+.simulacoes-tabela__vazio{
+    height: 90px;
+    color: var(--ink-soft);
+    font-weight: 400;
+}
+
+.simulacoes-tabela__acoes{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.simulacoes-tabela__acao{
+    display: inline-flex;
+    height: 32px;
+    width: 32px;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #111827;
+    cursor: pointer;
+}
+
+.simulacoes-tabela__acao:hover{
+    background: #f1f5f9;
+}
+
+.simulacao-dialogo{
+    width: min(520px, calc(100vw - 32px));
+    max-height: calc(100vh - 32px);
+    border: 0;
+    border-radius: 14px;
+    padding: 0;
+    color: var(--ink);
+    font-family: 'Poppins', sans-serif;
+    box-shadow: 0 24px 60px rgba(2, 10, 46, 0.35);
+}
+
+.simulacao-dialogo::backdrop{
+    background: rgba(2, 10, 46, 0.55);
+}
+
+.simulacao-dialogo__corpo{
+    padding: 22px 24px 24px;
+}
+
+.simulacao-dialogo__topo{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+}
+
+.simulacao-dialogo__titulo{
+    margin: 0;
+    color: var(--indigo);
+    font-size: 1.15rem;
+    font-weight: 700;
+}
+
+.simulacao-dialogo__fechar{
+    display: inline-flex;
+    height: 36px;
+    width: 36px;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--ink);
+    font-size: 1.6rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.simulacao-dialogo__fechar:hover{
+    background: #f1f5f9;
+}
+
+.simulacao-form__grade{
+    display: grid;
+    gap: 14px;
+}
+
+@media (min-width: 520px){
+    .simulacao-form__grade {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.simulacao-form__campo{
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.simulacao-form__rotulo{
+    color: var(--ink);
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.simulacao-form__input{
+    width: 100%;
+    box-sizing: border-box;
+    height: 40px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #ffffff;
+    padding: 0 12px;
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 0.9rem;
+}
+
+.simulacao-form__input--erro{
+    border-color: var(--danger);
+}
+
+.simulacao-form__erro,
+.simulacao-form__falha{
+    margin: 0;
+    color: var(--danger);
+    font-size: 0.75rem;
+}
+
+.simulacao-form__falha{
+    margin-top: 14px;
+    font-size: 0.85rem;
+}
+
+.simulacao-form__texto{
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.simulacao-form__acoes{
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 22px;
+}
