@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import type { SimulacoesTabelaProps } from '@/types/simulacoes.types';
-import { formatarDecimal, formatarMoeda, formatarNumero } from '@/utils/formatters';
+import { formatarDecimal, formatarMoeda, formatarNumero } from '@/utils/formato';
 
 const colunas = [
     'Consumo atual (CGI)',
