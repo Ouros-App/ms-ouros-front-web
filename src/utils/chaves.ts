@@ -1,0 +1,1 @@
+export const CHAVE_PERFIS = 'ouros:perfis';
