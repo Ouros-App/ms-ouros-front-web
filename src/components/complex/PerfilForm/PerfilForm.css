@@ -1,0 +1,135 @@
+.perfil-form{
+    position: relative;
+    z-index: 1;
+    min-width: 0;
+    font-family: 'Poppins', sans-serif;
+}
+
+.perfil-form__titulo{
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 0 0 28px;
+    color: #111827;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.perfil-form__titulo > span:first-child{
+    border-left: 2px solid var(--gold);
+    padding-left: 4px;
+}
+
+.perfil-form__linha{
+    position: relative;
+    height: 1px;
+    flex: 1;
+    background: linear-gradient(90deg, rgba(224, 168, 46, 0.1), var(--gold-border));
+}
+
+.perfil-form__linha::after{
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: -2px;
+    height: 8px;
+    width: 8px;
+    border-radius: 50%;
+    background: var(--gold-border);
+    transform: translateY(-50%);
+}
+
+.perfil-form__corpo{
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.perfil-form__dupla{
+    display: grid;
+    gap: 30px;
+    grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px){
+    .perfil-form__dupla {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.perfil-form__olho{
+    display: inline-flex;
+    height: 36px;
+    width: 36px;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    margin-right: 8px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #374151;
+    cursor: pointer;
+}
+
+.perfil-form__olho:hover{
+    background: #f1f5f9;
+}
+
+.perfil-form__falha{
+    margin: 0;
+    color: var(--danger);
+    font-size: 0.85rem;
+}
+
+.perfil-form__sucesso{
+    margin: -14px 0 -14px;
+    min-height: 1.2em;
+    color: #166534;
+    font-size: 0.85rem;
+}
+
+.perfil-form__salvar{
+    height: 42px;
+    width: 100%;
+    border: 0;
+    border-radius: 8px;
+    background: #14113f;
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.perfil-form__salvar:hover:not(:disabled){
+    background: #241f66;
+}
+
+.perfil-form__salvar:disabled{
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.perfil-form__sair{
+    margin: 36px 0 0;
+    color: #111827;
+    font-size: 0.8rem;
+    text-align: center;
+}
+
+.perfil-form__sair-link{
+    border: 0;
+    background: transparent;
+    padding: 0;
+    color: #d09020;
+    font-family: inherit;
+    font-size: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.perfil-form__sair-link:hover{
+    color: #a86f10;
+}

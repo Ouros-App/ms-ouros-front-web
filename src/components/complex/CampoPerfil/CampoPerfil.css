@@ -1,0 +1,82 @@
+.campo-perfil{
+    min-width: 0;
+    font-family: 'Poppins', sans-serif;
+}
+
+.campo-perfil__caixa{
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 46px;
+    border: 1px solid #111827;
+    border-radius: 12px;
+    background: #ffffff;
+}
+
+.campo-perfil__caixa:focus-within{
+    border-color: var(--gold-border);
+    box-shadow: 0 0 0 2px rgba(245, 184, 46, 0.35);
+}
+
+.campo-perfil__caixa--leitura{
+    border-color: #94a3b8;
+    background: #f8fafc;
+}
+
+.campo-perfil__caixa--erro{
+    border-color: var(--danger);
+}
+
+.campo-perfil__rotulo{
+    position: absolute;
+    top: -9px;
+    left: 18px;
+    z-index: 1;
+    background: #ffffff;
+    padding: 0 8px;
+    color: #111827;
+    font-size: 0.7rem;
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+.campo-perfil__caixa--leitura .campo-perfil__rotulo{
+    background: #f8fafc;
+}
+
+.campo-perfil__input{
+    width: 100%;
+    min-width: 0;
+    height: 100%;
+    border: 0;
+    border-radius: 12px;
+    background: transparent;
+    padding: 0 18px;
+    color: #374151;
+    font-family: inherit;
+    font-size: 0.8rem;
+    outline: none;
+}
+
+.campo-perfil__input::placeholder{
+    color: #6b7280;
+}
+
+.campo-perfil__input:read-only{
+    color: #475569;
+    cursor: default;
+}
+
+.campo-perfil__ajuda,
+.campo-perfil__erro{
+    margin: 6px 0 0 18px;
+    font-size: 0.72rem;
+}
+
+.campo-perfil__ajuda{
+    color: var(--ink-soft);
+}
+
+.campo-perfil__erro{
+    color: var(--danger);
+}
