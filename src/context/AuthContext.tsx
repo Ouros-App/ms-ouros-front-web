@@ -1,4 +1,4 @@
-import { createContext, useReducer } from 'react';
+import { createContext, useCallback, useReducer } from 'react';
 import type { PropsWithChildren } from 'react';
 import { authInitialState, authReducer } from '@/reducers/authReducer';
 import type { AuthState } from '@/reducers/authReducer';
@@ -7,13 +7,15 @@ import { lerArmazenado, removerArmazenado, salvarArmazenado } from '@/utils/stor
 
 interface AuthValue {
   user: User | null;
-  isAuthenticated: boolean
+  isAuthenticated: boolean;
   login: (user: User) => void;
+  updateUser: (dados: Partial<User>) => void;
   logout: () => void;
 }
-const CHAVE_SESSAO = 'ouros:sessao';
 
+const CHAVE_SESSAO = 'ouros:sessao';
 export const AuthContext = createContext<AuthValue | null>(null);
+
 function restaurarSessao(): AuthState {
   const user = lerArmazenado<User>(CHAVE_SESSAO);
   if (user && typeof user.id === 'string' && typeof user.name === 'string') {
@@ -21,21 +23,30 @@ function restaurarSessao(): AuthState {
   }
   return authInitialState;
 }
+
 export function AuthProvider({ children }: PropsWithChildren) {
   const [state, dispatch] = useReducer(authReducer, authInitialState, restaurarSessao);
 
-  const login = (user: User) =>{
+  const login = (user: User) => {
     salvarArmazenado(CHAVE_SESSAO, user);
-    dispatch({type: 'LOGIN', payload: user});
-  } 
+    dispatch({ type: 'LOGIN', payload: user });
+  };
 
-  const logout = () =>{
+  const updateUser = useCallback(
+    (dados: Partial<User>) => {
+      if (state.user) salvarArmazenado(CHAVE_SESSAO, { ...state.user, ...dados });
+      dispatch({ type: 'UPDATE_USER', playload: dados });
+    },
+    [state.user],
+  );
+
+  const logout = () => {
     removerArmazenado(CHAVE_SESSAO);
-    dispatch({type: 'LOGOUT'});
-  }
+    dispatch({ type: 'LOGOUT' });
+  };
 
   return (
-    <AuthContext.Provider value={{ ...state, login, logout }}>
+    <AuthContext.Provider value={{ ...state, login, updateUser, logout }}>
       {children}
     </AuthContext.Provider>
   );
