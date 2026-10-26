@@ -1,0 +1,77 @@
+.kpis-dashboard{
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 22px;
+    margin-bottom: 24px;
+    border-radius: 12px;
+    background: #ffffff;
+    padding: 16px;
+    box-shadow: 0 6px 24px rgba(10, 20, 80, 0.1);
+    font-family: 'Poppins', sans-serif;
+}
+
+.kpis-dashboard--estado{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px;
+    border: 1px solid #fecaca;
+    background: #fef2f2;
+}
+
+.kpis-dashboard__mensagem{
+    margin: 0;
+    color: var(--danger);
+    font-size: 0.85rem;
+}
+
+.kpis-dashboard__botao{
+    min-height: 36px;
+    border: 1px solid var(--gold-border);
+    border-radius: 6px;
+    background: #deab55;
+    padding: 0 16px;
+    color: #1a1a1a;
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.kpis-dashboard__botao:hover{
+    background: #d49d3f;
+}
+
+.kpis-dashboard__esqueleto{
+    height: 84px;
+    border-radius: 10px;
+    background: linear-gradient(100deg, #e2e8f0 30%, #f1f5f9 50%, #e2e8f0 70%);
+    background-size: 200% 100%;
+    animation: kpis-brilho 1.4s ease-in-out infinite;
+}
+
+.kpis-dashboard__oculto{
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+@keyframes kpis-brilho{
+    from{
+        background-position: 100% 0;
+    }
+    to{
+        background-position: -100% 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce){
+    .kpis-dashboard__esqueleto {
+        animation: none;
+    }
+}
