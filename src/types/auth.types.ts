@@ -1,3 +1,5 @@
+import type { User } from './user.types';
+
 export interface LoginValues{
     email: string;
     password: string;
@@ -15,4 +17,9 @@ export interface LoginCardProps {
     status: LoginStatus;
     message: string;
     onSubmit: (values: LoginValues) => void;
+}
+
+export interface RespostaLogin{
+    token: string;
+    user: Omit<User, 'token'>;
 }

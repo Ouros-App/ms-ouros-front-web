@@ -4,6 +4,7 @@ import { authInitialState, authReducer } from '@/reducers/authReducer';
 import type { AuthState } from '@/reducers/authReducer';
 import type { User } from '@/types/user.types';
 import { lerArmazenado, removerArmazenado, salvarArmazenado } from '@/utils/storage';
+import { CHAVE_SESSAO } from '@/utils/chaves';
 
 interface AuthValue {
   user: User | null;
@@ -13,7 +14,6 @@ interface AuthValue {
   logout: () => void;
 }
 
-const CHAVE_SESSAO = 'ouros:sessao';
 export const AuthContext = createContext<AuthValue | null>(null);
 
 function restaurarSessao(): AuthState {

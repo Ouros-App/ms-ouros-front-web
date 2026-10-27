@@ -1,87 +1,75 @@
-import type { LoginValues } from '@/types/auth.types';
+import type { LoginValues, RespostaLogin } from '@/types/auth.types';
 import type { User } from '@/types/user.types';
-import { CHAVE_PERFIS } from '@/utils/chaves';
 import { isAbortError, wait } from '@/utils/delay';
-import { lerArmazenado } from '@/utils/storage';
+import { ApiRequestError, apiClient } from './apiClient';
+import { entrarMock } from './authMock';
+import { ServiceError } from './serviceError';
 
-export class ServiceError extends Error{
-    constructor(message: string) {
-        super(message);
-        this.name = 'ServiceError';
-    }
+export { atualizarUsuarioCadastrado } from './authMock';
+export { ServiceError } from './serviceError';
+
+const MOCK_ATIVO = import.meta.env.DEV && import.meta.env.VITE_AUTH_MOCK === 'true';
+
+function respostaValida(dados: unknown): dados is RespostaLogin{
+    if (typeof dados !== 'object' || dados === null) return false;
+    const { token, user } = dados as Partial<RespostaLogin>;
+    return(
+        typeof token === 'string' &&
+        token.length > 0 &&
+        typeof user === 'object' &&
+        user !== null &&
+        typeof user.id === 'string' &&
+        typeof user.name === 'string' &&
+        typeof user.email === 'string' &&
+        (user.role === 'admin' || user.role === 'user')
+    );
 }
 
-interface UsuarioCadastrado extends User{
-    password: string;
-}
-
-interface PerfilSalvo{
-    id: string;
-    nome: string;
-    avatarUrl: string | null;
-}
-
-function aplicarPerfisSalvos(lista: UsuarioCadastrado[]): UsuarioCadastrado[]{
-    const salvos = lerArmazenado<PerfilSalvo[]>(CHAVE_PERFIS);
-    if (!salvos) return lista;
-    return lista.map((usuario) => {
-        const salvo = salvos.find((perfil) => perfil.id === usuario.id);
-        return salvo ? { ...usuario, name: salvo.nome, avatarUrl: salvo.avatarUrl ?? undefined } : usuario;
-    });
-}
-
-const usuarios: UsuarioCadastrado[] = aplicarPerfisSalvos([
-    { id: 'u-1', name: 'Vera Marcelinha', email: 'gestor@ouros.com', password: 'ouros123', role: 'admin' },
-]);
-
-export function atualizarUsuarioCadastrado(
-    id: string,
-    dados: { name: string; avatarUrl?: string; password?: string },
-): void{
-    const usuario = usuarios.find((u) => u.id === id);
-
-    if (!usuario) throw new ServiceError('Usuário não encontrado.');
-    usuario.name = dados.name;
-    usuario.avatarUrl = dados.avatarUrl;
-    if (dados.password) usuario.password = dados.password;
-}
-
-function toServiceError(error: unknown, fallback: string): Error{
+function traduzirErro(error: unknown): Error{
     if (isAbortError(error) && error instanceof Error) return error;
     if (error instanceof ServiceError) return error;
-    return new ServiceError(fallback);
+    
+    if (error instanceof ApiRequestError){
+        if (error.status === 429) return new ServiceError('Muitas tentativas. Aguarde alguns minutos e tente novamente.');
+        if (error.status >= 500) return new ServiceError('O servidor está indisponível. Tente novamente em instantes.');
+        if (error.status >= 400) return new ServiceError('E-mail ou senha incorretos.');
+    }
+    
+    if (error instanceof TypeError) {
+        return new ServiceError('Não foi possível conectar ao servidor. Verifique sua conexão.');
+    }
+    
+    return new ServiceError('Não foi possível entrar. Tente novamente.');
 }
 
-export async function entrar(values: LoginValues, signal?: AbortSignal): Promise<User>{
-    try {
-        await wait(800, signal);
-
-        const email = values.email.trim().toLowerCase();
-        const encontrado = usuarios.find((u) => u.email === email && u.password === values.password);
-
-        if (!encontrado){
-            throw new ServiceError('E-mail ou senha incorretos.');
+export async function entrar(values: LoginValues, signal?: AbortSignal): Promise<User> {
+    try{
+        if (MOCK_ATIVO) return await entrarMock(values, signal);
+        
+        const resposta = await apiClient<unknown>('/auth/login',{
+            method: 'POST',
+            body: JSON.stringify({ email: values.email.trim().toLowerCase(), password: values.password }),
+            signal,
+        });
+        
+        if (!respostaValida(resposta.data)) {
+            throw new ServiceError('Resposta inválida do servidor. Tente novamente.');
         }
-    
-        return{
-            id: encontrado.id,
-            name: encontrado.name,
-            email: encontrado.email,
-            role: encontrado.role,
-            avatarUrl: encontrado.avatarUrl,
-        };
+        
+        const { token, user } = resposta.data;
+        return { ...user, token };
     } 
     catch (error){
-        throw toServiceError(error, 'Não foi possível entrar. Tente novamente.');
+        throw traduzirErro(error);
     }
 }
 
-export async function entrarComGoogle(signal?: AbortSignal): Promise<User>{
+export async function entrarComGoogle(signal?: AbortSignal): Promise<User> {
     try{
         await wait(500, signal);
         throw new ServiceError('O login com Google ainda não está disponível. Use seu e-mail e senha.');
     } 
     catch (error){
-        throw toServiceError(error, 'Não foi possível entrar com o Google.');
+        throw traduzirErro(error);
     }
 }
