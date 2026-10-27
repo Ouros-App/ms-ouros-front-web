@@ -17,6 +17,21 @@ export default defineConfig({
         target: process.env.VITE_AUTH_API_URL || 'http://localhost:8000',
         changeOrigin: true,
         secure: false,
+        configure: (proxy) => {
+          proxy.on('error', (err, _req, res) => {
+            // Intercepta ECONNREFUSED quando o ms-auth-service ainda não está rodando localmente
+            if ('writeHead' in res && !res.headersSent) {
+              res.writeHead(503, { 'Content-Type': 'application/json' });
+              res.end(
+                JSON.stringify({
+                  detail: 'Serviço ms-auth-service não está em execução na porta 8000.',
+                  offline: true,
+                  error: (err as Error).message,
+                }),
+              );
+            }
+          });
+        },
       },
     },
   },

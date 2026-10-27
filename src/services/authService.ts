@@ -83,6 +83,66 @@ function criarMockJwt(payload: Record<string, unknown>): string {
   return `${header}.${body}.mockSignature`;
 }
 
+async function executarMockLoginStart(
+  email: string,
+  password: string,
+  signal?: AbortSignal,
+): Promise<NativeLoginStartResponse> {
+  await wait(400, signal);
+
+  const cadastrado = usuarios.find((u) => u.email === email);
+  if (cadastrado && cadastrado.password && cadastrado.password !== password) {
+    throw new ServiceError('E-mail ou senha incorretos.');
+  }
+
+  return {
+    challenge_id: `mock-challenge-${Date.now()}`,
+    expires_in: 300,
+    masked_email: mascaraEmail(email),
+  };
+}
+
+async function executarMockVerify(
+  email: string,
+  _password: string,
+  _challengeId: string,
+  code: string,
+  signal?: AbortSignal,
+): Promise<KeycloakTokenResponse> {
+  await wait(500, signal);
+
+  // No modo simulado / dev, aceita '123456' ou qualquer código de 6 dígitos que não termine em 00
+  if (code !== '123456' && (code === '000000' || code.endsWith('00'))) {
+    throw new ServiceError(
+      'Código de verificação incorreto. (Dica de teste em dev: utilize 123456)',
+    );
+  }
+
+  const cadastrado = usuarios.find((u) => u.email === email);
+  const mockClaims = {
+    sub: cadastrado?.id || 'u-demo',
+    database_id: cadastrado?.databaseId || 1,
+    email,
+    name: cadastrado?.name || 'Vera Marcelinha',
+    account_type: cadastrado?.role || 'admin',
+    roles: ['admin', 'user'],
+    realm_access: { roles: ['admin'] },
+    exp: Math.floor(Date.now() / 1000) + 300,
+  };
+
+  const mockToken = criarMockJwt(mockClaims);
+  const mockRefresh = criarMockJwt({ ...mockClaims, typ: 'Refresh' });
+
+  return {
+    access_token: mockToken,
+    refresh_token: mockRefresh,
+    expires_in: 300,
+    refresh_expires_in: 1800,
+    token_type: 'Bearer',
+    scope: 'openid ouros-identity offline_access',
+  };
+}
+
 /**
  * Etapa 1: Início do Login e Envio de OTP via ms-auth-service
  * POST /v1/auth/login/start
@@ -114,12 +174,26 @@ export async function iniciarLogin(
           'Muitas tentativas de login. Aguarde alguns instantes antes de tentar novamente.',
         );
       }
+
+      const errorData = (await res.json().catch(() => null)) as { detail?: string; offline?: boolean } | null;
+
+      // Se o ms-auth-service não estiver rodando no endereço alvo em ambiente de desenvolvimento
+      if (
+        (res.status === 502 || res.status === 503 || res.status === 504 || errorData?.offline) &&
+        (import.meta.env.DEV || import.meta.env.MODE === 'development')
+      ) {
+        console.warn(
+          '[Auth] ms-auth-service não encontrado localmente (ECONNREFUSED). Utilizando simulação de autenticação (código OTP de teste: 123456).',
+        );
+        return executarMockLoginStart(emailLimpo, dados.password, signal);
+      }
+
       if (res.status === 503) {
         throw new ServiceError(
           'Serviço de envio de e-mail ou autenticação temporariamente indisponível.',
         );
       }
-      const errorData = await res.json().catch(() => null);
+
       throw new ServiceError(
         errorData?.detail || 'Não foi possível iniciar o login. Tente novamente.',
       );
@@ -130,27 +204,12 @@ export async function iniciarLogin(
     if (isAbortError(error)) throw error;
     if (error instanceof ServiceError) throw error;
 
-    // Fallback de desenvolvimento caso o backend ms-auth-service esteja offline
+    // Fallback caso a conexão direta ao host falhe (ECONNREFUSED / Failed to fetch)
     if (import.meta.env.DEV || import.meta.env.MODE === 'development') {
-      const cadastrado = usuarios.find(
-        (u) => u.email === emailLimpo && u.password === dados.password,
+      console.warn(
+        '[Auth] Falha de conexão com ms-auth-service. Utilizando simulação de autenticação (código OTP de teste: 123456).',
       );
-      if (cadastrado) {
-        await wait(500, signal);
-        return {
-          challenge_id: `mock-challenge-${Date.now()}`,
-          expires_in: 300,
-          masked_email: mascaraEmail(emailLimpo),
-        };
-      }
-      if (dados.password.length >= 6) {
-        await wait(500, signal);
-        return {
-          challenge_id: `mock-challenge-${Date.now()}`,
-          expires_in: 300,
-          masked_email: mascaraEmail(emailLimpo),
-        };
-      }
+      return executarMockLoginStart(emailLimpo, dados.password, signal);
     }
 
     throw toServiceError(error, 'Serviço de autenticação indisponível. Verifique sua conexão.');
@@ -171,6 +230,17 @@ export async function verificarCodigoLogin(
   signal?: AbortSignal,
 ): Promise<KeycloakTokenResponse> {
   const emailLimpo = dados.email.trim().toLowerCase();
+
+  // Se o desafio atual for simulado
+  if (dados.challengeId.startsWith('mock-challenge-')) {
+    return executarMockVerify(
+      emailLimpo,
+      dados.password,
+      dados.challengeId,
+      dados.code,
+      signal,
+    );
+  }
 
   try {
     const url = `${AUTH_API_URL}/v1/auth/login/verify`;
@@ -195,7 +265,22 @@ export async function verificarCodigoLogin(
           'Limite de tentativas excedido. Solicite um novo código por e-mail.',
         );
       }
-      const errorData = await res.json().catch(() => null);
+
+      const errorData = (await res.json().catch(() => null)) as { detail?: string; offline?: boolean } | null;
+
+      if (
+        (res.status === 502 || res.status === 503 || res.status === 504 || errorData?.offline) &&
+        (import.meta.env.DEV || import.meta.env.MODE === 'development')
+      ) {
+        return executarMockVerify(
+          emailLimpo,
+          dados.password,
+          dados.challengeId,
+          dados.code,
+          signal,
+        );
+      }
+
       throw new ServiceError(
         errorData?.detail || 'Não foi possível validar o código. Tente novamente.',
       );
@@ -206,37 +291,14 @@ export async function verificarCodigoLogin(
     if (isAbortError(error)) throw error;
     if (error instanceof ServiceError) throw error;
 
-    // Fallback de desenvolvimento caso o backend ms-auth-service esteja offline
-    if (dados.challengeId.startsWith('mock-challenge-')) {
-      await wait(500, signal);
-      // No ambiente simulado, aceitamos '123456' ou qualquer código de 6 dígitos que não termine em 00
-      if (dados.code !== '123456' && dados.code.endsWith('00')) {
-        throw new ServiceError('Código incorreto. Use 123456 no ambiente de demonstração.');
-      }
-
-      const cadastrado = usuarios.find((u) => u.email === emailLimpo);
-      const mockClaims = {
-        sub: cadastrado?.id || 'u-demo',
-        database_id: cadastrado?.databaseId || 1,
-        email: emailLimpo,
-        name: cadastrado?.name || 'Vera Marcelinha',
-        account_type: cadastrado?.role || 'admin',
-        roles: ['admin', 'user'],
-        realm_access: { roles: ['admin'] },
-        exp: Math.floor(Date.now() / 1000) + 300,
-      };
-
-      const mockToken = criarMockJwt(mockClaims);
-      const mockRefresh = criarMockJwt({ ...mockClaims, typ: 'Refresh' });
-
-      return {
-        access_token: mockToken,
-        refresh_token: mockRefresh,
-        expires_in: 300,
-        refresh_expires_in: 1800,
-        token_type: 'Bearer',
-        scope: 'openid ouros-identity offline_access',
-      };
+    if (import.meta.env.DEV || import.meta.env.MODE === 'development') {
+      return executarMockVerify(
+        emailLimpo,
+        dados.password,
+        dados.challengeId,
+        dados.code,
+        signal,
+      );
     }
 
     throw toServiceError(error, 'Não foi possível validar o código. Tente novamente.');
