@@ -10,3 +10,9 @@ export function formatarData(iso: string): string{
     const [ano, mes, dia] = iso.split('-');
     return `${dia}/${mes}/${ano}`;
 }
+
+export function formatarDataHora(iso: string): string{
+    const [data, hora = '00:00'] = iso.split('T');
+    const [ano, mes, dia] = data.split('-');
+    return `${dia}/${mes}/${ano} | ${hora.slice(0, 5)}`;
+}
