@@ -1,14 +1,19 @@
 .simulacoes-card{
     position: relative;
     z-index: 1;
-    border: 1px solid #e6e9f2;
-    border-radius: 14px;
-    background: #ffffff;
-    padding: 24px 18px;
-    box-shadow: 0 10px 30px rgba(10, 20, 80, 0.08);
-    font-family: 'Poppins', sans-serif;
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 26px;
+    padding: 24px 18px 190px;
+    background: rgba(255, 255, 255, 0);
+    border: 1px solid rgba(255, 255, 255, 0.65);
+    border-radius: 18px;
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(78px);
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
+    top: 20px;
 }
-  
+
 .simulacoes-card__oculto{
     position: absolute;
     width: 1px;
@@ -42,7 +47,7 @@
 }
 
 .simulacoes-card__campo{
-    width: 100%;
+    width: 390px;
     height: 38px;
     border: 1px solid #e5e7eb;
     border-radius: 6px;
@@ -69,9 +74,28 @@
     font-family: inherit;
     font-size: 0.8rem;
     cursor: pointer;
+    transform: translate(140px);
 }
 
 .simulacoes-botao{
+    display: inline-flex;
+    min-height: 38px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--gold-border);
+    border-radius: 6px;
+    background: #deab55;
+    padding: 0 18px;
+    color: #1a1a1a;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    transform: translate(140px);
+}
+
+.simulacoes-botao--salavar{
     display: inline-flex;
     min-height: 38px;
     align-items: center;
@@ -107,6 +131,7 @@
     background: #ffffff;
     color: var(--ink);
     border-color: #cbd5e1;
+    transform: translate(-5px);
 }
 
 .simulacoes-botao--secundario:hover:not(:disabled) {
@@ -114,13 +139,13 @@
 }
 
 .simulacoes-botao--perigo{
-    background: var(--danger);
-    border-color: var(--danger);
-    color: #ffffff;
+    background: #d49d3f;
+    border-color: #d49d3f;
+    color: #000;
 }
 
 .simulacoes-botao--perigo:hover:not(:disabled) {
-    background: #991b1b;
+    background: #b3822e;
 }
 
 .simulacoes-card__estado{

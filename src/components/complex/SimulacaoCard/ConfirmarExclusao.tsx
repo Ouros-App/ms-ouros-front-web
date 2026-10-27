@@ -38,7 +38,7 @@ export function ConfirmarExclusao({simulacao, onFechar, onExcluir }: ConfirmarEx
                 Cancelar
             </button>
             
-            <button type="button" className="simulacoes-botao simulacoes-botao--perigo" onClick={confirmar} disabled={excluindo}>
+            <button type="button" className="simulacoes-botao--salavar simulacoes-botao--perigo" onClick={confirmar} disabled={excluindo}>
                 {excluindo ? 'Excluindo...' : 'Excluir'}
             </button>
         </div>
