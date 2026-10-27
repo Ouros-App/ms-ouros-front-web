@@ -1,16 +1,17 @@
 import type { FiltrosDashboard, IndicadoresDashboard } from '@/types/dashboard.types';
-import { isAbortError, wait } from '@/utils/delay';
-import { ServiceError } from './authService';
+import { getCorporateKpis } from './telemetryDashboardService';
 
 export async function obterIndicadoresDashboard(
-    filtros: FiltrosDashboard, signal?: AbortSignal, ): Promise<IndicadoresDashboard>{
-        try{
-            await wait(600, signal);
-            void filtros;
-            return{ gastoAnoPassado: 15_110_000, gastoAnoAtual: 13_090_000, custoPorAve: 25.94, totalLotes: 104728, };
-        } 
-        catch (error){
-            if (isAbortError(error) && error instanceof Error) throw error;
-            throw new ServiceError('Não foi possível carregar os indicadores do dashboard.');
-        }
+  filtros: FiltrosDashboard,
+  signal?: AbortSignal,
+): Promise<IndicadoresDashboard> {
+  const corporate = await getCorporateKpis(filtros, signal);
+  return {
+    gastoAnoPassado: corporate.spend_previous_year.value,
+    gastoAnoAtual: corporate.spend_current_year.value,
+    custoPorAve: corporate.avg_cost_per_bird.value,
+    totalLotes: Math.round(corporate.total_lots.value),
+  };
 }
+
+export { getCorporateKpis } from './telemetryDashboardService';

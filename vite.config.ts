@@ -5,6 +5,7 @@ import path from 'node:path';
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   const authTarget = env.VITE_AUTH_API_URL || 'https://ms-auth-service.discloud.app';
+  const telemetryTarget = env.VITE_TELEMETRY_API_URL || 'http://localhost:8000';
 
   return {
     plugins: [react()],
@@ -28,6 +29,25 @@ export default defineConfig(({ mode }) => {
                 res.end(
                   JSON.stringify({
                     detail: `Serviço ms-auth-service indisponível no momento (${authTarget}).`,
+                    offline: true,
+                    error: (err as Error).message,
+                  }),
+                );
+              }
+            });
+          },
+        },
+        '/v1/user': {
+          target: telemetryTarget,
+          changeOrigin: true,
+          secure: false,
+          configure: (proxy) => {
+            proxy.on('error', (err, _req, res) => {
+              if (res && 'writeHead' in res && !res.headersSent) {
+                res.writeHead(503, { 'Content-Type': 'application/json' });
+                res.end(
+                  JSON.stringify({
+                    detail: `Serviço ms-telemetry-dashboard-service indisponível no momento (${telemetryTarget}).`,
                     offline: true,
                     error: (err as Error).message,
                   }),
