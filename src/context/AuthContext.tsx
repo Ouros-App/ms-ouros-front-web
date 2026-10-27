@@ -3,7 +3,9 @@ import type { PropsWithChildren } from 'react';
 import { authInitialState, authReducer } from '@/reducers/authReducer';
 import type { AuthState } from '@/reducers/authReducer';
 import type { User } from '@/types/user.types';
+import { CHAVE_SESSAO } from '@/utils/chaves';
 import { lerArmazenado, removerArmazenado, salvarArmazenado } from '@/utils/storage';
+import { limparTokens, salvarTokens } from '@/services/tokenService';
 
 interface AuthValue {
   user: User | null;
@@ -13,7 +15,6 @@ interface AuthValue {
   logout: () => void;
 }
 
-const CHAVE_SESSAO = 'ouros:sessao';
 export const AuthContext = createContext<AuthValue | null>(null);
 
 function restaurarSessao(): AuthState {
@@ -29,12 +30,27 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   const login = (user: User) => {
     salvarArmazenado(CHAVE_SESSAO, user);
+    if (user.token) {
+      salvarTokens({
+        accessToken: user.token,
+        refreshToken: user.refreshToken,
+      });
+    }
     dispatch({ type: 'LOGIN', payload: user });
   };
 
   const updateUser = useCallback(
     (dados: Partial<User>) => {
-      if (state.user) salvarArmazenado(CHAVE_SESSAO, { ...state.user, ...dados });
+      if (state.user) {
+        const atualizado = { ...state.user, ...dados };
+        salvarArmazenado(CHAVE_SESSAO, atualizado);
+        if (dados.token) {
+          salvarTokens({
+            accessToken: dados.token,
+            refreshToken: dados.refreshToken || state.user.refreshToken,
+          });
+        }
+      }
       dispatch({ type: 'UPDATE_USER', playload: dados });
     },
     [state.user],
@@ -42,6 +58,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   const logout = () => {
     removerArmazenado(CHAVE_SESSAO);
+    limparTokens();
     dispatch({ type: 'LOGOUT' });
   };
 

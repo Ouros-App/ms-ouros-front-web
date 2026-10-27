@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { LoginCard } from '@/components/complex/LoginCard';
+import { VerificationCard } from '@/components/complex/VerificationCard';
 import { useAuth } from '@/hooks/useAuth';
 import { useLogin } from '@/hooks/useLogin';
 import { efeitoDireito, efeitoEsquerdo, logo, mascote } from './LoginAssets';
@@ -13,7 +14,16 @@ interface LoginLocationState {
 export default function LoginPage() {
   const { isAuthenticated } = useAuth();
   const location = useLocation();
-  const { status, message, submit } = useLogin();
+  const {
+    step,
+    status,
+    message,
+    pendingChallenge,
+    submitCredentials,
+    submitOtp,
+    resendOtp,
+    backToCredentials,
+  } = useLogin();
 
   const redirectTo = (location.state as LoginLocationState | null)?.from ?? '/registros';
 
@@ -58,11 +68,27 @@ export default function LoginPage() {
           </ul>
 
           {mascote && (
-            <img src={mascote} alt="Mascote do OUROS, um pintinho amarelo de macacão" className="login-hero__mascot" />
+            <img
+              src={mascote}
+              alt="Mascote do OUROS, um pintinho amarelo de macacão"
+              className="login-hero__mascot"
+            />
           )}
         </section>
 
-        <LoginCard status={status} message={message} onSubmit={submit} />
+        {step === 'credentials' || !pendingChallenge ? (
+          <LoginCard status={status} message={message} onSubmit={submitCredentials} />
+        ) : (
+          <VerificationCard
+            maskedEmail={pendingChallenge.maskedEmail}
+            status={status}
+            message={message}
+            onVerify={submitOtp}
+            onResend={resendOtp}
+            onBack={backToCredentials}
+            expiresIn={pendingChallenge.expiresIn}
+          />
+        )}
       </div>
     </main>
   );
