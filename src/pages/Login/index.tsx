@@ -87,6 +87,7 @@ export default function LoginPage() {
             onResend={resendOtp}
             onBack={backToCredentials}
             expiresIn={pendingChallenge.expiresIn}
+            isMock={pendingChallenge.isMock}
           />
         )}
       </div>

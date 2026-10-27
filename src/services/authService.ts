@@ -177,20 +177,21 @@ export async function iniciarLogin(
 
       const errorData = (await res.json().catch(() => null)) as { detail?: string; offline?: boolean } | null;
 
-      // Se o ms-auth-service não estiver rodando no endereço alvo em ambiente de desenvolvimento
+      // Se o backend estiver offline ou o proxy retornar 502/offline em ambiente de desenvolvimento
       if (
-        (res.status === 502 || res.status === 503 || res.status === 504 || errorData?.offline) &&
+        (res.status === 502 || errorData?.offline) &&
         (import.meta.env.DEV || import.meta.env.MODE === 'development')
       ) {
         console.warn(
-          '[Auth] ms-auth-service não encontrado localmente (ECONNREFUSED). Utilizando simulação de autenticação (código OTP de teste: 123456).',
+          '[Auth] Backend offline. Utilizando simulação de autenticação (código OTP de teste: 123456).',
         );
         return executarMockLoginStart(emailLimpo, dados.password, signal);
       }
 
       if (res.status === 503) {
         throw new ServiceError(
-          'Serviço de envio de e-mail ou autenticação temporariamente indisponível.',
+          errorData?.detail ||
+            'Serviço de envio de e-mail temporariamente indisponível no servidor.',
         );
       }
 
@@ -269,7 +270,7 @@ export async function verificarCodigoLogin(
       const errorData = (await res.json().catch(() => null)) as { detail?: string; offline?: boolean } | null;
 
       if (
-        (res.status === 502 || res.status === 503 || res.status === 504 || errorData?.offline) &&
+        (res.status === 502 || errorData?.offline) &&
         (import.meta.env.DEV || import.meta.env.MODE === 'development')
       ) {
         return executarMockVerify(

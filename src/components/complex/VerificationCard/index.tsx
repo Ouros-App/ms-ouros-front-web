@@ -15,6 +15,7 @@ export function VerificationCard({
   onBack,
   expiresIn = 300,
   cooldownSeconds = 60,
+  isMock = false,
 }: VerificationCardProps) {
   const busy = status === 'loading' || status === 'success';
 
@@ -78,6 +79,16 @@ export function VerificationCard({
             {maskedEmail}
           </strong>
         </p>
+
+        {isMock ? (
+          <div className="verification-card__mock-badge" role="status">
+            <span>ℹ️ <strong>Modo Simulado:</strong> Nenhum e-mail real foi enviado. Use o código de teste <strong className="verification-card__mock-code">123456</strong>.</span>
+          </div>
+        ) : (
+          <p className="verification-card__spam-hint">
+            Não encontrou? Verifique a pasta de <strong>Spam</strong> ou <strong>Lixo Eletrônico</strong>.
+          </p>
+        )}
       </header>
 
       <form

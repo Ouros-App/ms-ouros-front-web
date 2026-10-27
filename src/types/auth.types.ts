@@ -46,6 +46,7 @@ export interface PendingChallenge {
   challengeId: string;
   maskedEmail: string;
   expiresIn: number;
+  isMock?: boolean;
 }
 
 export interface VerificationCardProps {
@@ -57,4 +58,5 @@ export interface VerificationCardProps {
   onBack: () => void;
   expiresIn?: number;
   cooldownSeconds?: number;
+  isMock?: boolean;
 }

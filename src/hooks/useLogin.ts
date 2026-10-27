@@ -46,12 +46,15 @@ export function useLogin() {
 
       try {
         const response = await iniciarLogin(values, controller.signal);
+        const isMock = response.challenge_id.startsWith('mock-challenge-');
+
         setPendingChallenge({
           email: values.email,
           password: values.password,
           challengeId: response.challenge_id,
           maskedEmail: response.masked_email,
           expiresIn: response.expires_in,
+          isMock,
         });
         setStep('verification');
         setStatus('idle');
@@ -146,6 +149,8 @@ export function useLogin() {
         controller.signal,
       );
 
+      const isMock = response.challenge_id.startsWith('mock-challenge-');
+
       setPendingChallenge((prev) =>
         prev
           ? {
@@ -153,6 +158,7 @@ export function useLogin() {
               challengeId: response.challenge_id,
               expiresIn: response.expires_in,
               maskedEmail: response.masked_email,
+              isMock,
             }
           : null,
       );
