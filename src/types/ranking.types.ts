@@ -18,7 +18,7 @@ export type CampoOrdenacaoRanking = 'padrao' | 'nome' | 'pontuacao' | 'atualizac
 export type RankingStatus = 'carregando' | 'pronto' | 'erro';
 
 export interface LigaInfo{
-    id: string;
+    id: LigaId;
     nome: string;
     descricao: string;
     cor: string;
@@ -50,7 +50,7 @@ export interface RankingModalProps{
 }
 
 export interface ConfirmarExclusaoRankingProps{
-    titulo: string;
+    participante: ParticipanteRanking;
     onFechar: () => void;
     onExcluir: (id: string) => Promise<void>;
 }
@@ -60,3 +60,10 @@ export interface DialogoRankingProps{
     onFechar: () => void;
     children: React.ReactNode;
 }
+
+export interface RankingValores{
+    nome: string;
+    pontuacao: string;
+}
+
+export type RankingErros = Partial<Record<keyof RankingValores, string>>;
