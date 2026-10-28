@@ -15,7 +15,7 @@ export default function LoginPage() {
   const location = useLocation();
   const { status, message, submit } = useLogin();
 
-  const redirectTo = (location.state as LoginLocationState | null)?.from ?? '/registros';
+  const redirectTo = (location.state as LoginLocationState | null)?.from ?? '/ranking';
 
   if (isAuthenticated) {
     return <Navigate to={redirectTo} replace />;
