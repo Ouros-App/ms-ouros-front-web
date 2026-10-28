@@ -29,32 +29,60 @@ export interface CorporateKpisResponse {
   total_lots: CorporateKpiItem;
 }
 
-// 1. Gráfico Custo (Distribuição em Buckets / Donut)
+// 1. Gráfico Custo (Mapa Coroplético / Buckets)
 export interface CostDistributionBucket {
   bucket: string;
   label: string;
   count: number;
   value: number;
+  color?: string;
+  low?: number;
+  high?: number | null;
+  total_cost?: number;
+  percentage?: number;
+  regions?: string[];
 }
 
-// 2. Gráfico Custo por Lote (Cohorts de tamanho de lote)
+// 2. Gráfico Custo por Lote (7 Coortes de tamanho de lote)
 export interface CostByLotSizeCohort {
   cohort: string;
   previous_year_cost: number;
   current_year_cost: number;
+  previous_year_lots?: number;
+  current_year_lots?: number;
 }
 
-// 3. Gráfico Custo por Região (Macrorregiões do Brasil)
+// 3. Gráfico Custo por Região (Box Plot Stats)
+export interface BoxPlotStats {
+  min: number;
+  q1: number;
+  median: number;
+  q3: number;
+  max: number;
+  avg?: number;
+  total_cost?: number;
+  lots_count?: number;
+}
+
 export interface CostByRegion {
   region: string;
   previous_year_cost: number;
   current_year_cost: number;
+  cost?: number;
+  color?: string;
+  bucket?: string;
+  previous_year?: BoxPlotStats;
+  current_year?: BoxPlotStats;
 }
 
-// 4. Gráfico Custo Mensal (Evolução temporal)
+// 4. Gráfico Custo Mensal (12 meses comparativos)
 export interface MonthlyCost {
-  month_start: string;
-  cost: number;
+  month?: number;
+  month_label?: string;
+  month_start?: string;
+  previous_year_cost?: number;
+  current_year_cost?: number;
+  cost?: number;
 }
 
 // Opcionais de Telemetria

@@ -20,8 +20,24 @@
 
 .graficos-dashboard__vazio {
   margin: 0;
-  color: var(--ink-soft);
+  color: var(--ink-soft, #7E7D89);
   font-size: 0.85rem;
   text-align: center;
   align-self: center;
+}
+
+/* Mapa Coroplético do Brasil (Node #5998:4541) */
+.choropleth-map-wrapper {
+  user-select: none;
+}
+
+.choropleth-map-wrapper path:focus {
+  outline: none;
+}
+
+@media (max-width: 520px) {
+  .choropleth-map-wrapper {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
 }

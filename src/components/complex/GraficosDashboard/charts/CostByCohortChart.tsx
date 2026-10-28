@@ -33,7 +33,8 @@ export function CostByCohortChart({ dados }: Props) {
           <XAxis
             dataKey="cohort"
             stroke="#64748b"
-            fontSize={10}
+            fontSize={9}
+            interval={0}
             tickLine={false}
             axisLine={{ stroke: '#cbd5e1' }}
           />
@@ -46,12 +47,15 @@ export function CostByCohortChart({ dados }: Props) {
             width={60}
           />
           <Tooltip
-            formatter={(value: unknown, name: unknown) => {
+            formatter={(value: unknown, name: unknown, item?: { payload?: CostByLotSizeCohort }) => {
               const numVal = typeof value === 'number' ? value : 0;
-              const label = name === 'previous_year_cost' ? 'Ano passado' : 'Este ano';
-              return [formatarValorAbreviado(numVal), label];
+              const isPrev = name === 'previous_year_cost';
+              const label = isPrev ? 'Ano passado' : 'Este ano';
+              const lots = isPrev ? item?.payload?.previous_year_lots : item?.payload?.current_year_lots;
+              const lotText = typeof lots === 'number' ? ` (${lots} lotes)` : '';
+              return [`${formatarValorAbreviado(numVal)}${lotText}`, label];
             }}
-            labelFormatter={(label) => `Faixa: ${label}`}
+            labelFormatter={(label) => `Faixa de Lote: ${label}`}
             contentStyle={{
               backgroundColor: '#0e0e50',
               borderColor: '#D8A23A',

@@ -1,9 +1,9 @@
 import { PainelGrafico } from '@/components/complex/PainelGrafico';
 import { useGraficoTelemetry } from '@/hooks/useGraficosTelemetry';
 import type { GraficosDashboardProps } from '@/types/dashboard.types';
+import { BrazilChoroplethMapChart } from './charts/BrazilChoroplethMapChart';
 import { CostByCohortChart } from './charts/CostByCohortChart';
 import { CostByRegionChart } from './charts/CostByRegionChart';
-import { CostDistributionDonutChart } from './charts/CostDistributionDonutChart';
 import { MonthlyCostChart } from './charts/MonthlyCostChart';
 import './GraficosDashboard.css';
 
@@ -21,7 +21,7 @@ export function GraficosDashboard({ filtros }: GraficosDashboardProps) {
         mensagemErro={custo.mensagemErro}
         onRecarregar={custo.recarregar}
       >
-        {custo.dados && <CostDistributionDonutChart dados={custo.dados} />}
+        {custo.dados && <BrazilChoroplethMapChart dados={custo.dados} />}
       </PainelGrafico>
 
       <PainelGrafico
