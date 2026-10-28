@@ -1,117 +1,118 @@
-.ranking-info {
-    position: relative;
-    z-index: 1;
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 32px;
-    margin-top: 28px;
-    border-radius: 14px;
-    background: linear-gradient(180deg, #1a1596 0%, #0a0a52 100%);
-    padding: 32px 36px 36px;
-    color: #ffffff;
-    font-family: 'Poppins', sans-serif;
-    box-shadow: 0 14px 34px rgba(10, 10, 80, 0.3);
-  }
+.ranking-info{
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+  margin-top: 28px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #1a1596 0%, #0a0a52 100%);
+  padding: 32px 36px 36px;
+  color: #ffffff;
+  font-family: 'Poppins', sans-serif;
+  box-shadow: 0 14px 34px rgba(10, 10, 80, 0.3);
+}
   
-  @media (min-width: 900px) {
-    .ranking-info {
-      grid-template-columns: 1.1fr 1.3fr;
-      gap: 48px;
-    }
+@media (min-width: 900px) {
+  .ranking-info {
+    grid-template-columns: 1.1fr 1.3fr;
+    gap: 48px;
   }
+}
   
-  .ranking-info__coluna {
-    min-width: 0;
-  }
+.ranking-info__coluna{
+  min-width: 0;
+}
   
-  .ranking-info__titulo {
-    margin: 0 0 10px;
-    font-size: 1rem;
-    font-weight: 600;
-  }
+.ranking-info__titulo{
+  margin: 0 0 10px;
+  font-size: 1rem;
+  font-weight: 600;
+}
   
-  .ranking-info__texto {
-    margin: 0 0 18px;
-    color: #e2e8f0;
-    font-size: 0.8rem;
-  }
   
-  .formula-pontuacao {
-    display: flex;
-    flex-direction: column;
-    gap: 26px;
-    border-radius: 10px;
-    background: #eef2f7;
-    padding: 24px 22px;
-    color: #111827;
-  }
+.ranking-info__texto{
+  margin: 0 0 18px;
+  color: #e2e8f0;
+  font-size: 0.8rem;
+}
   
-  .formula-pontuacao__titulo {
-    margin: 0;
-    font-size: 0.9rem;
-    font-weight: 600;
-  }
+.formula-pontuacao{
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  border-radius: 10px;
+  background: #eef2f7;
+  padding: 24px 22px;
+  color: #111827;
+}
   
-  .formula-pontuacao__conta {
-    margin: 8px 0 0;
-    color: #1c1a78;
-    font-size: 0.85rem;
-  }
+.formula-pontuacao__titulo{
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
   
-  .lista-ligas {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
+.formula-pontuacao__conta{
+  margin: 8px 0 0;
+  color: #1c1a78;
+  font-size: 0.85rem;
+}
   
-  .lista-ligas__item{
-    display: flex;
-    align-items: center;
-    gap: 0;
-  }
+.lista-ligas{
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
   
-  .lista-ligas__selo{
-    position: relative;
-    z-index: 2;
-    display: inline-flex;
-    height: 60px;
-    width: 60px;
-    flex-shrink: 0;
-    align-items: center;
-    justify-content: center;
-    margin-right: -12px;
-    transform: translateX(20px );
-    border-radius: 10px;
-  }
+.lista-ligas__item{
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
   
-  .lista-ligas__imagem {
-    max-height: 66px;
-    max-width: 66px;
-    object-fit: contain;
-  }
+.lista-ligas__selo{
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  height: 60px;
+  width: 60px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  margin-right: -12px;
+  transform: translateX(20px );
+  border-radius: 10px;
+}
   
-  .lista-ligas__texto {
-    position: relative;
-    z-index: 1;
-    min-width: 0;
-    flex: 1;
-    border-radius: 8px;
-    background: #eef2f7;
-    padding: 12px 20px 12px 40px;
-    color: #111827;
-  }
+.lista-ligas__imagem{
+  max-height: 66px;
+  max-width: 66px;
+  object-fit: contain;
+}
   
-  .lista-ligas__nome {
-    margin: 0;
-    font-size: 0.78rem;
-    font-weight: 600;
-  }
+.lista-ligas__texto{
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  flex: 1;
+  border-radius: 8px;
+  background: #eef2f7;
+  padding: 12px 20px 12px 40px;
+  color: #111827;
+}
   
-  .lista-ligas__descricao {
-    margin: 2px 0 0;
-    font-size: 0.65rem;
-    line-height: 1.35;
-  }
+.lista-ligas__nome{
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+  
+.lista-ligas__descricao{
+  margin: 2px 0 0;
+  font-size: 0.65rem;
+  line-height: 1.35;
+}

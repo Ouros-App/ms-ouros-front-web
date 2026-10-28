@@ -1,45 +1,45 @@
-.ranking-card {
-    position: relative;
-    z-index: 1;
-    border: 1px solid #e6e9f2;
-    border-radius: 14px;
-    background: #ffffff;
-    padding: 24px 18px;
-    box-shadow: 0 10px 30px rgba(10, 20, 80, 0.08);
-    font-family: 'Poppins', sans-serif;
-  }
+.ranking-card{
+  position: relative;
+  z-index: 1;
+  border: 1px solid #e6e9f2;
+  border-radius: 14px;
+  background: #ffffff;
+  padding: 24px 18px;
+  box-shadow: 0 10px 30px rgba(10, 20, 80, 0.08);
+  font-family: 'Poppins', sans-serif;
+}
   
-  .ranking-card__oculto {
+.ranking-card__oculto{
     position: absolute;
     width: 1px;
     height: 1px;
     overflow: hidden;
     clip: rect(0 0 0 0);
     white-space: nowrap;
-  }
+}
   
-  .ranking-card__ferramentas {
+.ranking-card__ferramentas{
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 14px;
     margin-bottom: 22px;
-  }
+}
   
-  .ranking-card__busca {
-    position: relative;
-    flex: 1 1 240px;
-    max-width: 250px;
-  }
+.ranking-card__busca{
+  position: relative;
+  flex: 1 1 240px;
+  max-width: 250px;
+}
   
-  .ranking-card__lupa {
+.ranking-card__lupa{
     position: absolute;
     top: 50%;
     left: 10px;
     color: #6b7280;
     transform: translateY(-50%);
     pointer-events: none;
-  }
+}
   
   .ranking-card__campo {
     width: 100%;
