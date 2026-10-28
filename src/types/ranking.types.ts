@@ -38,9 +38,9 @@ export interface RankingCardProps{
 }
 
 export interface RankingTabelaProps{
-    participantes: ParticipanteRanking;
-    onEditar: () => void;
-    onExcluir: (id: string, dados: ParticipanteEdicao) => Promise<void>;
+    participantes: ParticipanteRanking[];
+    onEditar: (participante: ParticipanteRanking) => void;
+    onExcluir: (participante: ParticipanteRanking) => void;
 }
 
 export interface RankingModalProps{

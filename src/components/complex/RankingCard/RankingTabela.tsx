@@ -23,7 +23,7 @@ function RankingTabelaBase({ participantes, onEditar, onExcluir }: RankingTabela
                     </thead>
                     
                     <tbody>
-                        {participantes.lengh === 0 ?(
+                        {participantes.length === 0 ?(
                             <tr>
                                 <td colSpan={colunas.length} className="ranking-tabela__vazio">
                                     Nenhum participante encontrado.

@@ -1,12 +1,12 @@
-.ranking-page {
+.ranking-page{
     display: flex;
     min-height: 100vh;
     background: #ffffff;
     font-family: 'Poppins', sans-serif;
     color: var(--ink);
-  }
-  
-  .ranking-page__pular {
+}
+
+.ranking-page__pular{
     position: absolute;
     top: -48px;
     left: 12px;
@@ -17,21 +17,21 @@
     color: #ffffff;
     font-size: 0.85rem;
     text-decoration: none;
-  }
-  
-  .ranking-page__pular:focus {
+}
+
+.ranking-page__pular:focus{
     top: 12px;
-  }
-  
-  .ranking-page__coluna {
+}
+
+.ranking-page__coluna{
     position: relative;
     min-width: 0;
     flex: 1;
     overflow: hidden;
     padding: 24px 28px 40px 24px;
-  }
-  
-  .ranking-page__fundo {
+}
+
+.ranking-page__fundo{
     pointer-events: none;
     position: absolute;
     right: 0;
@@ -40,9 +40,9 @@
     max-width: 720px;
     opacity: 0.6;
     user-select: none;
-  }
-  
-  .ranking-page__topo {
+}
+
+.ranking-page__topo{
     position: relative;
     z-index: 1;
     display: flex;
@@ -51,24 +51,24 @@
     justify-content: space-between;
     gap: 16px;
     margin-bottom: 26px;
-  }
-  
-  .ranking-page__titulo {
+}
+
+.ranking-page__titulo{
     margin: 0;
     border-left: 3px solid var(--gold);
     padding-left: 12px;
     color: #111827;
     font-size: 1.6rem;
     font-weight: 600;
-  }
-  
-  .ranking-page__conteudo {
+}
+
+.ranking-page__conteudo{
     position: relative;
     z-index: 1;
-  }
-  
-  @media (max-width: 640px) {
-    .ranking-page__coluna {
-      padding: 18px 14px 32px;
+}
+
+@media (max-width: 640px){
+    .ranking-page__coluna{
+        padding: 18px 14px 32px;
     }
-  }
+}
