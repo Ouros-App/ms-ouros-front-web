@@ -30,13 +30,18 @@ const usuarios: UsuarioCadastrado[] = aplicarPerfisSalvos([
 
 export function atualizarUsuarioCadastrado(
     id: string,
-    dados: { name: string; avatarUrl?: string; password?: string },
+    dados: { name: string; email: string; avatarUrl?: string; password?: string },
 ): void{
     const usuario = usuarios.find((u) => u.id === id);
-    if (!usuario) throw new ServiceError('Usuário não encontrado.');
+    if (!usuario) {
+        throw new ServiceError('Usuário não encontrado.');
+    }
     usuario.name = dados.name;
+    usuario.email = dados.email;
     usuario.avatarUrl = dados.avatarUrl;
-    if (dados.password) usuario.password = dados.password;
+    if (dados.password) {
+        usuario.password = dados.password;
+    }
 }
 
 export async function entrarMock(values: LoginValues, signal?: AbortSignal): Promise<User> {

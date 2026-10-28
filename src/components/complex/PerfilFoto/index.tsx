@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import type { ChangeEvent } from 'react';
 import type { PerfilFotoProps } from '@/types/perfil.types';
 import './PerfilFoto.css';
+import asaPerfil from '@/assets/asa-perfil.png';
 
 export function PerfilFoto({ nome, foto, erro, processando, onEscolher, onRemover }: PerfilFotoProps){
     const entradaRef = useRef<HTMLInputElement>(null);
@@ -17,9 +18,7 @@ export function PerfilFoto({ nome, foto, erro, processando, onEscolher, onRemove
             {foto ?(
                 <img src={foto} alt={`Foto de perfil de ${nome}`} className="perfil-foto__imagem" />
             ) : (
-                <svg className="perfil-foto__asa" viewBox="0 0 40 40" aria-hidden="true" focusable="false">
-                    <path d="M4 28C10 12 20 5 37 7c-6 4-10 8-12 12 6-2 10-3 14-3-8 9-21 15-35 12Z" />
-                </svg>
+                <img src={asaPerfil} alt="" className="perfil-foto__asa"/>
             )}
         
             <div className="perfil-foto__acoes">

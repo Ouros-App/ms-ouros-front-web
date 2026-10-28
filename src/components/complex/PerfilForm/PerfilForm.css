@@ -8,10 +8,10 @@
 .perfil-form__titulo{
     display: flex;
     align-items: center;
-    gap: 14px;
-    margin: 0 0 28px;
+    gap: 24px;
+    margin: 0 0 42px;
     color: #111827;
-    font-size: 0.95rem;
+    font-size: 1.2rem;
     font-weight: 600;
 }
 
@@ -39,16 +39,20 @@
     transform: translateY(-50%);
 }
 
-.perfil-form__corpo{
+.perfil-form__corpo {
     display: flex;
     flex-direction: column;
-    gap: 30px;
+    gap: 50px;
+    min-width: 0;
+    width: 100%;
 }
 
 .perfil-form__dupla{
     display: grid;
-    gap: 30px;
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 20px;
+    width: 100%;
+    min-width: 0;
 }
 
 @media (min-width: 640px){
@@ -90,14 +94,14 @@
 }
 
 .perfil-form__salvar{
-    height: 42px;
+    height: 46px;
     width: 100%;
     border: 0;
     border-radius: 8px;
     background: #14113f;
     color: #ffffff;
     font-family: inherit;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     font-weight: 500;
     cursor: pointer;
     transition: background 0.2s;
@@ -113,9 +117,9 @@
 }
 
 .perfil-form__sair{
-    margin: 36px 0 0;
+    margin: 34px 0 0;
     color: #111827;
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     text-align: center;
 }
 

@@ -9,6 +9,7 @@ export interface Perfil{
 
 export interface PerfilAtualizacao{
     nome: string;
+    email: string;
     telefone: string;
     novaSenha: string;
     avatarUrl: string | null;
@@ -21,6 +22,7 @@ export interface PerfilValores{
     nome: string;
     telefone: string;
     senha: string;
+    email: string;
 }
 
 export type PerfilErros = Partial<Record<keyof PerfilValores, string>>;

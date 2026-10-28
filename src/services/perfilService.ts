@@ -53,12 +53,14 @@ export async function atualizarPerfil(id: string, dados: PerfilAtualizacao): Pro
     const atualizado: Perfil = {
         ...atual,
         nome: dados.nome,
+        email: dados.email,
         telefone: dados.telefone,
         avatarUrl: dados.avatarUrl,
     };
 
     atualizarUsuarioCadastrado(id,{
         name: atualizado.nome,
+        email: atualizado.email,
         avatarUrl: atualizado.avatarUrl ?? undefined,
         password: dados.novaSenha || undefined,
     });

@@ -5,13 +5,17 @@
 .perfil-foto__moldura{
     position: relative;
     display: flex;
-    min-height: 490px;
+    width: 400px;
+    height: 640px;
+    min-height: 480px;
     align-items: flex-end;
     justify-content: center;
     overflow: hidden;
-    border-radius: 14px;
-    background: #d9a53b;
-    padding-bottom: 14px;
+    border-radius: 11px;
+    background: #dba536;
+    padding-bottom: 12px;
+    top: 70px;
+    margin-left: 70px;
 }
 
 .perfil-foto__imagem{
@@ -24,11 +28,14 @@
 
 .perfil-foto__asa{
     position: absolute;
-    top: 26%;
+    top: 15%;
     left: 50%;
     width: 78%;
+    height: 65%;
+    object-fit: contain;
     transform: translateX(-50%);
-    fill: rgba(255, 255, 255, 0.28);
+    opacity: 0.3;
+    pointer-events: none;
 }
 
 .perfil-foto__acoes{
@@ -51,22 +58,35 @@
     opacity: 0;
 }
 
-.perfil-foto__botao{
-    min-height: 36px;
+.perfil-foto__botao {
+    min-height: 27px;
     border: 1px solid #14113f;
     border-radius: 999px;
     background: #14113f;
-    padding: 0 18px;
+    padding: 0 13px;
     color: #ffffff;
     font-family: inherit;
-    font-size: 0.78rem;
-    font-weight: 600;
+    font-size: 0.68rem;
+    font-weight: 500;
     cursor: pointer;
     transition: background 0.2s;
 }
 
 .perfil-foto__botao:hover:not(:disabled){
     background: #241f66;
+}
+
+.perfil-foto__asa{
+    position: absolute;
+    top: 16%;
+    left: 50%;
+    width: 78%;
+    height: 65%;
+    object-fit: contain;
+    transform: translateX(-50%);
+    opacity: 0.3;
+    filter: brightness(0) invert(1);
+    pointer-events: none;
 }
 
 .perfil-foto__botao:disabled{
