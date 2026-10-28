@@ -13,9 +13,9 @@ export const AUTH_API_URL = rawAuthUrl.replace(/\/+$/, '');
 // Em desenvolvimento, o proxy do Vite (/v1/user) evita CORS com ms-telemetry-dashboard-service
 const rawTelemetryUrl = import.meta.env.DEV
   ? (import.meta.env.VITE_FORCE_DIRECT_TELEMETRY === 'true'
-      ? (import.meta.env.VITE_TELEMETRY_API_URL || 'http://localhost:8000')
+      ? (import.meta.env.VITE_TELEMETRY_API_URL || 'https://ouros-dashboard.discloud.app')
       : '')
-  : (import.meta.env.VITE_TELEMETRY_API_URL || 'http://localhost:8000');
+  : (import.meta.env.VITE_TELEMETRY_API_URL || 'https://ouros-dashboard.discloud.app');
 
 export const TELEMETRY_API_URL = rawTelemetryUrl.replace(/\/+$/, '');
 

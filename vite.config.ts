@@ -5,7 +5,7 @@ import path from 'node:path';
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   const authTarget = env.VITE_AUTH_API_URL || 'https://ms-auth-service.discloud.app';
-  const telemetryTarget = env.VITE_TELEMETRY_API_URL || 'http://localhost:8000';
+  const telemetryTarget = env.VITE_TELEMETRY_API_URL || 'https://ouros-dashboard.discloud.app';
 
   return {
     plugins: [react()],
