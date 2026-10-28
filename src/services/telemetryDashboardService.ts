@@ -7,8 +7,8 @@ import type {
 } from '@/types/dashboard.types';
 import { TELEMETRY_API_URL } from '@/utils/constants';
 import { isAbortError } from '@/utils/delay';
+import { fetchComAuth } from './apiClient';
 import { ServiceError } from './authService';
-import { obterAccessToken } from './tokenService';
 
 function montarParametrosFiltros(filtros?: Partial<FiltrosDashboard>): string {
   if (!filtros) return '';
@@ -27,14 +27,9 @@ function montarParametrosFiltros(filtros?: Partial<FiltrosDashboard>): string {
 }
 
 function montarHeaders(): Record<string, string> {
-  const token = obterAccessToken();
-  const headers: Record<string, string> = {
+  return {
     Accept: 'application/json',
   };
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
-  return headers;
 }
 
 export async function getCorporateKpis(
@@ -45,7 +40,7 @@ export async function getCorporateKpis(
   const url = `${TELEMETRY_API_URL}/v1/user/dashboards/corporate/kpis${query}`;
 
   try {
-    const res = await fetch(url, {
+    const res = await fetchComAuth(url, {
       method: 'GET',
       headers: montarHeaders(),
       signal,
@@ -76,7 +71,7 @@ export async function getCorporateFilters(
   const url = `${TELEMETRY_API_URL}/v1/user/dashboards/corporate/filters`;
 
   try {
-    const res = await fetch(url, {
+    const res = await fetchComAuth(url, {
       method: 'GET',
       headers: montarHeaders(),
       signal,
@@ -107,7 +102,7 @@ export async function getCorporateChartData<K extends keyof DadosGraficosCorpora
   const url = `${TELEMETRY_API_URL}/v1/user/dashboards/corporate/charts/${chartId}/data${query}`;
 
   try {
-    const res = await fetch(url, {
+    const res = await fetchComAuth(url, {
       method: 'GET',
       headers: montarHeaders(),
       signal,
@@ -155,7 +150,7 @@ export async function getCorporateFarms(
   const url = `${TELEMETRY_API_URL}/v1/user/dashboards/corporate/farms${query}`;
 
   try {
-    const res = await fetch(url, {
+    const res = await fetchComAuth(url, {
       method: 'GET',
       headers: montarHeaders(),
       signal,

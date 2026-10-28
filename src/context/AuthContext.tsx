@@ -1,11 +1,17 @@
-import { createContext, useCallback, useReducer } from 'react';
+import { createContext, useCallback, useEffect, useReducer } from 'react';
 import type { PropsWithChildren } from 'react';
 import { authInitialState, authReducer } from '@/reducers/authReducer';
 import type { AuthState } from '@/reducers/authReducer';
 import type { User } from '@/types/user.types';
 import { CHAVE_SESSAO } from '@/utils/chaves';
 import { lerArmazenado, removerArmazenado, salvarArmazenado } from '@/utils/storage';
-import { limparTokens, salvarTokens } from '@/services/tokenService';
+import {
+  executarRenovacaoToken,
+  isTokenExpirado,
+  limparTokens,
+  obterAccessToken,
+  salvarTokens,
+} from '@/services/tokenService';
 
 interface AuthValue {
   user: User | null;
@@ -56,11 +62,44 @@ export function AuthProvider({ children }: PropsWithChildren) {
     [state.user],
   );
 
-  const logout = () => {
+  const logout = useCallback(() => {
     removerArmazenado(CHAVE_SESSAO);
     limparTokens();
     dispatch({ type: 'LOGOUT' });
-  };
+  }, []);
+
+  // Sincronização de eventos globais de renovação e expiração de sessão
+  useEffect(() => {
+    const handleTokenRefreshed = (
+      event: CustomEvent<{ accessToken: string; refreshToken?: string }>,
+    ) => {
+      const { accessToken, refreshToken } = event.detail;
+      updateUser({ token: accessToken, refreshToken });
+    };
+
+    const handleSessionExpired = () => {
+      logout();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && state.isAuthenticated) {
+        const token = obterAccessToken();
+        if (token && isTokenExpirado(token, 60)) {
+          void executarRenovacaoToken();
+        }
+      }
+    };
+
+    window.addEventListener('auth:token_refreshed', handleTokenRefreshed as EventListener);
+    window.addEventListener('auth:session_expired', handleSessionExpired);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('auth:token_refreshed', handleTokenRefreshed as EventListener);
+      window.removeEventListener('auth:session_expired', handleSessionExpired);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [logout, state.isAuthenticated, updateUser]);
 
   return (
     <AuthContext.Provider value={{ ...state, login, updateUser, logout }}>

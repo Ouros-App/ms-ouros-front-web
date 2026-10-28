@@ -1,5 +1,5 @@
 import type { User } from '@/types/user.types';
-import { CHAVE_REFRESH_TOKEN, CHAVE_TOKEN } from '@/utils/chaves';
+import { CHAVE_REFRESH_TOKEN, CHAVE_SESSAO, CHAVE_TOKEN } from '@/utils/chaves';
 import { lerArmazenado, removerArmazenado, salvarArmazenado } from '@/utils/storage';
 
 export interface KeycloakTokenClaims {
@@ -105,4 +105,91 @@ export function obterRefreshToken(): string | null {
 export function limparTokens(): void {
   removerArmazenado(CHAVE_TOKEN);
   removerArmazenado(CHAVE_REFRESH_TOKEN);
+}
+
+/**
+ * Verifica se um JWT está expirado ou prestes a expirar dentro de uma margem em segundos.
+ */
+export function isTokenExpirado(token?: string | null, margemSegundos = 30): boolean {
+  const tokenAlvo = token ?? obterAccessToken();
+  if (!tokenAlvo) return true;
+
+  const claims = parseJwt(tokenAlvo);
+  if (!claims || typeof claims.exp !== 'number') return false;
+
+  const agora = Math.floor(Date.now() / 1000);
+  return agora >= claims.exp - margemSegundos;
+}
+
+/**
+ * Notifica que a sessão expirou, limpando os dados persistidos e disparando evento global.
+ */
+export function notificarSessaoExpirada(): void {
+  limparTokens();
+  removerArmazenado(CHAVE_SESSAO);
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('auth:session_expired'));
+  }
+}
+
+// Mutex para evitar que múltiplas requisições paralelas disparem múltiplos refreshes
+let promessaRenovacaoEmAndamento: Promise<string | null> | null = null;
+
+/**
+ * Executa a renovação do token via refresh_token com controle de concorrência.
+ * Retorna o novo access_token gerado ou null se a renovação falhar.
+ */
+export async function executarRenovacaoToken(): Promise<string | null> {
+  if (promessaRenovacaoEmAndamento) {
+    return promessaRenovacaoEmAndamento;
+  }
+
+  promessaRenovacaoEmAndamento = (async () => {
+    const refreshToken = obterRefreshToken();
+    if (!refreshToken) {
+      notificarSessaoExpirada();
+      return null;
+    }
+
+    try {
+      const { renovarToken } = await import('./authService');
+      const response = await renovarToken(refreshToken);
+
+      salvarTokens({
+        accessToken: response.access_token,
+        refreshToken: response.refresh_token,
+      });
+
+      // Atualiza a sessão persistida do usuário se existir
+      const sessaoAtual = lerArmazenado<User>(CHAVE_SESSAO);
+      if (sessaoAtual) {
+        salvarArmazenado(CHAVE_SESSAO, {
+          ...sessaoAtual,
+          token: response.access_token,
+          refreshToken: response.refresh_token || sessaoAtual.refreshToken,
+        });
+      }
+
+      // Notifica as abas e componentes sobre o novo token
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('auth:token_refreshed', {
+            detail: {
+              accessToken: response.access_token,
+              refreshToken: response.refresh_token,
+            },
+          }),
+        );
+      }
+
+      return response.access_token;
+    } catch {
+      notificarSessaoExpirada();
+      return null;
+    } finally {
+      promessaRenovacaoEmAndamento = null;
+    }
+  })();
+
+  return promessaRenovacaoEmAndamento;
 }

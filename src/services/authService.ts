@@ -8,7 +8,7 @@ import { CHAVE_PERFIS } from '@/utils/chaves';
 import { AUTH_API_URL } from '@/utils/constants';
 import { isAbortError, wait } from '@/utils/delay';
 import { lerArmazenado } from '@/utils/storage';
-import { claimsToUser } from './tokenService';
+import { claimsToUser, parseJwt } from './tokenService';
 
 export class ServiceError extends Error {
   constructor(message: string) {
@@ -306,6 +306,40 @@ export async function verificarCodigoLogin(
   }
 }
 
+async function executarMockRefresh(
+  refreshToken: string,
+  signal?: AbortSignal,
+): Promise<KeycloakTokenResponse> {
+  await wait(300, signal);
+
+  const claims = parseJwt(refreshToken) as Record<string, unknown> | null;
+  const sub = (claims?.sub as string) || 'u-demo';
+  const cadastrado = usuarios.find((u) => u.id === sub || u.email === claims?.email);
+
+  const mockClaims = {
+    sub,
+    database_id: cadastrado?.databaseId || 1,
+    email: (claims?.email as string) || cadastrado?.email || 'gestor@ouros.com',
+    name: cadastrado?.name || 'Vera Marcelinha',
+    account_type: cadastrado?.role || 'admin',
+    roles: ['admin', 'user'],
+    realm_access: { roles: ['admin'] },
+    exp: Math.floor(Date.now() / 1000) + 300,
+  };
+
+  const mockToken = criarMockJwt(mockClaims);
+  const mockRefresh = criarMockJwt({ ...mockClaims, typ: 'Refresh' });
+
+  return {
+    access_token: mockToken,
+    refresh_token: mockRefresh,
+    expires_in: 300,
+    refresh_expires_in: 1800,
+    token_type: 'Bearer',
+    scope: 'openid ouros-identity offline_access',
+  };
+}
+
 /**
  * Renovação de Sessão via refresh_token
  * POST /v1/auth/token/refresh
@@ -314,21 +348,55 @@ export async function renovarToken(
   refreshToken: string,
   signal?: AbortSignal,
 ): Promise<KeycloakTokenResponse> {
-  const url = `${AUTH_API_URL}/v1/auth/token/refresh`;
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      refresh_token: refreshToken,
-    }),
-    signal,
-  });
-
-  if (!res.ok) {
-    throw new ServiceError('Sessão expirada. Faça login novamente.');
+  // Se for token simulado em desenvolvimento
+  if (
+    refreshToken.includes('mockSignature') ||
+    ((import.meta.env.DEV || import.meta.env.MODE === 'development') && refreshToken.startsWith('mock-'))
+  ) {
+    return executarMockRefresh(refreshToken, signal);
   }
 
-  return (await res.json()) as KeycloakTokenResponse;
+  try {
+    const url = `${AUTH_API_URL}/v1/auth/token/refresh`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        refresh_token: refreshToken,
+      }),
+      signal,
+    });
+
+    if (!res.ok) {
+      if (res.status === 401 || res.status === 400) {
+        throw new ServiceError('Sessão expirada. Faça login novamente.');
+      }
+
+      const errorData = (await res.json().catch(() => null)) as { detail?: string; offline?: boolean } | null;
+
+      if (
+        (res.status === 502 || errorData?.offline) &&
+        (import.meta.env.DEV || import.meta.env.MODE === 'development')
+      ) {
+        console.warn('[Auth] Backend offline durante renovação. Utilizando refresh mock.');
+        return executarMockRefresh(refreshToken, signal);
+      }
+
+      throw new ServiceError(errorData?.detail || 'Sessão expirada. Faça login novamente.');
+    }
+
+    return (await res.json()) as KeycloakTokenResponse;
+  } catch (error) {
+    if (isAbortError(error)) throw error;
+    if (error instanceof ServiceError) throw error;
+
+    if (import.meta.env.DEV || import.meta.env.MODE === 'development') {
+      console.warn('[Auth] Conexão falhou durante renovação de token. Utilizando refresh mock.');
+      return executarMockRefresh(refreshToken, signal);
+    }
+
+    throw toServiceError(error, 'Não foi possível renovar a sessão.');
+  }
 }
 
 /**
