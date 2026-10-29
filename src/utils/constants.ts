@@ -19,4 +19,13 @@ const rawTelemetryUrl = import.meta.env.DEV
 
 export const TELEMETRY_API_URL = rawTelemetryUrl.replace(/\/+$/, '');
 
+// Em desenvolvimento, o proxy do Vite (/spring) evita CORS com o ms-spring-api (rewrite remove o prefixo)
+const rawSpringUrl = import.meta.env.DEV
+  ? (import.meta.env.VITE_FORCE_DIRECT_SPRING === 'true'
+      ? (import.meta.env.VITE_SPRING_API_URL || 'http://localhost:8080')
+      : '/spring')
+  : (import.meta.env.VITE_SPRING_API_URL || 'http://localhost:8080');
+
+export const SPRING_API_URL = rawSpringUrl.replace(/\/+$/, '');
+
 export const STORAGE_VERSION = import.meta.env.VITE_STORAGE_VERSION || 'v1';

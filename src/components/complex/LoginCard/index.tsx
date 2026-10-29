@@ -7,7 +7,7 @@ const AJUDA: Record<LoginHelp, string> = {
     conta: 'As contas são criadas pelo gestor da sua granja. Peça a ele para cadastrar o seu e-mail no OUROS.',
 };
 
-export function LoginCard({ status, message, onSubmit }: LoginCardProps) {
+export function LoginCard({ status, message, onSubmit, onForgotPassword }: LoginCardProps) {
     const {
         values,
         errors,
@@ -86,7 +86,7 @@ export function LoginCard({ status, message, onSubmit }: LoginCardProps) {
                         <button
                             type="button"
                             className="login-card__link"
-                            onClick={() => setHelp('senha')}
+                            onClick={() => (onForgotPassword ? onForgotPassword() : setHelp('senha'))}
                         >
                             Esqueceu sua senha?
                         </button>
