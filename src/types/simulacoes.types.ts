@@ -1,3 +1,5 @@
+import type { PrevisaoRanking } from '@/services/rankingService';
+
 export interface Simulacao{
     id: string;
     idLote: string;
@@ -7,6 +9,8 @@ export interface Simulacao{
     precoEnergia: number;
     quantidadeAves: number;
     gastoAlvoEnergia: number;
+    idFarm?: number;
+    previsao?: PrevisaoRanking;
 }
 
 export type SimulacaoNova = Omit<Simulacao, 'id'>;

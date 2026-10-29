@@ -62,6 +62,19 @@
     font-weight: 600;
 }
 
+.dashboard-page__subtitulo {
+    margin: 4px 0 0 15px;
+    font-size: 13px;
+    color: #64748b;
+}
+
+.dashboard-page__topo-acoes {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
 .dashboard-page__conteudo{
     position: relative;
     z-index: 1;

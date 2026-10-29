@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import type { SimulacaoModalProps, SimulacaoValores } from '@/types/simulacoes.types';
+import { listarGranjas } from '@/services/farmService';
+import { simularRanking, type PrevisaoRanking } from '@/services/rankingService';
 import { isAbortError } from '@/utils/delay';
 import { Dialogo } from './Dialogo';
 import { useSimulacaoForm } from './useSimulacaoForms';
@@ -26,6 +28,28 @@ export function SimulacaoModal({ simulacao, onFechar, onSalvar }: SimulacaoModal
     const { values, errors, change, validar } = useSimulacaoForm(simulacao);
     const [enviando, setEnviando] = useState(false);
     const [falha, setFalha] = useState('');
+    const [previsao, setPrevisao] = useState<PrevisaoRanking | undefined>(simulacao?.previsao);
+    const [calculando, setCalculando] = useState(false);
+    const [erroPrevisao, setErroPrevisao] = useState('');
+
+    const calcularPrevisao = async () => {
+        const alvo = Number(values.consumoAlvo);
+        if (!(alvo > 0)) {
+            setErroPrevisao('Informe um consumo alvo (CGI) maior que zero para calcular a previsão.');
+            return;
+        }
+        setCalculando(true);
+        setErroPrevisao('');
+        try {
+            const idFarm = simulacao?.idFarm ?? (await listarGranjas())[0]?.id;
+            if (!idFarm) throw new Error('Nenhuma granja disponível para calcular a previsão.');
+            setPrevisao(await simularRanking(idFarm, alvo));
+        } catch (error) {
+            setErroPrevisao(error instanceof Error ? error.message : 'Não foi possível calcular a previsão.');
+        } finally {
+            setCalculando(false);
+        }
+    };
 
     const enviar = async (evento: FormEvent<HTMLFormElement>) => {
         evento.preventDefault();
@@ -81,6 +105,20 @@ export function SimulacaoModal({ simulacao, onFechar, onSalvar }: SimulacaoModal
                     </div>
                 );
             })}
+        </div>
+
+        <div className="simulacao-form__previsao" aria-live="polite">
+            <button type="button" className="simulacoes-botao simulacoes-botao--secundario" onClick={calcularPrevisao} disabled={enviando || calculando}>
+                {calculando ? 'Calculando...' : 'Calcular previsão no ranking'}
+            </button>
+            {erroPrevisao && <p className="simulacao-form__erro" role="alert">{erroPrevisao}</p>}
+            {previsao && !erroPrevisao && (
+                <p className="simulacao-form__resumo">
+                    Posição atual: {previsao.posicaoAtual ?? '-'} · Posição simulada: {previsao.posicaoSimulada ?? '-'}
+                    {previsao.posicoesGanhas !== null && previsao.posicoesGanhas > 0 ? ` (+${previsao.posicoesGanhas})` : ''}
+                    {previsao.ligaSimulada ? ` · Liga: ${previsao.ligaSimulada}` : ''}
+                </p>
+            )}
         </div>
 
         {falha && (

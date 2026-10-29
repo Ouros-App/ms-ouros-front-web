@@ -1,0 +1,150 @@
+.tarefas-page {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f8fafc;
+}
+
+.tarefas-page__coluna {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 32px 40px;
+  max-width: 1400px;
+}
+
+.tarefas-page__topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.tarefas-page__titulo {
+  font-size: 24px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+}
+
+.tarefas-page__subtitulo {
+  font-size: 14px;
+  color: #64748b;
+  margin: 4px 0 0;
+}
+
+.tarefas-page__acoes-topo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.tarefas-page__filtros {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.tarefas-page__filtro-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tarefas-page__filtro-btn--ativo {
+  background-color: #f59e0b;
+  color: #ffffff;
+  border-color: #f59e0b;
+}
+
+.tarefas-page__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.tarefa-card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+}
+
+.tarefa-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.tarefa-card__badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+}
+
+.tarefa-card__badge--estadual {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.tarefa-card__badge--individual {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.tarefa-card__status {
+  font-size: 12px;
+  font-weight: 600;
+  color: #059669;
+}
+
+.tarefa-card__titulo {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 8px;
+}
+
+.tarefa-card__descricao {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0 0 16px;
+  flex: 1;
+}
+
+.tarefa-card__meta-valor {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  background-color: #f8fafc;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  color: #334155;
+}
+
+.tarefa-card__prazo {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.tarefas-page__info {
+  text-align: center;
+  padding: 32px;
+  color: #64748b;
+}
