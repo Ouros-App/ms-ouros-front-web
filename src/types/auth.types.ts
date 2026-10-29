@@ -16,6 +16,7 @@ export interface LoginCardProps {
   status: LoginStatus;
   message: string;
   onSubmit: (values: LoginValues) => void;
+  onForgotPassword?: () => void;
 }
 
 export interface NativeLoginStartResponse {

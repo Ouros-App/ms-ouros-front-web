@@ -5,6 +5,7 @@ import path from 'node:path';
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   const authTarget = env.VITE_AUTH_API_URL || 'https://ms-auth-service.discloud.app';
+  const springTarget = env.VITE_SPRING_API_URL || 'http://localhost:8080';
   const telemetryTarget = env.VITE_TELEMETRY_API_URL || 'https://ouros-dashboard.discloud.app';
 
   return {
@@ -36,6 +37,31 @@ export default defineConfig(({ mode }) => {
               }
             });
           },
+        },
+        '/spring': {
+          target: springTarget,
+          changeOrigin: true,
+          secure: false,
+          rewrite: (p) => p.replace(/^\/spring/, ''),
+          configure: (proxy) => {
+            proxy.on('error', (err, _req, res) => {
+              if (res && 'writeHead' in res && !res.headersSent) {
+                res.writeHead(503, { 'Content-Type': 'application/json' });
+                res.end(
+                  JSON.stringify({
+                    detail: 'Servico ms-spring-api indisponivel no momento (' + springTarget + ').',
+                    offline: true,
+                    error: (err as Error).message,
+                  }),
+                );
+              }
+            });
+          },
+        },
+        '/v1/admin': {
+          target: telemetryTarget,
+          changeOrigin: true,
+          secure: false,
         },
         '/v1/user': {
           target: telemetryTarget,

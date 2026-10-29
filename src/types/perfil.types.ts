@@ -5,6 +5,7 @@ export interface Perfil{
     cpf: string;
     telefone: string;
     avatarUrl: string | null;
+    idEnterprise?: number | null;
 }
 
 export interface PerfilAtualizacao{

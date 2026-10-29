@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { LoginCard } from '@/components/complex/LoginCard';
+import { PasswordResetFlow } from '@/components/complex/PasswordResetFlow';
 import { VerificationCard } from '@/components/complex/VerificationCard';
 import { useAuth } from '@/hooks/useAuth';
 import { useLogin } from '@/hooks/useLogin';
@@ -14,6 +16,7 @@ interface LoginLocationState {
 export default function LoginPage() {
   const { isAuthenticated } = useAuth();
   const location = useLocation();
+  const [redefinindoSenha, setRedefinindoSenha] = useState(false);
   const {
     step,
     status,
@@ -76,8 +79,15 @@ export default function LoginPage() {
           )}
         </section>
 
-        {step === 'credentials' || !pendingChallenge ? (
-          <LoginCard status={status} message={message} onSubmit={submitCredentials} />
+        {redefinindoSenha ? (
+          <PasswordResetFlow onClose={() => setRedefinindoSenha(false)} />
+        ) : step === 'credentials' || !pendingChallenge ? (
+          <LoginCard
+            status={status}
+            message={message}
+            onSubmit={submitCredentials}
+            onForgotPassword={() => setRedefinindoSenha(true)}
+          />
         ) : (
           <VerificationCard
             maskedEmail={pendingChallenge.maskedEmail}

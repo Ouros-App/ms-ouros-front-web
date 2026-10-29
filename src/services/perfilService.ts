@@ -1,22 +1,39 @@
 import type { Perfil, PerfilAtualizacao } from '@/types/perfil.types';
-import { CHAVE_PERFIS } from '@/utils/chaves';
-import { isAbortError, wait } from '@/utils/delay';
+import { isAbortError } from '@/utils/delay';
 import { apenasDigitos } from '@/utils/mascaras';
-import { lerArmazenado, salvarArmazenado } from '@/utils/storage';
-import { atualizarUsuarioCadastrado, ServiceError } from './authService';
+import { ServiceError } from './authService';
+import { springRequest } from './springClient';
 
-const perfisIniciais: Perfil[] = [
-{
-    id: 'u-1',
-    nome: 'Vera Marcelinha',
-    email: 'gestor@ouros.com',
-    cpf: '123.456.789-10',
-    telefone: '(11) 99925-1812',
-    avatarUrl: null,
-},
-];
+interface CompanyEmployeeResponse {
+    id: number;
+    name: string;
+    email: string;
+    document_number: string | null;
+    telephone: string | null;
+    photo_url: string | null;
+    id_enterprise: number | null;
+}
 
-let banco: Perfil[] = lerArmazenado<Perfil[]>(CHAVE_PERFIS) ?? perfisIniciais;
+interface CompanyEmployeePatch {
+    name?: string;
+    telephone?: string;
+    password?: string;
+    photo_url?: string;
+}
+
+const URL_HTTP = /^https?:\/\//i;
+
+function paraPerfil(dto: CompanyEmployeeResponse): Perfil {
+    return {
+        id: String(dto.id),
+        nome: dto.name,
+        email: dto.email,
+        cpf: dto.document_number ?? '',
+        telefone: dto.telephone ?? '',
+        avatarUrl: dto.photo_url,
+        idEnterprise: dto.id_enterprise,
+    };
+}
 
 function falhar(error: unknown, mensagem: string): Error {
     if (isAbortError(error) && error instanceof Error) return error;
@@ -24,50 +41,42 @@ function falhar(error: unknown, mensagem: string): Error {
     return new ServiceError(mensagem);
 }
 
-export async function obterPerfil(id: string, signal?: AbortSignal): Promise<Perfil | null> {
-    try{
-        await wait(500, signal);
-        const encontrado = banco.find((p) => p.id === id);
-        return encontrado ? { ...encontrado } : null;
-    } 
-    catch (error){
-    throw falhar(error, 'Não foi possível carregar o perfil.');
+/** Perfil do usuário autenticado (GET /company-employees/me). O id numérico vem do banco, não do Keycloak. */
+export async function obterPerfil(signal?: AbortSignal): Promise<Perfil | null> {
+    try {
+        const dto = await springRequest<CompanyEmployeeResponse>(
+            '/company-employees/me',
+            { signal },
+            'Não foi possível carregar o perfil.',
+        );
+        return dto ? paraPerfil(dto) : null;
+    } catch (error) {
+        throw falhar(error, 'Não foi possível carregar o perfil.');
     }
 }
 
-export async function atualizarPerfil(id: string, dados: PerfilAtualizacao): Promise<Perfil>{
+export async function atualizarPerfil(id: string, dados: PerfilAtualizacao): Promise<Perfil> {
     try {
-        await wait(700);
-        const atual = banco.find((p) => p.id === id);
-        
-        if (!atual) throw new ServiceError('Perfil não encontrado.');
         const digitos = apenasDigitos(dados.telefone);
-    
         if (digitos.length < 10 || digitos.length > 11) {
             throw new ServiceError('Telefone inválido.');
         }
-        if (dados.avatarUrl !== null && !dados.avatarUrl.startsWith('data:image/')) {
-            throw new ServiceError('Foto inválida.');
-    }
-    
-    const atualizado: Perfil = {
-        ...atual,
-        nome: dados.nome,
-        telefone: dados.telefone,
-        avatarUrl: dados.avatarUrl,
-    };
 
-    atualizarUsuarioCadastrado(id,{
-        name: atualizado.nome,
-        avatarUrl: atualizado.avatarUrl ?? undefined,
-        password: dados.novaSenha || undefined,
-    });
+        const corpo: CompanyEmployeePatch = { name: dados.nome, telephone: digitos };
+        if (dados.novaSenha) corpo.password = dados.novaSenha;
+        // photo_url aceita no máximo 500 caracteres: data-URLs (base64) não são enviadas ao backend.
+        const fotoPersistivel = dados.avatarUrl !== null && URL_HTTP.test(dados.avatarUrl);
+        if (fotoPersistivel && dados.avatarUrl) corpo.photo_url = dados.avatarUrl;
 
-    banco = banco.map((p) => (p.id === id ? atualizado : p));
-    salvarArmazenado(CHAVE_PERFIS, banco);
-    return { ...atualizado };
-    } 
-    catch (error){
-    throw falhar(error, 'Não foi possível salvar o perfil.');
+        const dto = await springRequest<CompanyEmployeeResponse>(
+            `/company-employees/${encodeURIComponent(id)}`,
+            { method: 'PATCH', body: corpo },
+            'Não foi possível salvar o perfil.',
+        );
+        const perfil = paraPerfil(dto);
+        // Foto local (data-URL) vale apenas durante a sessão enquanto o backend não suporta upload.
+        return fotoPersistivel ? perfil : { ...perfil, avatarUrl: dados.avatarUrl ?? perfil.avatarUrl };
+    } catch (error) {
+        throw falhar(error, 'Não foi possível salvar o perfil.');
     }
 }

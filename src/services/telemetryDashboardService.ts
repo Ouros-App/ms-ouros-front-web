@@ -137,6 +137,7 @@ export async function getCorporateFarms(
     state?: string;
     management?: string;
     month?: string;
+    enterpriseId?: number;
   },
   signal?: AbortSignal,
 ): Promise<CorporateFarmsTableResponse> {
@@ -152,6 +153,9 @@ export async function getCorporateFarms(
   }
   if (filtros?.month && filtros.month !== 'atual' && filtros.month !== 'todos') {
     params.set('month', filtros.month);
+  }
+  if (filtros?.enterpriseId) {
+    params.set('enterprise_id', String(filtros.enterpriseId));
   }
 
   const query = params.toString() ? `?${params.toString()}` : '';
