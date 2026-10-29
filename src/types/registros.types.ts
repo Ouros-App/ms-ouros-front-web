@@ -6,6 +6,8 @@ export interface Registro{
     custo: number;
     entraram: number;
     sairam: number;
+    idFarm?: number;
+    farmName?: string;
 }
 
 export type RegistroNovo = Omit<Registro, 'id'>;
