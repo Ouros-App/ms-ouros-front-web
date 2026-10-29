@@ -1,0 +1,116 @@
+.metas-resumo{
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 28px;
+    margin-bottom: 24px;
+    border: 1px solid #f1e6cc;
+    border-radius: 14px;
+    background: #ffffff;
+    padding: 22px 36px;
+    box-shadow: 0 6px 20px rgba(222, 171, 85, 0.18);
+    font-family: 'Poppins', sans-serif;
+}
+
+.metas-resumo__progresso{
+    display: flex;
+    min-height: 130px;
+    align-items: center;
+    gap: 28px;
+}
+
+.metas-resumo__contagem{
+    display: flex;
+    min-width: 140px;
+    flex-direction: column;
+    align-items: center;
+}
+
+.metas-resumo__numeros{
+    margin: 0;
+    color: #0f172a;
+    font-size: 1.15rem;
+    font-weight: 600;
+}
+
+.metas-resumo__legenda{
+    margin: 0 0 8px;
+    color: #0f172a;
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+
+.metas-resumo__barra{
+    height: 10px;
+    width: 130px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #f2dfc0;
+}
+
+.metas-resumo__barra-preenchida{
+    height: 100%;
+    border-radius: 999px;
+    background: #1a1596;
+    transition: width 0.5s ease;
+}
+
+.metas-resumo__divisor{
+    align-self: stretch;
+    width: 1px;
+    background: #e5e7eb;
+}
+
+.metas-resumo__formulario{
+    min-width: 260px;
+    flex: 1;
+}
+
+.metas-resumo__estado{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 0.85rem;
+}
+
+.metas-resumo__estado p{
+    margin: 0;
+}
+
+.metas-resumo__botao{
+    min-height: 34px;
+    border: 1px solid var(--gold-border);
+    border-radius: 6px;
+    background: #deab55;
+    padding: 0 16px;
+    color: #1a1a1a;
+    font-family: inherit;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.metas-resumo__botao:hover{
+    background: #d49d3f;
+}
+
+@media (max-width: 760px){
+    .metas-resumo {
+        padding: 18px;
+    }
+
+    .metas-resumo__divisor{
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce){
+    .metas-resumo__barra-preenchida {
+        transition: none;
+    }
+}

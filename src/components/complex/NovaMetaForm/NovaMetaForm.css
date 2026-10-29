@@ -1,0 +1,75 @@
+.nova-meta{
+    min-width: 0;
+    font-family: 'Poppins', sans-serif;
+}
+
+.nova-meta__titulo{
+    display: block;
+    margin-bottom: 14px;
+    color: #0f172a;
+    font-size: 1.05rem;
+    font-weight: 600;
+}
+
+.nova-meta__linha{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.nova-meta__campo{
+    height: 40px;
+    min-width: 0;
+    flex: 1;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    background: #f3f4f6;
+    padding: 0 14px;
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 0.8rem;
+}
+
+.nova-meta__campo::placeholder{
+    color: #6b7280;
+}
+
+.nova-meta__campo--erro{
+    border-color: var(--danger);
+}
+
+.nova-meta__botao{
+    display: inline-flex;
+    height: 40px;
+    width: 40px;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #c7c9f0;
+    border-radius: 6px;
+    background-color: #ecedfb;
+    color: #1a1596;
+    cursor: pointer;
+}
+
+.nova-meta__botao:hover:not(:disabled){
+    background: #Dcdef7;
+}
+
+.nova-meta__botao:disabled{
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.nova-meta__erro{
+    margin: 8px 0 0;
+    color: var(--danger);
+    font-size: 0.78rem;
+}
+
+.nova-meta__aviso{
+    min-height: 1.1rem;
+    margin: 8px 0 0;
+    color: var(--ink-soft);
+    font-size: 0.78rem;
+}
