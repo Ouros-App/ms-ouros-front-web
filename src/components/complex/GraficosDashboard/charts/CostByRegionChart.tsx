@@ -32,20 +32,48 @@ export function CostByRegionChart({ dados }: Props) {
     });
   }, [dados]);
 
-  // Cálculo do teto do eixo Y baseado nos máximos das distribuições ou dos custos
+  // Cálculo dinâmico do teto do eixo Y
+  // Se houver estatísticas de Box Plot (distribuição por lote), o teto considera estritamente os quartis/máximo
+  // para não esmagar os boxes contra o custo total acumulado da macrorregião.
   const maximoY = useMemo(() => {
     if (dadosOrdenados.length === 0) return 250_000;
+
+    const temBoxPlotStats = dadosOrdenados.some(
+      (d) =>
+        (d.previous_year?.max && d.previous_year.max > 0) ||
+        (d.current_year?.max && d.current_year.max > 0),
+    );
+
     let teto = 0;
-    for (const d of dadosOrdenados) {
-      if (d.previous_year?.max) teto = Math.max(teto, d.previous_year.max);
-      if (d.current_year?.max) teto = Math.max(teto, d.current_year.max);
-      teto = Math.max(teto, d.previous_year_cost ?? 0, d.current_year_cost ?? 0, d.cost ?? 0);
+    if (temBoxPlotStats) {
+      for (const d of dadosOrdenados) {
+        if (d.previous_year?.max) teto = Math.max(teto, d.previous_year.max);
+        if (d.current_year?.max) teto = Math.max(teto, d.current_year.max);
+      }
+    } else {
+      for (const d of dadosOrdenados) {
+        teto = Math.max(teto, d.previous_year_cost ?? 0, d.current_year_cost ?? 0, d.cost ?? 0);
+      }
     }
+
     if (teto <= 0) return 250_000;
-    // Arredondar para um valor amigável (múltiplos de 50k ou 20% acima)
-    const expoente = Math.pow(10, Math.floor(Math.log10(teto)));
-    const fator = Math.ceil((teto * 1.15) / expoente);
-    return fator * expoente;
+
+    // Arredondar para um múltiplo amigável com 15% de margem no topo para as hastes
+    const tetoComMargem = teto * 1.15;
+    const expoente = Math.pow(10, Math.floor(Math.log10(tetoComMargem)));
+    const normalizado = tetoComMargem / expoente;
+
+    let multiplicador = 1;
+    if (normalizado <= 1.2) multiplicador = 1.2;
+    else if (normalizado <= 1.5) multiplicador = 1.5;
+    else if (normalizado <= 2) multiplicador = 2;
+    else if (normalizado <= 2.5) multiplicador = 2.5;
+    else if (normalizado <= 3) multiplicador = 3;
+    else if (normalizado <= 4) multiplicador = 4;
+    else if (normalizado <= 5) multiplicador = 5;
+    else multiplicador = 10;
+
+    return multiplicador * expoente;
   }, [dadosOrdenados]);
 
   if (!dados || dados.length === 0) {

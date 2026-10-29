@@ -43,13 +43,15 @@ export interface CostDistributionBucket {
   regions?: string[];
 }
 
-// 2. Gráfico Custo por Lote (7 Coortes de tamanho de lote)
+// 2. Gráfico Custo por Lote (Coortes adaptativas ou fixas de tamanho de lote)
 export interface CostByLotSizeCohort {
   cohort: string;
   previous_year_cost: number;
   current_year_cost: number;
   previous_year_lots?: number;
   current_year_lots?: number;
+  min_birds?: number | null;
+  max_birds?: number | null;
 }
 
 // 3. Gráfico Custo por Região (Box Plot Stats)
@@ -103,6 +105,8 @@ export interface FarmSummaryItem {
   farm_name: string;
   manager_name: string | null;
   location: string;
+  state?: string | null;
+  regional_management?: string | null;
   total_consumption: string;
   lots_count: number;
   avg_lot_cost: number;

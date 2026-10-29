@@ -9,10 +9,105 @@ import {
   YAxis,
 } from 'recharts';
 import type { CostByLotSizeCohort } from '@/types/dashboard.types';
-import { formatarValorAbreviado } from '@/utils/formato';
+import { formatarMoeda, formatarValorAbreviado } from '@/utils/formato';
 
 interface Props {
   dados: CostByLotSizeCohort[];
+}
+
+interface TooltipCohortItem {
+  dataKey?: string | number;
+  value?: number;
+  payload?: CostByLotSizeCohort;
+}
+
+function TooltipCustoPorLote({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: TooltipCohortItem[];
+  label?: string;
+}) {
+  if (!active || !payload || payload.length === 0) return null;
+
+  const itemPayload = payload[0]?.payload;
+  const avesInfo =
+    typeof itemPayload?.min_birds === 'number' && typeof itemPayload?.max_birds === 'number'
+      ? ` (${itemPayload.min_birds.toLocaleString('pt-BR')} - ${itemPayload.max_birds.toLocaleString('pt-BR')} aves)`
+      : typeof itemPayload?.min_birds === 'number'
+      ? ` (acima de ${itemPayload.min_birds.toLocaleString('pt-BR')} aves)`
+      : '';
+
+  return (
+    <div
+      style={{
+        backgroundColor: '#0E0E50',
+        border: '1px solid #D8A23A',
+        borderRadius: '8px',
+        padding: '8px 12px',
+        color: '#FFFFFF',
+        fontSize: '11px',
+        boxShadow: '0 4px 14px rgba(0,0,0,0.3)',
+        minWidth: '160px',
+      }}
+    >
+      <div style={{ fontWeight: 600, color: '#D8A23A', marginBottom: '6px' }}>
+        Faixa de Lote: {label}
+        {avesInfo && (
+          <span style={{ color: '#E2E8F0', fontWeight: 400, fontSize: '10px', display: 'block', marginTop: '2px' }}>
+            {avesInfo}
+          </span>
+        )}
+      </div>
+      {payload.map((entry) => {
+        const isPassado = entry.dataKey === 'previous_year_cost';
+        const rotulo = isPassado ? 'Ano passado' : 'Este ano';
+        const numVal = typeof entry.value === 'number' ? entry.value : 0;
+        const lots = isPassado
+          ? entry.payload?.previous_year_lots
+          : entry.payload?.current_year_lots;
+        const lotText = typeof lots === 'number' && lots > 0 ? ` (${lots} lotes)` : '';
+        const corCirculo = isPassado ? '#6366F1' : '#D8A23A';
+
+        return (
+          <div
+            key={String(entry.dataKey)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '12px',
+              marginTop: '4px',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span
+                style={{
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  backgroundColor: corCirculo,
+                  border: '1.5px solid #FFFFFF',
+                  display: 'inline-block',
+                }}
+              />
+              <span style={{ color: '#E2E8F0', fontWeight: 500 }}>{rotulo}:</span>
+            </div>
+            <span style={{ fontWeight: 600, color: '#FFFFFF' }}>
+              {formatarMoeda(numVal)}
+              {lotText && (
+                <span style={{ color: '#94A3B8', fontWeight: 400, fontSize: '10px', marginLeft: '4px' }}>
+                  {lotText}
+                </span>
+              )}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
 export function CostByCohortChart({ dados }: Props) {
@@ -26,14 +121,14 @@ export function CostByCohortChart({ dados }: Props) {
         <BarChart
           data={dados}
           margin={{ top: 15, right: 15, left: 0, bottom: 20 }}
-          barGap={4}
-          barCategoryGap="20%"
+          barGap={6}
+          barCategoryGap="25%"
         >
           <CartesianGrid strokeDasharray="3 3" stroke="#f0f2f5" vertical={false} />
           <XAxis
             dataKey="cohort"
             stroke="#64748b"
-            fontSize={9}
+            fontSize={11}
             interval={0}
             tickLine={false}
             axisLine={{ stroke: '#cbd5e1' }}
@@ -46,25 +141,7 @@ export function CostByCohortChart({ dados }: Props) {
             tickFormatter={(val: number) => formatarValorAbreviado(val)}
             width={60}
           />
-          <Tooltip
-            formatter={(value: unknown, name: unknown, item?: { payload?: CostByLotSizeCohort }) => {
-              const numVal = typeof value === 'number' ? value : 0;
-              const isPrev = name === 'previous_year_cost';
-              const label = isPrev ? 'Ano passado' : 'Este ano';
-              const lots = isPrev ? item?.payload?.previous_year_lots : item?.payload?.current_year_lots;
-              const lotText = typeof lots === 'number' ? ` (${lots} lotes)` : '';
-              return [`${formatarValorAbreviado(numVal)}${lotText}`, label];
-            }}
-            labelFormatter={(label) => `Faixa de Lote: ${label}`}
-            contentStyle={{
-              backgroundColor: '#0e0e50',
-              borderColor: '#D8A23A',
-              borderRadius: '8px',
-              color: '#ffffff',
-              fontSize: '12px',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-            }}
-          />
+          <Tooltip content={<TooltipCustoPorLote />} />
           <Legend
             verticalAlign="top"
             align="right"

@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
-import type { CostDistributionBucket } from '@/types/dashboard.types';
-import { formatarMoeda } from '@/utils/formato';
+import type { CostByRegion, CostDistributionBucket } from '@/types/dashboard.types';
+import { formatarMoeda, formatarValorAbreviado } from '@/utils/formato';
 
 interface Props {
   dados: CostDistributionBucket[];
+  dadosRegioesApi?: CostByRegion[] | null;
 }
 
 interface RegionMeta {
@@ -41,73 +42,167 @@ const REGIOES_BRASIL: Record<string, RegionMeta> = {
   },
 };
 
-// 6 faixas da escala vertical de gradiente do Figma (Node #5998:4549)
-const FAIXAS_FIGMA = [
-  { label: '3.0M+', color: '#0E0925' },
-  { label: '2.5M', color: '#1E1354' },
-  { label: '2.0M', color: '#110B95' },
-  { label: '1.5M', color: '#1A12C3' },
-  { label: '1.0M', color: '#332BF2' },
-  { label: '1.0M-', color: '#5A53FF' },
-];
+// 6 cores do gradiente oficial do Figma (do mais claro ao mais escuro)
+const CORES_PALETA = ['#5A53FF', '#332BF2', '#1A12C3', '#110B95', '#1E1354', '#0E0925'];
 
-export function BrazilChoroplethMapChart({ dados }: Props) {
+export function BrazilChoroplethMapChart({ dados, dadosRegioesApi }: Props) {
   const [regiaoAtiva, setRegiaoAtiva] = useState<string | null>(null);
   const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
 
-  // Mapeia regiões para os dados de bucket recebidos do backend
+  // Mapeia regiões para os dados recebidos (prioriza custos reais da API por região)
   const dadosRegioes = useMemo(() => {
     const mapa = new Map<
       string,
       {
         bucket: string;
         label: string;
-        color: string;
+        color?: string;
         totalCost: number;
         lotsCount: number;
         percentage?: number;
       }
     >();
 
-    if (!dados || dados.length === 0) {
-      return mapa;
-    }
-
-    for (const b of dados) {
-      const cor = b.color || '#110B95';
-      const custo = b.total_cost ?? b.value ?? 0;
-      const lotes = b.count ?? 0;
-      const pct = b.percentage;
-
-      // Se a resposta contiver o array `regions`
-      if (Array.isArray(b.regions) && b.regions.length > 0) {
-        for (const r of b.regions) {
-          mapa.set(r, {
-            bucket: b.bucket || b.label,
-            label: b.label || b.bucket,
-            color: cor,
-            totalCost: custo,
-            lotsCount: lotes,
-            percentage: pct,
-          });
-        }
-      } else if (b.label in REGIOES_BRASIL || b.bucket in REGIOES_BRASIL) {
-        const rName = b.label in REGIOES_BRASIL ? b.label : b.bucket;
-        mapa.set(rName, {
-          bucket: b.bucket || b.label,
-          label: b.label || b.bucket,
-          color: cor,
-          totalCost: custo,
+    // 1. Prioridade: dados granulares por macrorregião (cost-by-region)
+    if (dadosRegioesApi && dadosRegioesApi.length > 0) {
+      for (const reg of dadosRegioesApi) {
+        const custoAtual = reg.current_year_cost ?? reg.cost ?? reg.previous_year_cost ?? 0;
+        const lotes = reg.current_year?.lots_count ?? reg.previous_year?.lots_count ?? 0;
+        mapa.set(reg.region, {
+          bucket: reg.bucket || reg.region,
+          label: reg.region,
+          color: reg.color,
+          totalCost: custoAtual,
           lotsCount: lotes,
-          percentage: pct,
         });
       }
     }
 
-    return mapa;
-  }, [dados]);
+    // 2. Complemento: buckets de distribuição (cost-distribution-buckets)
+    if (dados && dados.length > 0) {
+      for (const b of dados) {
+        const cor = b.color;
+        const custo = b.total_cost ?? b.value ?? 0;
+        const lotes = b.count ?? 0;
+        const pct = b.percentage;
 
-  if (!dados || dados.length === 0) {
+        if (Array.isArray(b.regions) && b.regions.length > 0) {
+          for (const r of b.regions) {
+            if (!mapa.has(r) || (mapa.get(r)?.totalCost ?? 0) === 0) {
+              mapa.set(r, {
+                bucket: b.bucket || b.label,
+                label: b.label || b.bucket,
+                color: cor,
+                totalCost: custo,
+                lotsCount: lotes,
+                percentage: pct,
+              });
+            }
+          }
+        } else if (b.label in REGIOES_BRASIL || b.bucket in REGIOES_BRASIL) {
+          const rName = b.label in REGIOES_BRASIL ? b.label : b.bucket;
+          if (!mapa.has(rName) || (mapa.get(rName)?.totalCost ?? 0) === 0) {
+            mapa.set(rName, {
+              bucket: b.bucket || b.label,
+              label: b.label || b.bucket,
+              color: cor,
+              totalCost: custo,
+              lotsCount: lotes,
+              percentage: pct,
+            });
+          }
+        }
+      }
+    }
+
+    return mapa;
+  }, [dados, dadosRegioesApi]);
+
+  // Cálculo dinâmico das faixas e limites baseado no custo real mínimo e máximo das regiões
+  const { minCusto, maxCusto, faixasDinamicas } = useMemo(() => {
+    const custosValidos: number[] = [];
+    dadosRegioes.forEach((item) => {
+      if (item.totalCost > 0) custosValidos.push(item.totalCost);
+    });
+
+    const min = custosValidos.length > 0 ? Math.min(...custosValidos) : 0;
+    const max = custosValidos.length > 0 ? Math.max(...custosValidos) : 0;
+
+    // 1. Prioridade: buckets calculados e retornados dinamicamente pelo backend
+    if (dados && dados.length > 0) {
+      // O Figma exibe a barra vertical do maior (topo, escuro) para o menor (base, claro)
+      const faixas = [...dados].reverse().map((b) => ({
+        label: b.label || b.bucket,
+        color: b.color || '#5A53FF',
+      }));
+      return { minCusto: min, maxCusto: max, faixasDinamicas: faixas };
+    }
+
+    // 2. Fallback caso não haja buckets na API mas haja custos de regiões:
+    if (custosValidos.length === 0) {
+      return {
+        minCusto: 0,
+        maxCusto: 0,
+        faixasDinamicas: [
+          { label: '3.0M+', color: '#0E0925' },
+          { label: '2.5M', color: '#1E1354' },
+          { label: '2.0M', color: '#110B95' },
+          { label: '1.5M', color: '#1A12C3' },
+          { label: '1.0M', color: '#332BF2' },
+          { label: '1.0M-', color: '#5A53FF' },
+        ],
+      };
+    }
+
+    if (min === max) {
+      return {
+        minCusto: min,
+        maxCusto: max,
+        faixasDinamicas: [
+          { label: `${formatarValorAbreviado(max)}+`, color: '#0E0925' },
+          { label: formatarValorAbreviado(max * 0.9), color: '#1E1354' },
+          { label: formatarValorAbreviado(max * 0.8), color: '#110B95' },
+          { label: formatarValorAbreviado(max * 0.7), color: '#1A12C3' },
+          { label: formatarValorAbreviado(max * 0.6), color: '#332BF2' },
+          { label: `${formatarValorAbreviado(min)}-`, color: '#5A53FF' },
+        ],
+      };
+    }
+
+    const step = (max - min) / 5;
+    const faixas = [
+      { label: `${formatarValorAbreviado(max)}+`, color: '#0E0925' },
+      { label: formatarValorAbreviado(min + step * 4), color: '#1E1354' },
+      { label: formatarValorAbreviado(min + step * 3), color: '#110B95' },
+      { label: formatarValorAbreviado(min + step * 2), color: '#1A12C3' },
+      { label: formatarValorAbreviado(min + step * 1), color: '#332BF2' },
+      { label: `${formatarValorAbreviado(min)}-`, color: '#5A53FF' },
+    ];
+
+    return { minCusto: min, maxCusto: max, faixasDinamicas: faixas };
+  }, [dados, dadosRegioes]);
+
+  // Função para mapear o custo de uma região à sua cor no gradiente dinâmico
+  const getCorRegiao = (key: string): string => {
+    const data = dadosRegioes.get(key);
+    if (!data || data.totalCost <= 0) {
+      return REGIOES_BRASIL[key]?.defaultColor || '#5A53FF';
+    }
+
+    if (data.color) {
+      return data.color;
+    }
+
+    if (maxCusto > minCusto) {
+      const ratio = Math.max(0, Math.min(1, (data.totalCost - minCusto) / (maxCusto - minCusto)));
+      const idx = Math.min(CORES_PALETA.length - 1, Math.floor(ratio * 5.999));
+      return CORES_PALETA[idx];
+    }
+
+    return REGIOES_BRASIL[key]?.defaultColor || '#110B95';
+  };
+
+  if ((!dados || dados.length === 0) && (!dadosRegioesApi || dadosRegioesApi.length === 0)) {
     return <p className="graficos-dashboard__vazio">Sem dados de custo para o período selecionado.</p>;
   }
 
@@ -159,8 +254,7 @@ export function BrazilChoroplethMapChart({ dados }: Props) {
           style={{ overflow: 'visible' }}
         >
           {Object.entries(REGIOES_BRASIL).map(([key, regiao]) => {
-            const data = dadosRegioes.get(key);
-            const fillCor = data?.color || regiao.defaultColor;
+            const fillCor = getCorRegiao(key);
             const isHovered = regiaoAtiva === key;
 
             return (
@@ -187,7 +281,7 @@ export function BrazilChoroplethMapChart({ dados }: Props) {
         </svg>
       </div>
 
-      {/* Legenda Vertical de Gradiente do Figma (Node #5998:4549) */}
+      {/* Legenda Vertical de Gradiente do Figma com Faixas Dinâmicas */}
       <div
         className="choropleth-map-legend"
         style={{
@@ -208,35 +302,35 @@ export function BrazilChoroplethMapChart({ dados }: Props) {
             boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
           }}
         >
-          {FAIXAS_FIGMA.map((faixa, i) => (
+          {faixasDinamicas.map((faixa, i) => (
             <div
-              key={faixa.label}
+              key={`color-${faixa.label}-${i}`}
               style={{
                 width: '16px',
                 height: '32px',
                 backgroundColor: faixa.color,
                 borderTopLeftRadius: i === 0 ? '4px' : '0',
                 borderTopRightRadius: i === 0 ? '4px' : '0',
-                borderBottomLeftRadius: i === FAIXAS_FIGMA.length - 1 ? '4px' : '0',
-                borderBottomRightRadius: i === FAIXAS_FIGMA.length - 1 ? '4px' : '0',
+                borderBottomLeftRadius: i === faixasDinamicas.length - 1 ? '4px' : '0',
+                borderBottomRightRadius: i === faixasDinamicas.length - 1 ? '4px' : '0',
               }}
             />
           ))}
         </div>
 
-        {/* Rótulos de Texto das Faixas */}
+        {/* Rótulos de Texto Dinâmicos das Faixas */}
         <div
           style={{
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',
-            height: `${FAIXAS_FIGMA.length * 32}px`,
+            height: `${faixasDinamicas.length * 32}px`,
             padding: '2px 0',
           }}
         >
-          {FAIXAS_FIGMA.map((faixa) => (
+          {faixasDinamicas.map((faixa, i) => (
             <span
-              key={faixa.label}
+              key={`label-${faixa.label}-${i}`}
               style={{
                 fontSize: '11px',
                 fontFamily: 'Poppins, sans-serif',
@@ -275,18 +369,22 @@ export function BrazilChoroplethMapChart({ dados }: Props) {
           </div>
           {infoAtiva ? (
             <>
+              {infoAtiva.label && infoAtiva.label !== regiaoAtiva && (
+                <div>
+                  <span style={{ color: '#B8B6C7' }}>Faixa: </span>
+                  <span style={{ fontWeight: 500 }}>{infoAtiva.label}</span>
+                </div>
+              )}
               <div>
-                <span style={{ color: '#B8B6C7' }}>Faixa: </span>
-                <span style={{ fontWeight: 500 }}>{infoAtiva.label}</span>
-              </div>
-              <div>
-                <span style={{ color: '#B8B6C7' }}>Custo: </span>
+                <span style={{ color: '#B8B6C7' }}>Custo Total: </span>
                 <span style={{ fontWeight: 500 }}>{formatarMoeda(infoAtiva.totalCost)}</span>
               </div>
-              <div>
-                <span style={{ color: '#B8B6C7' }}>Lotes: </span>
-                <span style={{ fontWeight: 500 }}>{infoAtiva.lotsCount}</span>
-              </div>
+              {infoAtiva.lotsCount > 0 && (
+                <div>
+                  <span style={{ color: '#B8B6C7' }}>Lotes: </span>
+                  <span style={{ fontWeight: 500 }}>{infoAtiva.lotsCount}</span>
+                </div>
+              )}
               {typeof infoAtiva.percentage === 'number' && (
                 <div>
                   <span style={{ color: '#B8B6C7' }}>Participação: </span>

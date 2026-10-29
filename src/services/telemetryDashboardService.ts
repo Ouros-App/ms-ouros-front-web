@@ -135,6 +135,8 @@ export async function getCorporateFarms(
     page?: number;
     limit?: number;
     state?: string;
+    management?: string;
+    month?: string;
   },
   signal?: AbortSignal,
 ): Promise<CorporateFarmsTableResponse> {
@@ -145,6 +147,12 @@ export async function getCorporateFarms(
   if (filtros?.page) params.set('page', String(filtros.page));
   if (filtros?.limit) params.set('limit', String(filtros.limit));
   if (filtros?.state && filtros.state !== 'todos') params.set('state', filtros.state);
+  if (filtros?.management && filtros.management !== 'todas' && filtros.management !== 'Todas') {
+    params.set('management', filtros.management);
+  }
+  if (filtros?.month && filtros.month !== 'atual' && filtros.month !== 'todos') {
+    params.set('month', filtros.month);
+  }
 
   const query = params.toString() ? `?${params.toString()}` : '';
   const url = `${TELEMETRY_API_URL}/v1/user/dashboards/corporate/farms${query}`;

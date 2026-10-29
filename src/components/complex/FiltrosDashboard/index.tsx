@@ -30,11 +30,14 @@ export function FiltrosDashboard({ filtros, opcoes, onAlterar }: FiltrosDashboar
           onChange={alterarPeriodo}
         >
           {temPeriodos ? (
-            opcoes?.periods.map((periodo) => (
-              <option key={periodo} value={periodo}>
-                {periodo}
-              </option>
-            ))
+            <>
+              <option value="atual">Mês Atual</option>
+              {opcoes?.periods.map((periodo) => (
+                <option key={periodo} value={periodo}>
+                  {periodo}
+                </option>
+              ))}
+            </>
           ) : (
             opcoesPeriodo.map((opcao) => (
               <option key={opcao.valor} value={opcao.valor}>

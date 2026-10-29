@@ -2,10 +2,13 @@ import type { FiltrosDashboard, OpcaoFiltro } from '@/types/dashboard.types';
 
 export const filtrosPadrao: FiltrosDashboard = { periodo: 'atual', estado: 'todos' };
 
+const anoAtual = new Date().getFullYear();
+
 export const opcoesPeriodo: OpcaoFiltro[] = [
   { valor: 'atual', rotulo: 'Mês Atual' },
-  { valor: 'Ano 2026', rotulo: 'Ano 2026' },
-  { valor: 'Ano 2025', rotulo: 'Ano 2025' },
+  { valor: `Ano ${anoAtual}`, rotulo: `Ano ${anoAtual}` },
+  { valor: `Ano ${anoAtual - 1}`, rotulo: `Ano ${anoAtual - 1}` },
+  { valor: `Ano ${anoAtual - 2}`, rotulo: `Ano ${anoAtual - 2}` },
   { valor: 'ultimos-3', rotulo: 'Últimos 3 meses' },
   { valor: 'ultimos-6', rotulo: 'Últimos 6 meses' },
 ];

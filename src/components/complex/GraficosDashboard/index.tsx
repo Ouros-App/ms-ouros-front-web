@@ -17,11 +17,19 @@ export function GraficosDashboard({ filtros }: GraficosDashboardProps) {
     <div className="graficos-dashboard">
       <PainelGrafico
         titulo="Custo"
-        status={custo.status}
-        mensagemErro={custo.mensagemErro}
-        onRecarregar={custo.recarregar}
+        status={custo.status === 'pronto' || custoPorRegiao.status === 'pronto' ? 'pronto' : custo.status}
+        mensagemErro={custo.mensagemErro || custoPorRegiao.mensagemErro}
+        onRecarregar={() => {
+          custo.recarregar();
+          custoPorRegiao.recarregar();
+        }}
       >
-        {custo.dados && <BrazilChoroplethMapChart dados={custo.dados} />}
+        {(custo.dados || custoPorRegiao.dados) && (
+          <BrazilChoroplethMapChart
+            dados={custo.dados ?? []}
+            dadosRegioesApi={custoPorRegiao.dados}
+          />
+        )}
       </PainelGrafico>
 
       <PainelGrafico
