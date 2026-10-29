@@ -6,6 +6,15 @@ export interface RankingGranja {
     score: number | null;
 }
 
+export interface RankingItem {
+    idFarm: number;
+    farmName: string;
+    region?: string | null;
+    score: number;
+    rankPosition: number;
+    league?: string | null;
+}
+
 export interface PrevisaoRanking {
     posicaoAtual: number | null;
     posicaoSimulada: number | null;
@@ -16,8 +25,21 @@ export interface PrevisaoRanking {
 
 interface RankingDto {
     farm_id: number;
+    farm_name?: string;
+    region?: string;
     rank_position: number | null;
     score: number | null;
+}
+
+interface PodiumDto {
+    current_farm_id?: number;
+    ranking_podium?: Array<{
+        farm_id: number;
+        farm_name: string;
+        region?: string;
+        score: number;
+        rank_position: number;
+    }>;
 }
 
 export interface SimulacaoRankingDto {
@@ -57,4 +79,53 @@ export async function simularRanking(idFarm: number, score: number, signal?: Abo
         'Não foi possível calcular a previsão no ranking.',
     );
     return paraPrevisao(dto) as PrevisaoRanking;
+}
+
+/** Obter ranking geral de granjas (GET /farms/rankings). */
+export async function obterRankingGeral(enterpriseId?: number, signal?: AbortSignal): Promise<RankingItem[]> {
+    const query = enterpriseId ? { id_enterprise: enterpriseId, limit: 50 } : { limit: 50 };
+    const lista = await springRequest<RankingDto[]>(
+        '/farms/rankings',
+        { query, signal },
+        'Não foi possível carregar o ranking geral.',
+    );
+    return (lista ?? []).map((r, i) => ({
+        idFarm: r.farm_id,
+        farmName: r.farm_name || `Granja #${r.farm_id}`,
+        region: r.region,
+        score: Number(r.score ?? 0),
+        rankPosition: Number(r.rank_position ?? i + 1),
+        league: r.rank_position && r.rank_position <= 3 ? 'Liga Ouro' : 'Liga Prata',
+    }));
+}
+
+/** Obter pódio relativo de uma granja (GET /farms/{id}/ranking/podium). */
+export async function obterPodioRanking(idFarm: number, signal?: AbortSignal): Promise<RankingItem[]> {
+    try {
+        const res = await springRequest<PodiumDto>(
+            `/farms/${idFarm}/ranking/podium`,
+            { signal },
+            'Não foi possível carregar o pódio.',
+        );
+        return (res?.ranking_podium ?? []).map((p) => ({
+            idFarm: p.farm_id,
+            farmName: p.farm_name,
+            region: p.region,
+            score: Number(p.score ?? 0),
+            rankPosition: Number(p.rank_position ?? 1),
+            league: 'Pódio',
+        }));
+    } catch {
+        return [];
+    }
+}
+
+/** Sincronizar o ranking de uma ou todas as empresas no Redis (POST /farms/rankings/sync). */
+export async function sincronizarRanking(enterpriseId?: number, signal?: AbortSignal): Promise<void> {
+    const query = enterpriseId ? { id_enterprise: enterpriseId } : undefined;
+    await springRequest<void>(
+        '/farms/rankings/sync',
+        { method: 'POST', query, signal },
+        'Não foi possível sincronizar os rankings.',
+    );
 }
