@@ -9,6 +9,8 @@ const RegistroDetalhePage = lazy(() => import('@/pages/RegistroDetalhe'));
 const DashboardPage = lazy(() => import('@/pages/Dashboard'));
 const SimulacaoPage = lazy(() => import('@/pages/Simulacao'));
 const PerfilPage = lazy(() => import('@/pages/Perfil'));
+const RankingPage = lazy(() => import('@/pages/Ranking'));
+const TarefasPage = lazy(() => import('@/pages/Tarefas'));
 const NotFoundPage = lazy(() => import('@/pages/NotFound'));
 
 function RootRoute() {
@@ -42,6 +44,22 @@ export function AppRoutes() {
         element={
           <PrivateRoute>
             <DashboardPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/ranking"
+        element={
+          <PrivateRoute>
+            <RankingPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/tarefas"
+        element={
+          <PrivateRoute>
+            <TarefasPage />
           </PrivateRoute>
         }
       />

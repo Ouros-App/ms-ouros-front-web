@@ -1,0 +1,104 @@
+.dashboard-farms-table {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f1f5f9;
+}
+
+.dashboard-farms-table__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.dashboard-farms-table__title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.dashboard-farms-table__subtitle {
+  font-size: 13px;
+  color: #64748b;
+  margin: 4px 0 0;
+}
+
+.dashboard-farms-table__search {
+  padding: 8px 14px;
+  font-size: 14px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  outline: none;
+  min-width: 260px;
+}
+
+.dashboard-farms-table__search:focus {
+  border-color: #f59e0b;
+}
+
+.dashboard-farms-table__wrapper {
+  overflow-x: auto;
+}
+
+.dashboard-farms-table__table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 14px;
+}
+
+.dashboard-farms-table__table th {
+  background-color: #f8fafc;
+  padding: 12px 14px;
+  color: #475569;
+  font-weight: 600;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.dashboard-farms-table__table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+}
+
+.dashboard-farms-table__strong {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.dashboard-farms-table__info {
+  text-align: center;
+  padding: 32px;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.dashboard-farms-table__footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16px;
+  margin-top: 16px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.dashboard-farms-table__btn {
+  padding: 6px 12px;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.dashboard-farms-table__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
