@@ -116,6 +116,6 @@ export async function excluirSimulacao(id: string): Promise<void> {
 }
 
 export async function listarSimulacoesPaginadas(query: PageQuery, signal?: AbortSignal, filtro?: FiltroSimulacoes): Promise<PageResponse<Simulacao>> {
-    const data = await springRequest<PageResponse<FarmSimulationDto>>('/farms/simulations/paged', { query: { ...query, id_enterprise: filtro?.idEnterprise, id_farm: filtro?.idFarm }, signal });
+    const data = await springRequest<PageResponse<FarmSimulationDto>>('/farms/simulations/paged', { query: { ...query, sort: ({ consumoAtual: 'current_cgi', consumoAlvo: 'target_cgi', precoAgua: 'water_price', precoEnergia: 'energy_price', quantidadeAves: 'poultry_quantity', gastoAlvoEnergia: 'target_energy_kwh' }[query.sort ?? ''] ?? 'id'), direction: query.direction ?? 'desc', id_enterprise: filtro?.idEnterprise, id_farm: filtro?.idFarm }, signal });
     return { ...data, content: data.content.map(paraSimulacao) };
 }

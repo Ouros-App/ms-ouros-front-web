@@ -118,20 +118,38 @@ export async function obterResumoMetas(signal?: AbortSignal): Promise<ResumoMeta
     }
 }
 
-/** P22 must provide the global summary independently of search and page. */
+/** Aggregate supplied by the paged endpoint for all matching goals. */
 export interface MetasPageResponse extends PageResponse<MetaEstadual> {
+    statusCounts: Record<string, number>;
     summary: ResumoMetas;
 }
+
 export async function listarMetasPaginadas(query: PageQuery, signal?: AbortSignal): Promise<MetasPageResponse> {
     const data = await springRequest<PageResponse<{
-        id: number; region?: string; title: string; total_farms: number; completed_farms: number;
-    }> & { summary: ResumoMetas }>('/state-goals/paged', { query: { ...query }, signal });
-    if (!resumoValido(data.summary)) throw new ServiceError('Resumo global de metas indisponível.');
-    return { ...data, content: data.content.map((m) => {
-        if (!Number.isFinite(m.total_farms) || !Number.isFinite(m.completed_farms)) {
-            throw new ServiceError('Contagem de granjas da meta indisponível.');
-        }
-        return { id: String(m.id), estado: m.region ?? '', meta: m.title,
-            totalGranjas: m.total_farms, concluidos: m.completed_farms };
-    }) };
+        id: number; region?: string; title: string; description?: string; type?: string;
+        status: string; target_value?: number; date_creation?: string; date_end?: string;
+    }> & { statusCounts: Record<string, number> }>('/state-goals/paged', {
+        query: { ...query, sort: mapearSortMeta(query.sort) }, signal,
+    });
+    if (!data.statusCounts || Object.values(data.statusCounts).some((count) => !Number.isFinite(count))) {
+        throw new ServiceError('Resumo global de metas indisponível.');
+    }
+    const concluidas = Object.entries(data.statusCounts)
+        .filter(([status]) => ['CONCLUIDA', 'COMPLETED', 'COMPLETED_SUCCESSFULLY'].includes(status.toUpperCase()))
+        .reduce((total, [, count]) => total + count, 0);
+    const total = Object.values(data.statusCounts).reduce((sum, count) => sum + count, 0);
+    const summary = { total, concluidas, percentual: total > 0 ? (concluidas / total) * 100 : 0 };
+    return { ...data, summary, content: data.content.map((m) => ({
+        id: String(m.id), estado: m.region ?? '', meta: m.title,
+        totalGranjas: m.target_value ?? 0,
+        concluidos: m.status.toUpperCase() === 'CONCLUIDA' ? (m.target_value ?? 0) : 0,
+    })) };
+}
+
+function mapearSortMeta(sort?: string): string {
+    const campos: Record<string, string> = {
+        id: 'id', title: 'title', type: 'type', status: 'status', target_value: 'target_value',
+        date_creation: 'date_creation', date_end: 'date_end', region: 'region',
+    };
+    return campos[sort ?? ''] ?? 'id';
 }

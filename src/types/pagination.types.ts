@@ -11,6 +11,7 @@ export interface PageQuery {
   size: number;
   search?: string;
   sort?: string;
+  direction?: 'asc' | 'desc';
 }
 
 export interface PaginationProps {

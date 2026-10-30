@@ -31,7 +31,7 @@ for (const spec of [
   const { result } = renderHook(spec.hook);
   await waitFor(() => expect(result.current.status).toBe('pronto'));
   act(() => result.current.setBusca('L2'));
-  await waitFor(() => expect(spec.list).toHaveBeenLastCalledWith({ page: 0, size: 10, search: 'L2', sort: 'padrao' }, expect.any(AbortSignal)));
+  await waitFor(() => expect(spec.list).toHaveBeenLastCalledWith({ page: 0, size: 10, search: 'L2', sort: 'padrao', direction: 'desc' }, expect.any(AbortSignal)));
   vi.mocked(spec.list).mockResolvedValue(envelope([{ ...item, idLote: 'L2' }]) as never);
   await act(async () => { await result.current.salvar(item as never, '1'); });
   await waitFor(() => expect(result.current[spec.key as 'registros'][0].idLote).toBe('L2'));
@@ -53,7 +53,7 @@ it('ranking preserva posição global retornada pelo servidor', async () => {
  await waitFor(() => expect(result.current.status).toBe('pronto'));
  expect(result.current.participantes[0].posicao).toBe(32);
  act(() => result.current.setOrdenacao('nome'));
- await waitFor(() => expect(ranking.listarRankingPaginado).toHaveBeenLastCalledWith(expect.objectContaining({ sort: 'nome', page: 0 }), expect.any(AbortSignal), undefined));
+ await waitFor(() => expect(ranking.listarRankingPaginado).toHaveBeenLastCalledWith(expect.objectContaining({ sort: 'nome', direction: 'asc', page: 0 }), expect.any(AbortSignal), undefined));
 });
 it('perfil sincroniza dados após salvar', async () => {
  vi.mocked(perfil.obterPerfil).mockResolvedValue({ id: '1', nome: 'Ana' } as never);

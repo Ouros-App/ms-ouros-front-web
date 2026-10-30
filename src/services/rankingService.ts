@@ -210,16 +210,15 @@ export async function excluirParticipante(id: string): Promise<void> {
 }
 
 export async function listarRankingPaginado(query: PageQuery, signal?: AbortSignal, enterpriseId?: number): Promise<PageResponse<ParticipanteRanking>> {
-    const data = await springRequest<PageResponse<RankingDto> & { rankingTotalElements: number }>('/farms/rankings/paged', {
-        query: { ...query, id_enterprise: enterpriseId }, signal,
+    const data = await springRequest<PageResponse<RankingDto>>('/farms/rankings/paged', {
+        query: { ...query, sort: query.sort === 'nome' || query.sort === 'farm_name' ? 'farm_name' : 'score', direction: query.direction ?? 'asc', id_enterprise: enterpriseId }, signal,
     });
-    if (!Number.isFinite(data.rankingTotalElements)) throw new ServiceError('Total global do ranking indisponível.');
     return { ...data, content: data.content.map((g) => {
         if (g.rank_position == null) throw new ServiceError('Posição global do ranking indisponível.');
         return {
             id: String(g.farm_id), nome: g.farm_name ?? `Granja #${g.farm_id}`,
             pontuacao: g.score ?? 0, atualizadoEm: '', posicao: g.rank_position,
-            liga: ligaDaPosicao(g.rank_position - 1, data.rankingTotalElements),
+            liga: ligaDaPosicao(g.rank_position - 1, data.totalElements),
         };
     }) };
 }

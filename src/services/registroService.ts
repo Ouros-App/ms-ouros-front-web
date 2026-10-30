@@ -146,6 +146,6 @@ export async function excluirRegistro(id:string): Promise<void>{
 }
 
 export async function listarRegistrosPaginados(query: PageQuery, signal?: AbortSignal, filtro?: FiltroRegistros): Promise<PageResponse<Registro>> {
-    const data = await springRequest<PageResponse<ProductionSummary>>('/lots/production-summaries/paged', { query: { ...query, id_enterprise: filtro?.idEnterprise, id_farm: filtro?.idFarm }, signal });
+    const data = await springRequest<PageResponse<ProductionSummary>>('/lots/production-summaries/paged', { query: { ...query, sort: ({ hidrometro: 'hidrometro', custo: 'custo', entraram: 'entraram', sairam: 'sairam', atuais: 'galinhas_atuais' }[query.sort ?? ''] ?? 'id'), direction: query.direction ?? 'desc', id_enterprise: filtro?.idEnterprise, id_farm: filtro?.idFarm }, signal });
     return { ...data, content: data.content.map(paraRegistro) };
 }

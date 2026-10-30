@@ -12,7 +12,6 @@ export const opcoesOrdenacaoRanking: { valor: CampoOrdenacaoRanking; rotulo: str
     { valor: 'padrao', rotulo: 'Ordenar por' },
     { valor: 'nome', rotulo: 'Participante (A a Z)' },
     { valor: 'pontuacao', rotulo: 'Pontuação (menor para maior)' },
-    { valor: 'atualizacao', rotulo: 'Última atualização (mais recente)' },
 ];
 
 export function ligaPorId(id: LigaId): LigaInfo{
@@ -51,6 +50,5 @@ export function filtrarEOrdenarRanking(
     
     if (ordenacao === 'nome') return [...filtrados].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
     if (ordenacao === 'pontuacao') return [...filtrados].sort((a, b) => a.pontuacao - b.pontuacao);
-    if (ordenacao === 'atualizacao') return [...filtrados].sort((a, b) => b.atualizadoEm.localeCompare(a.atualizadoEm));
     return filtrados;
 }

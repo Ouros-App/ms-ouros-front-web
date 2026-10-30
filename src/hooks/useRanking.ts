@@ -12,8 +12,11 @@ export function useRanking(empresaSelecionada?: number | null) {
         const value = lerArmazenado<CampoOrdenacaoRanking>(CHAVE);
         return opcoesOrdenacaoRanking.some((o) => o.valor === value) ? value! : 'padrao';
     });
-    const load = useCallback((page: number, size: number, signal: AbortSignal) =>
-        listarRankingPaginado({ page, size, search: busca, sort: ordenacao }, signal, empresaSelecionada ?? undefined), [busca, ordenacao, empresaSelecionada]);
+    const load = useCallback((page: number, size: number, signal: AbortSignal) => {
+        const orders = {padrao: { sort: 'padrao', direction: 'asc' }, nome: { sort: 'nome', direction: 'asc' }, pontuacao: { sort: 'pontuacao', direction: 'asc' }} as const;
+        const order = orders[ordenacao as keyof typeof orders] ?? orders.padrao;
+        return listarRankingPaginado({ page, size, search: busca, ...order }, signal, empresaSelecionada ?? undefined);
+    }, [busca, ordenacao, empresaSelecionada]);
     const list = usePagedList(load);
     const setOrdenacao = useCallback((campo: CampoOrdenacaoRanking) => {
         setOrdenacaoEstado(campo);

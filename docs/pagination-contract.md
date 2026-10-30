@@ -6,16 +6,16 @@ Esta PR implementa o consumidor front. As rotas Spring `/paged` ainda não exist
 
 Rotas: `/lots/production-summaries/paged`, `/state-goals/paged`, `/farms/simulations/paged`, `/farms/rankings/paged`.
 
-Query: `page` a partir de zero, `size` (10, 25 ou 50), `search`, `sort`. Filtros existentes `id_enterprise` e `id_farm` são preservados nos adapters. A autorização continua no servidor. Busca e ordenação devem ocorrer antes de contar e paginar; nunca se aplica filtro ou sort no segmento recebido.
+Query: `page` a partir de zero, `size` (10, 25 ou 50), `search`, `sort` e `direction`. Filtros existentes `id_enterprise` e `id_farm` são preservados nos adapters. A autorização continua no servidor. Busca e ordenação devem ocorrer antes de contar e paginar; nunca se aplica filtro ou sort no segmento recebido.
 
-`sort` aceita os valores dos seletores existentes: registros (`padrao`, `hidrometro`, `custo`, `entraram`, `sairam`, `atuais`); simulações (`padrao`, `consumoAtual`, `consumoAlvo`, `precoAgua`, `precoEnergia`, `quantidadeAves`, `gastoAlvoEnergia`); ranking (`padrao`, `nome`, `pontuacao`, `atualizacao`). Os rótulos existentes definem a direção; o backend deve desempatar por ID.
+O front mapeia os seletores para os campos JSON aceitos pelo Spring: `atuais` para `galinhas_atuais`; `consumoAtual` para `current_cgi`; `consumoAlvo` para `target_cgi`; `precoAgua` para `water_price`; `precoEnergia` para `energy_price`; `quantidadeAves` para `poultry_quantity`; `gastoAlvoEnergia` para `target_energy_kwh`; `nome` para `farm_name`; `pontuacao` para `score`. Também envia `direction`; registros e simulações usam `desc`, ranking por nome e score usa `asc`. O backend acrescenta ID como desempate nas consultas relacionais. Ranking não tem data de atualização persistida, então essa opção foi removida.
 
 Envelope: `{ content, totalElements, totalPages, page, size }`. `content` preserva os nomes dos DTOs atuais, com os agregados adicionais abaixo necessários à apresentação correta:
 
-- Metas: cada item requer `total_farms` e `completed_farms`, contagens reais de granjas vinculadas. `target_value` não é quantidade de granjas. O envelope requer `summary: { percentual, concluidas, total }`, agregado global independente de página e busca, dentro do escopo autorizado. Ausência de agregado deve resultar em erro visível, nunca resumo da página ou estimativas.
-- Ranking: `rank_position` é global e permanece estável sob busca e ordenação. O envelope requer `rankingTotalElements`, número total de granjas do ranking dentro do escopo da empresa antes da busca textual, para preservar as faixas de liga. `totalElements` continua sendo o total filtrado para navegação. Ausência desses dados produz erro visível.
+- Metas: o envelope inclui `statusCounts`, contagem global por status para o conjunto filtrado. O front calcula o resumo geral a partir dessas contagens (concluídas são status `CONCLUIDA`), independente da página. Os DTOs atuais não retornam total de granjas concluídas por estado; as colunas legadas continuam usando `target_value` no mapeamento já existente.
+- Ranking: `rank_position` corresponde ao conjunto filtrado completo; `totalElements` é também esse total, e serve para manter a classificação por liga entre páginas. Não há `rankingTotalElements` adicional.
 
-Esses nomes dos agregados e de `search`/`sort` são a proposta concreta do consumidor e precisam ser alinhados ao implementar P22; os planos originais não os especificam.
+Contrato confirmado contra a documentação da PR Spring #74.
 
 As rotas antigas são preservadas para detalhes e outros consumidores. A implementação existente das mutações de metas e participantes continua local/simulada; conectar essas operações ao backend é uma dependência anterior que esta PR não transforma em persistência real. Após a mutação, a listagem sempre é recarregada do servidor.
 
