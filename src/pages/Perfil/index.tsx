@@ -28,7 +28,7 @@ export default function PerfilPage(){
     
     const sair = useCallback(() => {
         logout();
-        navigate('/login', { replace: true });
+        void navigate('/login', { replace: true });
     }, [logout, navigate]);
 
     if (status === 'erro'){
