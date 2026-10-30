@@ -10,21 +10,12 @@ export function Dialogo({ titulo, onFechar, children }: DialogoRankingProps) {
     const dialogo = ref.current;
     if (!anteriorRef.current) anteriorRef.current = document.activeElement as HTMLElement | null;
     if (dialogo && !dialogo.open) dialogo.showModal();
-        return () => {
+    return () => {
       const anterior = anteriorRef.current;
       const destino = anterior?.isConnected ? anterior : document.getElementById('ranking-busca');
       destino?.focus();
     };
   }, []);
-
-    useEffect(() => {
-        const dialogo = ref.current;
-        const fecharAoClicarFora = (evento: MouseEvent) => {
-            if (evento.target === dialogo) onFechar();
-        };
-        dialogo?.addEventListener('click', fecharAoClicarFora);
-        return () => dialogo?.removeEventListener('click', fecharAoClicarFora);
-    }, [onFechar]);
 
   return (
     <dialog
@@ -32,6 +23,9 @@ export function Dialogo({ titulo, onFechar, children }: DialogoRankingProps) {
       className="ranking-dialogo"
       aria-labelledby={tituloId}
       onClose={onFechar}
+      onClick={(evento) => {
+        if (evento.target === ref.current) onFechar();
+      }}
     >
       <div className="ranking-dialogo__corpo">
         <div className="ranking-dialogo__topo">

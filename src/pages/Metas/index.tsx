@@ -1,6 +1,7 @@
 import { MetasCard } from '@/components/complex/MetasCard';
 import { MetasResumo } from '@/components/complex/MetasReumo';
 import { PerfilUsuario } from '@/components/complex/PerfilUsuario';
+import { SeletorEmpresaAdm } from '@/components/complex/SeletorEmpresaAdm';
 import { Sidebar } from '@/components/complex/Sidebar';
 import { useMetas } from '@/hooks/useMetas';
 import { useResumoMetas } from '@/hooks/useResumoMetas';
@@ -25,7 +26,10 @@ export default function MetasPage(){
                 <header className="metas-page__topo">
                     <h1 className="metas-page__titulo">Metas</h1>
 
-                    <PerfilUsuario />
+                    <div className="metas-page__acoes-topo">
+                        <SeletorEmpresaAdm />
+                        <PerfilUsuario />
+                    </div>
                 </header>
 
                 <main id="conteudo-principal" className="metas-page__conteudo" tabIndex={-1}>

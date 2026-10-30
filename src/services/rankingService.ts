@@ -1,3 +1,6 @@
+import type { Participante, ParticipanteEdicao } from '@/types/ranking.types';
+import { isAbortError, wait } from '@/utils/delay';
+import { ServiceError } from './authService';
 import { springRequest } from './springClient';
 
 export interface RankingGranja {
@@ -130,11 +133,7 @@ export async function sincronizarRanking(enterpriseId?: number, signal?: AbortSi
     );
 }
 
-import type { Participante, ParticipanteEdicao } from "@/types/ranking.types";
-import { isAbortError, wait } from "@/utils/delay";
-import { ServiceError } from "./serviceError";
-
-let banco: Participante[] =[
+let bancoParticipantes: Participante[] = [
     { id: 'p-1', nome: 'Marcelona', pontuacao: 8.65, atualizadoEm: '2026-08-25T14:32:00' },
     { id: 'p-2', nome: 'Rafael Souza', pontuacao: 8.41, atualizadoEm: '2026-08-25T14:32:00' },
     { id: 'p-3', nome: 'Camila Duarte', pontuacao: 8.1, atualizadoEm: '2026-08-24T09:15:00' },
@@ -147,47 +146,62 @@ let banco: Participante[] =[
     { id: 'p-10', nome: 'Thiago Barros', pontuacao: 5.4, atualizadoEm: '2026-08-21T16:20:00' },
 ];
 
-function agoraLocal(): string{
+function agoraLocal(): string {
     const agora = new Date();
     const dois = (n: number) => String(n).padStart(2, '0');
     return `${agora.getFullYear()}-${dois(agora.getMonth() + 1)}-${dois(agora.getDate())}T${dois(agora.getHours())}:${dois(agora.getMinutes())}:00`;
 }
 
-function falhar(error: unknown, mensagem: string): Error{
+function falhar(error: unknown, mensagem: string): Error {
     if (isAbortError(error) && error instanceof Error) return error;
     if (error instanceof ServiceError) return error;
     return new ServiceError(mensagem);
 }
 
-export async function listarParticipantes(signal?: AbortSignal): Promise<Participante[]>{
-    try{
-        await wait(600, signal);
-        return banco.map((p) => ({ ...p }));
-    } 
-    catch (error){
+export async function listarParticipantes(signal?: AbortSignal, enterpriseId?: number): Promise<Participante[]> {
+    try {
+        try {
+            const granjas = await obterRankingGeral(enterpriseId, signal);
+            if (granjas && granjas.length > 0) {
+                return granjas.map((g) => ({
+                    id: String(g.idFarm),
+                    nome: g.farmName,
+                    pontuacao: g.score,
+                    atualizadoEm: agoraLocal(),
+                }));
+            }
+        } catch {
+            // Fallback para participantes mockados se API de granjas estiver offline
+        }
+
+        await wait(200, signal);
+        return bancoParticipantes.map((p) => ({ ...p }));
+    } catch (error) {
         throw falhar(error, 'Não foi possível carregar o ranking.');
     }
 }
 
 export async function atualizarParticipante(id: string, dados: ParticipanteEdicao): Promise<Participante> {
     try {
-        await wait(500);
-        if (!banco.some((p) => p.id === id)) throw new ServiceError('Participante não encontrado.');
+        await wait(300);
+        if (!bancoParticipantes.some((p) => p.id === id)) {
+            const novo: Participante = { id, ...dados, atualizadoEm: agoraLocal() };
+            bancoParticipantes = [novo, ...bancoParticipantes.filter((p) => p.id !== id)];
+            return { ...novo };
+        }
         const atualizado: Participante = { id, ...dados, atualizadoEm: agoraLocal() };
-        banco = banco.map((p) => (p.id === id ? atualizado : p));
+        bancoParticipantes = bancoParticipantes.map((p) => (p.id === id ? atualizado : p));
         return { ...atualizado };
-    } 
-    catch (error){
+    } catch (error) {
         throw falhar(error, 'Não foi possível atualizar o participante.');
     }
 }
 
-export async function excluirParticipante(id: string): Promise<void>{
+export async function excluirParticipante(id: string): Promise<void> {
     try {
-        await wait(400);
-        banco = banco.filter((p) => p.id !== id);
-    } 
-    catch (error){
+        await wait(200);
+        bancoParticipantes = bancoParticipantes.filter((p) => p.id !== id);
+    } catch (error) {
         throw falhar(error, 'Não foi possível excluir o participante.');
     }
 }
