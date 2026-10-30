@@ -1,7 +1,8 @@
 .verification-card {
-  width: 100%;
-  max-width: 720px;
-  min-height: 500px;
+  width: 720px;
+  max-width: 852px;
+  height: 760px;
+  min-height: 300px;
   margin: 0 auto;
   padding: 40px 36px 36px 36px;
   border: 2.5px solid #d8a23a;
