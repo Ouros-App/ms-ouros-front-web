@@ -8,7 +8,6 @@ import { CHAVE_SESSAO } from '@/utils/chaves';
 import Registros from '@/pages/Registros';
 import Simulacao from '@/pages/Simulacao';
 import Ranking from '@/pages/Ranking';
-import Tarefas from '@/pages/Tarefas';
 import Perfil from '@/pages/Perfil';
 import Metas from '@/pages/Metas';
 import Dashboard from '@/pages/Dashboard';
@@ -37,7 +36,7 @@ beforeEach(() => {
  vi.stubGlobal('fetch', vi.fn(async (input) => new Response(JSON.stringify(payload(String(input))), { status: 200 })));
 });
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
-for (const [Page, heading] of [[Registros, /Registros/], [Simulacao, /Simula/], [Ranking, /Ranking de Eficiência/], [Tarefas, /Metas e Tarefas/], [Perfil, /Perfil -/], [Metas, /^Metas$/], [Dashboard, /Dashboard/i]] as const) {
+for (const [Page, heading] of [[Registros, /Registros/], [Simulacao, /Simula/], [Ranking, /^Ranking$/], [Perfil, /Perfil -/], [Metas, /^Metas$/], [Dashboard, /Dashboard/i]] as const) {
  it(`página ${heading} carrega dentro da sessão e abre notificações`, async () => {
   const view = render(<MemoryRouter><AuthProvider><AdminEnterpriseProvider><Page /></AdminEnterpriseProvider></AuthProvider></MemoryRouter>);
   expect(screen.getByRole('heading', { level: 1, name: heading })).toBeTruthy();

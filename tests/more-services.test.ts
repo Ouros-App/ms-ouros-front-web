@@ -17,10 +17,10 @@ it('metas estaduais mantêm criação, edição, exclusão e resumo válido', as
  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({ data: { percentual: 50, concluidas: 1, total: 2 } }))).mockResolvedValueOnce(new Response('{"data":null}')));
  expect((await metas.obterResumoMetas()).percentual).toBe(50); await expect(metas.obterResumoMetas()).rejects.toThrow();
 });
-it('ranking mantém a edição local e calcula previsão remota', async () => {
+it('ranking mantém edição local, aceita participantes da API e calcula previsão remota', async () => {
  const list = await ranking.listarParticipantes(); expect(list.length).toBeGreaterThan(0);
  expect((await ranking.atualizarParticipante(list[0].id, { nome: 'Ana', pontuacao: 10 })).nome).toBe('Ana');
- await expect(ranking.atualizarParticipante('ausente', { nome: 'A', pontuacao: 1 })).rejects.toThrow();
+ expect(await ranking.atualizarParticipante('ausente', { nome: 'A', pontuacao: 1 })).toMatchObject({ id: 'ausente', nome: 'A', pontuacao: 1 });
  await ranking.excluirParticipante(list[0].id); expect((await ranking.listarParticipantes()).some(p => p.id === list[0].id)).toBe(false);
  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ rank_position: 1, score: 8 }))));
  expect((await ranking.obterRankingGranja(1)).posicao).toBe(1);
