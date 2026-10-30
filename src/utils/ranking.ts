@@ -50,5 +50,6 @@ export function filtrarEOrdenarRanking(
     
     if (ordenacao === 'nome') return [...filtrados].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
     if (ordenacao === 'pontuacao') return [...filtrados].sort((a, b) => a.pontuacao - b.pontuacao);
+    if ((ordenacao as string) === 'atualizacao') return [...filtrados].sort((a, b) => b.atualizadoEm.localeCompare(a.atualizadoEm));
     return filtrados;
 }
