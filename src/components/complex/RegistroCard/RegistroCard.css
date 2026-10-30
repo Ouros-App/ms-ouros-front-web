@@ -44,7 +44,6 @@
 .dialogo .registro-botao--secundario {
     background: #e5e5e5;
     border-color: #999;
-    border-radius: 7px;
     width: 98px;
     height: 36px;
     border-radius:8px;
@@ -142,7 +141,6 @@
     font-weight: 600;
     white-space: nowrap;
     cursor: pointer;
-    transform: translate(109px);
     transform: translate(109px);
 }
 

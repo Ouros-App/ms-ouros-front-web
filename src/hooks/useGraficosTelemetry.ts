@@ -66,7 +66,7 @@ export function useGraficosTelemetryConjunto(filtros: FiltrosDashboard) {
     const controller = new AbortController();
     setStatus('carregando');
 
-    Promise.allSettled([
+    void Promise.allSettled([
       getCorporateChartData('cost-distribution-buckets', { periodo, estado, gerencia }, controller.signal),
       getCorporateChartData('cost-by-lot-size-cohort', { periodo, estado, gerencia }, controller.signal),
       getCorporateChartData('cost-by-region', { periodo, estado, gerencia }, controller.signal),
