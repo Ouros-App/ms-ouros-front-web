@@ -1,4 +1,4 @@
-import { test } from 'node:test';
+import { test } from 'vitest';
 import assert from 'node:assert/strict';
 import { validateLogin, validateRegistro } from '../src/utils/validators.ts';
 import { formatarData, formatarDataHora, formatarMes, formatarValorAbreviado } from '../src/utils/formato.ts';
