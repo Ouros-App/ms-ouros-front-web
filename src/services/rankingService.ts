@@ -1,3 +1,6 @@
+import type { PageQuery, PageResponse } from '@/types/pagination.types';
+import type { ParticipanteRanking } from '@/types/ranking.types';
+import { ligaDaPosicao } from '@/utils/ranking';
 import type { Participante, ParticipanteEdicao } from '@/types/ranking.types';
 import { isAbortError, wait } from '@/utils/delay';
 import { ServiceError } from './authService';
@@ -204,4 +207,19 @@ export async function excluirParticipante(id: string): Promise<void> {
     } catch (error) {
         throw falhar(error, 'Não foi possível excluir o participante.');
     }
+}
+
+export async function listarRankingPaginado(query: PageQuery, signal?: AbortSignal, enterpriseId?: number): Promise<PageResponse<ParticipanteRanking>> {
+    const data = await springRequest<PageResponse<RankingDto> & { rankingTotalElements: number }>('/farms/rankings/paged', {
+        query: { ...query, id_enterprise: enterpriseId }, signal,
+    });
+    if (!Number.isFinite(data.rankingTotalElements)) throw new ServiceError('Total global do ranking indisponível.');
+    return { ...data, content: data.content.map((g) => {
+        if (g.rank_position == null) throw new ServiceError('Posição global do ranking indisponível.');
+        return {
+            id: String(g.farm_id), nome: g.farm_name ?? `Granja #${g.farm_id}`,
+            pontuacao: g.score ?? 0, atualizadoEm: '', posicao: g.rank_position,
+            liga: ligaDaPosicao(g.rank_position - 1, data.rankingTotalElements),
+        };
+    }) };
 }

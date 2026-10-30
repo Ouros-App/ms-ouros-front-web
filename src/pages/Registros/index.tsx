@@ -35,6 +35,7 @@ export default function RegistrosPage() {
                 onSalvar={registros.salvar}
                 onExcluir={registros.excluir}
                 onRecarregar={registros.recarregar}
+                    pagination={registros.pagination}
                 />
             </main>
         </div>

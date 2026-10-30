@@ -1,3 +1,4 @@
+import { Pagination } from '@/components/common/Pagination';
 import { useCallback, useState } from 'react';
 import type { MetaEdicao, MetaEstadual, MetasCardProps } from '@/types/metas.types';
 import { sanitizeText } from '@/utils/sanitizers';
@@ -8,7 +9,7 @@ import './MetasCard.css';
 
 type DialogoAberto = | { tipo: 'editar'; meta: MetaEstadual } | { tipo: 'excluir'; meta: MetaEstadual } | null;
 
-export function MetasCard({ metas, status, mensagemErro, busca, onBuscar, onSalvar, onExcluir,onRecarregar }: MetasCardProps){
+export function MetasCard({ metas, status, mensagemErro, busca, onBuscar, onSalvar, onExcluir,onRecarregar, pagination }: MetasCardProps){
     const [dialogo, setDialogo] = useState<DialogoAberto>(null);
     const [aviso, setAviso] = useState('');
     const fechar = useCallback(() => setDialogo(null), []);
@@ -79,6 +80,7 @@ export function MetasCard({ metas, status, mensagemErro, busca, onBuscar, onSalv
             {dialogo?.tipo === 'excluir' && (
                 <ConfirmarExclusao meta={dialogo.meta} onFechar={fechar} onExcluir={excluirComAviso} />
             )}
+        {pagination && <Pagination {...pagination} />}
         </section>
     );
 }

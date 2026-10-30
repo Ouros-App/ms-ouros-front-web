@@ -47,6 +47,7 @@ export default function SimulacaoPage(){
                 onSalvar={simulacoes.salvar}
                 onExcluir={simulacoes.excluir}
                 onRecarregar={simulacoes.recarregar}
+                    pagination={simulacoes.pagination}
                 />
             </main>
         </div>

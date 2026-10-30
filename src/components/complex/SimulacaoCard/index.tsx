@@ -1,3 +1,4 @@
+import { Pagination } from '@/components/common/Pagination';
 import { useCallback, useState } from 'react';
 import type { CampoOrdenacaoSimulacao, Simulacao, SimulacaoNova, SimulacoesCardProps } from '@/types/simulacoes.types';
 import { sanitizeBusca } from '@/utils/sanitizadores';
@@ -9,7 +10,7 @@ import './SimulacoesCard.css';
 
 type DialogoAberto = | { tipo: 'form'; simulacao: Simulacao | null } | { tipo: 'excluir'; simulacao: Simulacao } | null;
 
-export function SimulacoesCard({ simulacoes, status, mensagemErro, busca, ordenacao, onBuscar, onOrdenar, onSalvar, onExcluir, onRecarregar, }: SimulacoesCardProps){
+export function SimulacoesCard({ simulacoes, status, mensagemErro, busca, ordenacao, onBuscar, onOrdenar, onSalvar, onExcluir, onRecarregar, pagination }: SimulacoesCardProps){
     
     const [dialogo, setDialogo] = useState<DialogoAberto>(null);
     const [aviso, setAviso] = useState('');
@@ -105,6 +106,7 @@ export function SimulacoesCard({ simulacoes, status, mensagemErro, busca, ordena
     {dialogo?.tipo === 'excluir' && (
         <ConfirmarExclusao simulacao={dialogo.simulacao} onFechar={fechar} onExcluir={excluirComAviso} />
     )}
-    </section>
+    {pagination && <Pagination {...pagination} />}
+        </section>
     );
 }

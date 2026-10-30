@@ -54,6 +54,7 @@ export interface IndicadoresSimulacaoProps{
 }
 
 export interface SimulacoesCardProps{
+    pagination?: import("./pagination.types").PaginationProps;
     simulacoes: Simulacao[];
     status: SimulacoesStatus;
     mensagemErro: string;

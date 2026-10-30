@@ -1,13 +1,14 @@
-import { useEffect, useState } from 'react';
+import { usePagedList } from '@/hooks/usePagedList';
+import { Pagination } from '@/components/common/Pagination';
+import { useCallback, useEffect, useState } from 'react';
 import {
   getAdminAiKpis,
   getAdminAiTokenSpend,
   getAdminAiLatency,
-  getAdminAiSessions,
+  getAdminAiSessionsPage,
   type AdminAiKpisResponse,
   type AdminAiTokenSpendResponse,
   type AdminAiLatencyResponse,
-  type AdminAiSessionsResponse,
 } from '@/services/adminAiMetricsService';
 import { isAbortError } from '@/utils/delay';
 import './DashboardAiMetrics.css';
@@ -20,7 +21,9 @@ export function DashboardAiMetrics({ enterpriseId }: DashboardAiMetricsProps) {
   const [kpis, setKpis] = useState<AdminAiKpisResponse | null>(null);
   const [spend, setSpend] = useState<AdminAiTokenSpendResponse | null>(null);
   const [latency, setLatency] = useState<AdminAiLatencyResponse | null>(null);
-  const [sessions, setSessions] = useState<AdminAiSessionsResponse | null>(null);
+  const loadSessions = useCallback((page: number, size: number, signal: AbortSignal) =>
+    getAdminAiSessionsPage({ page, size }, enterpriseId ?? undefined, signal), [enterpriseId]);
+  const sessions = usePagedList(loadSessions);
   const [carregando, setCarregando] = useState(true);
 
   useEffect(() => {
@@ -31,13 +34,11 @@ export function DashboardAiMetrics({ enterpriseId }: DashboardAiMetricsProps) {
       getAdminAiKpis(enterpriseId ?? undefined, controller.signal),
       getAdminAiTokenSpend(enterpriseId ?? undefined, controller.signal),
       getAdminAiLatency(enterpriseId ?? undefined, controller.signal),
-      getAdminAiSessions({ enterpriseId: enterpriseId ?? undefined, pageSize: 5 }, controller.signal),
     ])
-      .then(([resKpi, resSpend, resLat, resSess]) => {
+      .then(([resKpi, resSpend, resLat]) => {
         setKpis(resKpi);
         setSpend(resSpend);
         setLatency(resLat);
-        setSessions(resSess);
       })
       .catch((err) => {
         if (controller.signal.aborted || isAbortError(err)) return;
@@ -50,15 +51,10 @@ export function DashboardAiMetrics({ enterpriseId }: DashboardAiMetricsProps) {
     return () => controller.abort();
   }, [enterpriseId]);
 
-  if (carregando) {
-    return <div className="dashboard-ai-metrics__loading">Carregando telemetria Midas IA...</div>;
-  }
-
-  if (!kpis) return null;
 
   return (
     <section className="dashboard-ai-metrics" aria-label="Métricas de IA e Observabilidade Midas">
-      <header className="dashboard-ai-metrics__header">
+      {kpis?.tokenSpend && <><header className="dashboard-ai-metrics__header">
         <div>
           <h2 className="dashboard-ai-metrics__title">🤖 Observabilidade Midas IA & LLMs</h2>
           <p className="dashboard-ai-metrics__subtitle">
@@ -123,7 +119,12 @@ export function DashboardAiMetrics({ enterpriseId }: DashboardAiMetricsProps) {
         )}
       </div>
 
-      {sessions && sessions.items.length > 0 && (
+      </>}
+      {carregando && <p role="status">Carregando telemetria Midas IA...</p>}
+      {sessions.status === 'carregando' && <p role="status">Carregando sessões...</p>}
+      {sessions.status === 'erro' && <div role="alert"><p>{sessions.mensagemErro}</p><button type="button" onClick={sessions.recarregar}>Tentar novamente</button></div>}
+      {sessions.status === 'pronto' && sessions.items.length === 0 && <p role="status">Nenhuma sessão encontrada.</p>}
+      {sessions.status === 'pronto' && sessions.items.length > 0 && (
         <div className="dashboard-ai-metrics__sessions">
           <h3 className="dashboard-ai-metrics__panel-title">Auditoria de Sessões Midas</h3>
           <div className="dashboard-ai-metrics__table-wrapper">
@@ -132,7 +133,7 @@ export function DashboardAiMetrics({ enterpriseId }: DashboardAiMetricsProps) {
                 <tr>
                   <th>Sessão</th>
                   <th>Modelo</th>
-                  <th>Tópico</th>
+                  <th>Usuário</th>
                   <th>Tokens</th>
                   <th>Latência</th>
                   <th>Custo</th>
@@ -141,13 +142,13 @@ export function DashboardAiMetrics({ enterpriseId }: DashboardAiMetricsProps) {
               </thead>
               <tbody>
                 {sessions.items.map((s) => (
-                  <tr key={s.sessionId}>
-                    <td>{s.sessionId}</td>
+                  <tr key={s.session_id}>
+                    <td>{s.session_id}</td>
                     <td>{s.model}</td>
-                    <td>{s.topic}</td>
-                    <td>{s.totalTokens}</td>
-                    <td>{s.latencyMs}ms</td>
-                    <td>R$ {s.costBrl.toFixed(2)}</td>
+                    <td>{s.user_name}</td>
+                    <td>{s.total_tokens}</td>
+                    <td>{s.latency_ms}ms</td>
+                    <td>R$ {s.cost_brl.toFixed(2)}</td>
                     <td><span className="dashboard-ai-metrics__status">{s.status}</span></td>
                   </tr>
                 ))}
@@ -156,6 +157,7 @@ export function DashboardAiMetrics({ enterpriseId }: DashboardAiMetricsProps) {
           </div>
         </div>
       )}
+      <Pagination {...sessions.pagination} />
     </section>
   );
 }

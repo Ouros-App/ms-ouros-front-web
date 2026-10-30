@@ -1,3 +1,4 @@
+import type { PageQuery, PageResponse } from '@/types/pagination.types';
 import type { Registro, RegistroNovo } from "@/types/registros.types";
 import { isAbortError } from "@/utils/delay";
 import { ServiceError } from "./authService";
@@ -142,4 +143,9 @@ export async function excluirRegistro(id:string): Promise<void>{
     catch(error){
         throw falhar(error, 'Não foi possível excluir o registro.');
     }
+}
+
+export async function listarRegistrosPaginados(query: PageQuery, signal?: AbortSignal, filtro?: FiltroRegistros): Promise<PageResponse<Registro>> {
+    const data = await springRequest<PageResponse<ProductionSummary>>('/lots/production-summaries/paged', { query: { ...query, id_enterprise: filtro?.idEnterprise, id_farm: filtro?.idFarm }, signal });
+    return { ...data, content: data.content.map(paraRegistro) };
 }

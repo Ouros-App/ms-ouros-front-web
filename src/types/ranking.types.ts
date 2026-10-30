@@ -25,6 +25,7 @@ export interface LigaInfo{
 }
 
 export interface RankingCardProps{
+    pagination?: import("./pagination.types").PaginationProps;
     participantes: ParticipanteRanking[];
     status: RankingStatus;
     mensagemErro: string;

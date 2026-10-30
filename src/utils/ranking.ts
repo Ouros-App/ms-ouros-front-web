@@ -19,7 +19,7 @@ export function ligaPorId(id: LigaId): LigaInfo{
     return ligas.find((liga) => liga.id === id) ?? ligas[ligas.length - 1];
 }
 
-function ligaDaPosicao(indice: number, total: number): LigaId{
+export function ligaDaPosicao(indice: number, total: number): LigaId{
     const fracao = indice / total;
     if (fracao < 0.15) return 'ouro';
     if (fracao < 0.35) return 'prata';

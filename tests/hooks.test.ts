@@ -4,8 +4,8 @@ import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
 import { useVerificationForm } from '@/components/complex/VerificationCard/useVerificationForm';
 import { useOtpCountdown } from '@/hooks/useOtpCountdown';
 import { useMetas } from '@/hooks/useMetas';
-vi.mock('@/services/metas.Service', () => ({ listarMetas: vi.fn(), lancarMetaEstadual: vi.fn(), atualizarMeta: vi.fn(), excluirMeta: vi.fn() }));
-import { listarMetas, lancarMetaEstadual, atualizarMeta, excluirMeta } from '@/services/metas.Service';
+vi.mock('@/services/metas.Service', () => ({ listarMetasPaginadas: vi.fn(), lancarMetaEstadual: vi.fn(), atualizarMeta: vi.fn(), excluirMeta: vi.fn() }));
+import { listarMetasPaginadas } from '@/services/metas.Service';
 
 afterEach(() => { cleanup(); vi.useRealTimers(); vi.resetAllMocks(); });
 describe('código OTP', () => {
@@ -67,30 +67,20 @@ describe('código OTP', () => {
     expect(result.current.cooldown).toBe(30);
   });
 });
-describe('gestão de metas', () => {
-  it('carrega, filtra, adiciona, atualiza e exclui metas', async () => {
+describe('gestão de metas paginadas', () => {
+  it('mantém resumo global ao navegar e recarrega após alteração', async () => {
+    const summary = { percentual: 50, concluidas: 100, total: 200 };
     const meta = { id: '1', estado: 'SP', meta: 'Água', totalGranjas: 10, concluidos: 2 };
-    vi.mocked(listarMetas).mockResolvedValue([meta]);
-    vi.mocked(lancarMetaEstadual).mockResolvedValue([{ ...meta, id: '2', meta: 'Energia' }]);
-    vi.mocked(atualizarMeta).mockResolvedValue({ ...meta, concluidos: 5 });
-    vi.mocked(excluirMeta).mockResolvedValue(undefined);
-    const { result } = renderHook(() => useMetas());
+    vi.mocked(listarMetasPaginadas).mockImplementation(async ({ page, size }) => ({ content: [meta], page, size, totalElements: 20, totalPages: 2, summary }));
+    const { result } = renderHook(useMetas);
     await waitFor(() => expect(result.current.status).toBe('pronto'));
-    await act(async () => { await result.current.lancar('Energia'); });
-    expect(result.current.todas).toHaveLength(2);
+    expect(result.current.resumo).toEqual(summary);
+    act(() => result.current.pagination.onPageChange(1));
+    await waitFor(() => expect(result.current.pagination.page).toBe(1));
+    expect(result.current.resumo).toEqual(summary);
     await act(async () => { await result.current.salvar('1', { meta: 'Água', totalGranjas: 10, concluidos: 5 }); });
-    expect(result.current.todas[0].concluidos).toBe(5);
-    act(() => result.current.setBusca('energia'));
-    expect(result.current.metas).toHaveLength(1);
-    await act(async () => { await result.current.excluir('2'); });
-    expect(result.current.metas).toHaveLength(0);
-  });
-  it('exibe erro e permite recarregar', async () => {
-    vi.mocked(listarMetas).mockRejectedValueOnce(new Error('Falha')).mockResolvedValueOnce([]);
-    const { result } = renderHook(() => useMetas());
-    await waitFor(() => expect(result.current.status).toBe('erro'));
-    expect(result.current.mensagemErro).toBe('Falha');
-    act(() => result.current.recarregar());
-    await waitFor(() => expect(result.current.status).toBe('pronto'));
+    await waitFor(() => expect(listarMetasPaginadas).toHaveBeenCalledTimes(3));
+    act(() => result.current.setBusca('SP'));
+    await waitFor(() => expect(listarMetasPaginadas).toHaveBeenLastCalledWith({ page: 0, size: 10, search: 'SP' }, expect.any(AbortSignal)));
   });
 });

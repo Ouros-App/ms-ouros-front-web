@@ -1,3 +1,4 @@
+import type { PageQuery, PageResponse } from '@/types/pagination.types';
 import { fetchComAuth } from './apiClient';
 import { ServiceError } from './authService';
 import { TELEMETRY_API_URL } from '@/utils/constants';
@@ -59,28 +60,28 @@ export interface AdminAiLatencyResponse {
 }
 
 export interface AdminAiSessionItem {
-  sessionId: string;
-  startedAt: string;
-  enterpriseId: string;
-  enterpriseName: string;
-  farmName: string;
-  userRole: string;
+  session_id: string;
+  user_id: number | string;
+  user_name: string;
+  account_type: string;
+  enterprise_id: number | null;
+  farm_id: number | null;
   model: string;
-  topic: string;
-  promptTokens: number;
-  completionTokens: number;
-  totalTokens: number;
-  latencyMs: number;
-  costBrl: number;
-  accuracyPercent: number;
-  status: string;
+  prompt_tokens: number;
+  completion_tokens: number;
+  total_tokens: number;
+  cost_brl: number;
+  latency_ms: number;
+  accuracy_rate: number;
+  status: 'success' | 'error' | 'blocked' | 'timeout';
+  created_at: string;
 }
 
 export interface AdminAiSessionsResponse {
   items: AdminAiSessionItem[];
   total: number;
   page: number;
-  pageSize: number;
+  limit: number;
 }
 
 export async function getAdminAiKpis(enterpriseId?: number, signal?: AbortSignal): Promise<AdminAiKpisResponse> {
@@ -123,12 +124,12 @@ export async function getAdminAiLatency(enterpriseId?: number, signal?: AbortSig
 }
 
 export async function getAdminAiSessions(
-  params?: { page?: number; pageSize?: number; search?: string; enterpriseId?: number },
+  params?: { page?: number; limit?: number; search?: string; enterpriseId?: number },
   signal?: AbortSignal,
 ): Promise<AdminAiSessionsResponse> {
   const qs = new URLSearchParams();
   if (params?.page) qs.set('page', String(params.page));
-  if (params?.pageSize) qs.set('page_size', String(params.pageSize));
+  if (params?.limit) qs.set('limit', String(params.limit));
   if (params?.search) qs.set('search', params.search);
   if (params?.enterpriseId) qs.set('enterprise_id', String(params.enterpriseId));
   const url = `${TELEMETRY_API_URL}/v1/admin/ai-metrics/sessions${qs.toString() ? `?${qs.toString()}` : ''}`;
@@ -140,4 +141,10 @@ export async function getAdminAiSessions(
     if (isAbortError(err)) throw err;
     throw err instanceof ServiceError ? err : new ServiceError('Falha ao conectar com telemetria de IA');
   }
+}
+
+export async function getAdminAiSessionsPage(query: PageQuery, enterpriseId?: number, signal?: AbortSignal): Promise<PageResponse<AdminAiSessionItem>> {
+  const data = await getAdminAiSessions({ page: query.page + 1, limit: query.size, search: query.search, enterpriseId }, signal);
+  return { content: data.items, page: data.page - 1, size: data.limit,
+    totalElements: data.total, totalPages: Math.ceil(data.total / data.limit) };
 }

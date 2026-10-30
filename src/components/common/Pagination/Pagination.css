@@ -1,0 +1,6 @@
+.pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: .75rem; padding: 1rem; font-size: .875rem; }
+.pagination button, .pagination select { font: inherit; color: inherit; background: transparent; border: 1px solid #8e86a0; border-radius: .5rem; padding: .5rem .75rem; min-height: 44px; }
+.pagination button:not(:disabled), .pagination select:not(:disabled) { cursor: pointer; }
+.pagination :disabled { opacity: .5; cursor: default; }
+.pagination :focus-visible { outline: 3px solid #996ec9; outline-offset: 3px; }
+@media (max-width: 600px) { .pagination { justify-content: center; } .pagination [role="status"] { flex-basis: 100%; text-align: center; } }

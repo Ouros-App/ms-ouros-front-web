@@ -1,3 +1,4 @@
+import { Pagination } from '@/components/common/Pagination';
 import { useCallback, useState } from "react";
 import type { CampoOrdenacao, Registro, RegistroNovo, RegistrosCardProps} from "@/types/registros.types";
 import { opcoesOrdenacao } from "@/utils/registros";
@@ -9,7 +10,7 @@ import './RegistroCard.css';
 
 type DialogoAberto = {tipo: 'form'; registro: Registro | null} | {tipo: 'excluir'; registro: Registro} | null;
 
-export function RegistroCard({registros, status, mensagemErro, busca, ordenacao, onBuscar, onOrdenar, onSalvar, onExcluir, onRecarregar,}:RegistrosCardProps){
+export function RegistroCard({registros, status, mensagemErro, busca, ordenacao, onBuscar, onOrdenar, onSalvar, onExcluir, onRecarregar, pagination }:RegistrosCardProps){
     const [dialogo, setDialogo] = useState<DialogoAberto>(null);
     const [aviso, setAviso] = useState('');
     const fechar = useCallback(() => setDialogo(null), []);
@@ -101,6 +102,7 @@ export function RegistroCard({registros, status, mensagemErro, busca, ordenacao,
             {dialogo?.tipo === 'excluir' &&(
                 <ConfirmarExclusao registro={dialogo.registro} onFechar={fechar} onExcluir={excluirComAviso}/>
             )}
+        {pagination && <Pagination {...pagination} />}
         </section>
     );
 }

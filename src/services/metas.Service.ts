@@ -1,3 +1,5 @@
+import type { PageQuery, PageResponse } from '@/types/pagination.types';
+import { springRequest } from './springClient';
 import type { MetaEdicao, MetaEstadual, ResumoMetas } from '@/types/metas.types';
 import { caminhoResumoMetas } from '@/utils/metasApi';
 import { estadosBrasil } from '@/utils/metas';
@@ -114,4 +116,22 @@ export async function obterResumoMetas(signal?: AbortSignal): Promise<ResumoMeta
     catch (error) {
         throw falhar(error, 'Não foi possível carregar o resumo das metas.');
     }
+}
+
+/** P22 must provide the global summary independently of search and page. */
+export interface MetasPageResponse extends PageResponse<MetaEstadual> {
+    summary: ResumoMetas;
+}
+export async function listarMetasPaginadas(query: PageQuery, signal?: AbortSignal): Promise<MetasPageResponse> {
+    const data = await springRequest<PageResponse<{
+        id: number; region?: string; title: string; total_farms: number; completed_farms: number;
+    }> & { summary: ResumoMetas }>('/state-goals/paged', { query: { ...query }, signal });
+    if (!resumoValido(data.summary)) throw new ServiceError('Resumo global de metas indisponível.');
+    return { ...data, content: data.content.map((m) => {
+        if (!Number.isFinite(m.total_farms) || !Number.isFinite(m.completed_farms)) {
+            throw new ServiceError('Contagem de granjas da meta indisponível.');
+        }
+        return { id: String(m.id), estado: m.region ?? '', meta: m.title,
+            totalGranjas: m.total_farms, concluidos: m.completed_farms };
+    }) };
 }

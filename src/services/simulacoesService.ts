@@ -1,3 +1,4 @@
+import type { PageQuery, PageResponse } from '@/types/pagination.types';
 import type { Simulacao, SimulacaoNova } from "@/types/simulacoes.types";
 import { isAbortError } from "@/utils/delay";
 import { ServiceError } from "./authService";
@@ -112,4 +113,9 @@ export async function excluirSimulacao(id: string): Promise<void> {
     } catch (error) {
         throw falhar(error, 'Não foi possível excluir a simulação.');
     }
+}
+
+export async function listarSimulacoesPaginadas(query: PageQuery, signal?: AbortSignal, filtro?: FiltroSimulacoes): Promise<PageResponse<Simulacao>> {
+    const data = await springRequest<PageResponse<FarmSimulationDto>>('/farms/simulations/paged', { query: { ...query, id_enterprise: filtro?.idEnterprise, id_farm: filtro?.idFarm }, signal });
+    return { ...data, content: data.content.map(paraSimulacao) };
 }

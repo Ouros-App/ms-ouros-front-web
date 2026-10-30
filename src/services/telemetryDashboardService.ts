@@ -1,3 +1,5 @@
+import type { PageQuery, PageResponse } from '@/types/pagination.types';
+import type { FarmSummaryItem } from '@/types/dashboard.types';
 import type {
   CorporateFarmsTableResponse,
   CorporateKpisResponse,
@@ -181,4 +183,14 @@ export async function getCorporateFarms(
     if (error instanceof ServiceError) throw error;
     throw new ServiceError('Não foi possível carregar a lista de granjas.');
   }
+}
+
+export async function getCorporateFarmsPage(
+  query: PageQuery,
+  filters: { enterpriseId?: number; state?: string; management?: string; month?: string },
+  signal?: AbortSignal,
+): Promise<PageResponse<FarmSummaryItem>> {
+  const data = await getCorporateFarms({ ...filters, search: query.search, page: query.page + 1, limit: query.size }, signal);
+  return { content: data.items, page: data.page - 1, size: data.limit,
+    totalElements: data.total, totalPages: Math.ceil(data.total / data.limit) };
 }
