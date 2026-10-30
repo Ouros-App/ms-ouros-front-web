@@ -1,10 +1,11 @@
-import { createContext, useCallback, useEffect, useReducer } from 'react';
+import { createContext, useCallback, useEffect, useReducer, useRef } from 'react';
 import type { PropsWithChildren } from 'react';
 import { authInitialState, authReducer } from '@/reducers/authReducer';
 import type { AuthState } from '@/reducers/authReducer';
 import type { User } from '@/types/user.types';
 import { CHAVE_SESSAO } from '@/utils/chaves';
 import { lerArmazenado, removerArmazenado, salvarArmazenado } from '@/utils/storage';
+import { encerrarSessaoWeb } from '@/services/authService';
 import {
   executarRenovacaoToken,
   isTokenExpirado,
@@ -16,6 +17,7 @@ import {
 interface AuthValue {
   user: User | null;
   isAuthenticated: boolean;
+  isInitializing: boolean;
   login: (user: User) => void;
   updateUser: (dados: Partial<User>) => void;
   logout: () => void;
@@ -35,39 +37,45 @@ function persistirUsuario(user: User): User {
 function restaurarSessao(): AuthState {
   const user = lerArmazenado<User>(CHAVE_SESSAO);
   if (user && typeof user.id === 'string' && typeof user.name === 'string') {
-    return { user: persistirUsuario(user), isAuthenticated: true };
+    return { user: persistirUsuario(user), isAuthenticated: false, isInitializing: true };
   }
   return authInitialState;
 }
 
 export function AuthProvider({ children }: PropsWithChildren) {
   const [state, dispatch] = useReducer(authReducer, authInitialState, restaurarSessao);
+  const restoreStarted = useRef(false);
 
   const login = (user: User) => {
     limparTokens();
-    persistirUsuario(user);
+    const usuarioPersistido = persistirUsuario(user);
     if (user.token) {
       salvarTokens({
         accessToken: user.token,
         refreshToken: user.refreshToken,
       });
     }
-    dispatch({ type: 'LOGIN', payload: user });
+    dispatch({ type: 'LOGIN', payload: usuarioPersistido });
   };
 
   const updateUser = useCallback(
     (dados: Partial<User>) => {
       if (state.user) {
         const atualizado = { ...state.user, ...dados };
-        persistirUsuario(atualizado);
         if (dados.token) {
           salvarTokens({
             accessToken: dados.token,
-            refreshToken: dados.refreshToken || state.user.refreshToken,
+            refreshToken: dados.refreshToken,
           });
         }
+        const usuarioPersistido = persistirUsuario(atualizado);
+        dispatch({ type: 'UPDATE_USER', playload: usuarioPersistido });
+        return;
       }
-      dispatch({ type: 'UPDATE_USER', playload: dados });
+      const perfil = { ...dados };
+      delete perfil.token;
+      delete perfil.refreshToken;
+      dispatch({ type: 'UPDATE_USER', playload: perfil });
     },
     [state.user],
   );
@@ -76,15 +84,36 @@ export function AuthProvider({ children }: PropsWithChildren) {
     removerArmazenado(CHAVE_SESSAO);
     limparTokens();
     dispatch({ type: 'LOGOUT' });
+    void encerrarSessaoWeb().catch((error: unknown) => {
+      console.warn('Não foi possível encerrar a sessão remota:', error);
+    });
   }, []);
+
+  useEffect(() => {
+    if (!state.isInitializing || !state.user || restoreStarted.current) return;
+    restoreStarted.current = true;
+    const cachedUser = state.user;
+
+    void executarRenovacaoToken()
+      .then((token) => {
+        if (token) {
+          dispatch({ type: 'RESTORE_SUCCESS', payload: cachedUser });
+        } else {
+          dispatch({ type: 'RESTORE_FAILURE' });
+        }
+      })
+      .catch((error: unknown) => {
+        console.warn('Não foi possível restaurar a sessão:', error);
+        dispatch({ type: 'RESTORE_FAILURE' });
+      });
+  }, [state.isInitializing, state.user]);
 
   // Sincronização de eventos globais de renovação e expiração de sessão
   useEffect(() => {
     const handleTokenRefreshed = (
-      event: CustomEvent<{ accessToken: string; refreshToken?: string }>,
+      event: CustomEvent<{ accessToken: string }>,
     ) => {
-      const { accessToken, refreshToken } = event.detail;
-      updateUser({ token: accessToken, refreshToken });
+      updateUser({ token: event.detail.accessToken });
     };
 
     const handleSessionExpired = () => {

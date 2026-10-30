@@ -229,7 +229,7 @@ export async function iniciarLogin(
 
 /**
  * Etapa 2: Validação do Código e Emissão de Tokens
- * POST /v1/auth/login/verify
+ * POST /v1/auth/web/login/verify
  */
 export async function verificarCodigoLogin(
   dados: {
@@ -255,7 +255,7 @@ export async function verificarCodigoLogin(
   }
 
   try {
-    const url = `${AUTH_API_URL}/v1/auth/login/verify`;
+    const url = `${AUTH_API_URL}/v1/auth/web/login/verify`;
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -265,6 +265,7 @@ export async function verificarCodigoLogin(
         challenge_id: dados.challengeId,
         code: dados.code.trim(),
       }),
+      credentials: 'include',
       signal,
     });
 
@@ -356,23 +357,21 @@ async function executarMockRefresh(
  * POST /v1/auth/token/refresh
  */
 export async function renovarToken(
-  refreshToken: string,
+  refreshToken?: string,
   signal?: AbortSignal,
 ): Promise<KeycloakTokenResponse> {
   // Se for token simulado em desenvolvimento
   const isDev = import.meta.env.DEV;
-  if (isDev && (refreshToken.includes('mockSignature') || refreshToken.startsWith('mock-'))) {
+  if (isDev && refreshToken && (refreshToken.includes('mockSignature') || refreshToken.startsWith('mock-'))) {
     return executarMockRefresh(refreshToken, signal);
   }
 
   try {
-    const url = `${AUTH_API_URL}/v1/auth/token/refresh`;
+    const url = `${AUTH_API_URL}/v1/auth/web/token/refresh`;
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        refresh_token: refreshToken,
-      }),
+      credentials: 'include',
       signal,
     });
 
@@ -388,7 +387,7 @@ export async function renovarToken(
         import.meta.env.DEV
       ) {
         console.warn('[Auth] Backend offline durante renovação. Utilizando refresh mock.');
-        return executarMockRefresh(refreshToken, signal);
+        if (refreshToken) return executarMockRefresh(refreshToken, signal);
       }
 
       throw new ServiceError(errorData?.detail || 'Não foi possível renovar a sessão. Tente novamente.', res.status);
@@ -401,10 +400,21 @@ export async function renovarToken(
 
     if (import.meta.env.DEV) {
       console.warn('[Auth] Conexão falhou durante renovação de token. Utilizando refresh mock.');
-      return executarMockRefresh(refreshToken, signal);
+      if (refreshToken) return executarMockRefresh(refreshToken, signal);
     }
 
     throw toServiceError(error, 'Não foi possível renovar a sessão.');
+  }
+}
+
+export async function encerrarSessaoWeb(): Promise<void> {
+  const response = await fetch(`${AUTH_API_URL}/v1/auth/web/logout`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+  });
+  if (!response.ok && response.status !== 401) {
+    throw new ServiceError('Não foi possível encerrar a sessão no servidor.', response.status);
   }
 }
 

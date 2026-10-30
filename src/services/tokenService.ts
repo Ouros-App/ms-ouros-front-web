@@ -2,6 +2,9 @@ import type { User } from '@/types/user.types';
 import { CHAVE_REFRESH_TOKEN, CHAVE_SESSAO, CHAVE_TOKEN } from '@/utils/chaves';
 import { lerArmazenado, removerArmazenado, salvarArmazenado } from '@/utils/storage';
 
+let accessTokenEmMemoria: string | null = null;
+let refreshMockEmMemoria: string | null = null;
+
 export interface KeycloakTokenClaims {
   sub?: string;
   database_id?: number | string;
@@ -88,18 +91,23 @@ export function claimsToUser(
 }
 
 export function salvarTokens(tokens: { accessToken: string; refreshToken?: string }): void {
-  salvarArmazenado(CHAVE_TOKEN, tokens.accessToken);
-  if (tokens.refreshToken) {
+  accessTokenEmMemoria = tokens.accessToken;
+  removerArmazenado(CHAVE_TOKEN);
+  removerArmazenado(CHAVE_REFRESH_TOKEN);
+  refreshMockEmMemoria = null;
+  if (import.meta.env.DEV && tokens.refreshToken) {
+    refreshMockEmMemoria = tokens.refreshToken;
     salvarArmazenado(CHAVE_REFRESH_TOKEN, tokens.refreshToken);
   }
 }
 
 export function obterAccessToken(): string | null {
-  return lerArmazenado<string>(CHAVE_TOKEN);
+  return accessTokenEmMemoria;
 }
 
 export function obterRefreshToken(): string | null {
-  return lerArmazenado<string>(CHAVE_REFRESH_TOKEN);
+  if (!import.meta.env.DEV) return null;
+  return refreshMockEmMemoria ?? lerArmazenado<string>(CHAVE_REFRESH_TOKEN);
 }
 
 let versaoSessao = 0;
@@ -107,6 +115,8 @@ let versaoSessao = 0;
 export function limparTokens(): void {
   versaoSessao++;
   promessaRenovacaoEmAndamento = null;
+  accessTokenEmMemoria = null;
+  refreshMockEmMemoria = null;
   removerArmazenado(CHAVE_TOKEN);
   removerArmazenado(CHAVE_REFRESH_TOKEN);
 }
@@ -152,15 +162,11 @@ export async function executarRenovacaoToken(): Promise<string | null> {
 
   const promessa = (async () => {
     const refreshToken = obterRefreshToken();
-    if (!refreshToken) {
-      notificarSessaoExpirada();
-      return null;
-    }
 
     try {
       const { renovarToken } = await import('./authService');
       if (versaoAtual !== versaoSessao) return null;
-      const response = await renovarToken(refreshToken);
+      const response = await renovarToken(refreshToken ?? undefined);
 
       if (versaoAtual !== versaoSessao) {
         return null;

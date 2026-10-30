@@ -15,7 +15,10 @@ const RankingPage = lazy(() => import('@/pages/Ranking'));
 const NotFoundPage = lazy(() => import('@/pages/NotFound'));
 
 function RootRoute() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isInitializing } = useAuth();
+  if (isInitializing) {
+    return <p role="status" aria-live="polite">Restaurando sessão...</p>;
+  }
   return <Navigate to={isAuthenticated ? '/registros' : '/login'} replace />;
 }
 
