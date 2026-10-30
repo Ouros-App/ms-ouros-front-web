@@ -17,15 +17,21 @@ export function Dialogo({ titulo, onFechar, children }: DialogoRankingProps) {
     };
   }, []);
 
+  useEffect(() => {
+    const dialogo = ref.current;
+    const fecharAoClicarFora = (evento: MouseEvent) => {
+      if (evento.target === dialogo) onFechar();
+    };
+    dialogo?.addEventListener('click', fecharAoClicarFora);
+    return () => dialogo?.removeEventListener('click', fecharAoClicarFora);
+  }, [onFechar]);
+
   return (
     <dialog
       ref={ref}
       className="ranking-dialogo"
       aria-labelledby={tituloId}
       onClose={onFechar}
-      onClick={(evento) => {
-        if (evento.target === ref.current) onFechar();
-      }}
     >
       <div className="ranking-dialogo__corpo">
         <div className="ranking-dialogo__topo">
