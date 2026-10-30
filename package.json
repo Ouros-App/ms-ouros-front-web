@@ -9,7 +9,9 @@
     "preview": "vite preview --host 0.0.0.0 --port ${PORT:-4173}",
     "lint": "eslint .",
     "docker:run": "bash ./run.sh",
-    "docker:compose": "bash ./run_compose.sh"
+    "docker:compose": "bash ./run_compose.sh",
+    "test": "node --experimental-strip-types --test tests/*.test.mjs",
+    "test:coverage": "node -e \"require('node:fs').mkdirSync('coverage', { recursive: true })\" && node --experimental-strip-types --experimental-test-coverage --test --test-reporter=lcov --test-reporter-destination=coverage/lcov.info tests/*.test.mjs"
   },
   "dependencies": {
     "dompurify": "^3.2.6",

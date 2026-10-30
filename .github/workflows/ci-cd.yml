@@ -115,6 +115,14 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Run tests with coverage
+        run: npm run test:coverage
+
       - name: Configure SonarCloud
         env:
           SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
@@ -126,7 +134,9 @@ jobs:
             echo "sonar.organization=${SONAR_ORGANIZATION:-$owner}"
             echo "sonar.projectKey=${SONAR_PROJECT_KEY:-${owner}_${repo}}"
             echo "sonar.sources=."
-            echo "sonar.exclusions=.git/**,.github/**,dist/**,build/**"
+            echo "sonar.tests=tests"
+            echo "sonar.javascript.lcov.reportPaths=coverage/lcov.info"
+            echo "sonar.exclusions=.git/**,.github/**,dist/**,build/**,coverage/**,tests/**"
             if [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then
               echo "sonar.branch.name=main"
             fi
