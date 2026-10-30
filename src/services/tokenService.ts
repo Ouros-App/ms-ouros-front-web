@@ -141,7 +141,7 @@ let promessaRenovacaoEmAndamento: Promise<string | null> | null = null;
 
 /**
  * Executa a renovação do token via refresh_token com controle de concorrência.
- * Retorna o novo access_token gerado ou null se a renovação falhar.
+ * Retorna null para sessão encerrada/expirada; propaga falhas transitórias.
  */
 export async function executarRenovacaoToken(): Promise<string | null> {
   if (promessaRenovacaoEmAndamento) {
@@ -159,6 +159,7 @@ export async function executarRenovacaoToken(): Promise<string | null> {
 
     try {
       const { renovarToken } = await import('./authService');
+      if (versaoAtual !== versaoSessao) return null;
       const response = await renovarToken(refreshToken);
 
       if (versaoAtual !== versaoSessao) {
@@ -169,16 +170,6 @@ export async function executarRenovacaoToken(): Promise<string | null> {
         accessToken: response.access_token,
         refreshToken: response.refresh_token,
       });
-
-      // Atualiza a sessão persistida do usuário se existir
-      const sessaoAtual = lerArmazenado<User>(CHAVE_SESSAO);
-      if (sessaoAtual && versaoAtual === versaoSessao) {
-        salvarArmazenado(CHAVE_SESSAO, {
-          ...sessaoAtual,
-          token: response.access_token,
-          refreshToken: response.refresh_token || sessaoAtual.refreshToken,
-        });
-      }
 
       // Notifica as abas e componentes sobre o novo token
       if (typeof window !== 'undefined' && versaoAtual === versaoSessao) {
@@ -197,21 +188,23 @@ export async function executarRenovacaoToken(): Promise<string | null> {
       if (versaoAtual !== versaoSessao) {
         return null;
       }
-      const { ServiceError } = await import('./authService');
-      if (error instanceof ServiceError && error.status && error.status !== 400 && error.status !== 401 && error.status !== 403) {
+      const { SessaoExpiradaError } = await import('./authService');
+      if (versaoAtual !== versaoSessao) return null;
+      if (error instanceof SessaoExpiradaError) {
+        notificarSessaoExpirada();
         return null;
       }
-      notificarSessaoExpirada();
-      return null;
+      throw error;
     }
   })();
 
   promessaRenovacaoEmAndamento = promessa;
-  void promessa.finally(() => {
+  const liberarRenovacao = () => {
     if (promessaRenovacaoEmAndamento === promessa) {
       promessaRenovacaoEmAndamento = null;
     }
-  });
+  };
+  void promessa.then(liberarRenovacao, liberarRenovacao);
 
   return promessa;
 }

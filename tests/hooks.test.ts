@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { StrictMode } from 'react';
 import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
 import { useVerificationForm } from '@/components/complex/VerificationCard/useVerificationForm';
 import { useOtpCountdown } from '@/hooks/useOtpCountdown';
@@ -31,6 +32,29 @@ describe('código OTP', () => {
     act(() => result.current.handleChange(1, ''));
     act(() => result.current.handleKeyDown(1, { key: 'Backspace', preventDefault: vi.fn() } as never));
     expect(result.current.code).toBe('3456');
+  });
+  it('mantém digitação em lote e completa uma vez em StrictMode', () => {
+    const onComplete = vi.fn();
+    const { result } = renderHook(() => useVerificationForm({ onComplete }), { wrapper: StrictMode });
+    act(() => {
+      for (let i = 0; i < 6; i++) result.current.handleChange(i, String(i + 1));
+    });
+    expect(result.current.code).toBe('123456');
+    expect(onComplete).toHaveBeenCalledExactlyOnceWith('123456');
+  });
+  it('sincroniza colagem, exclusão e reset antes do próximo render', () => {
+    const { result } = renderHook(() => useVerificationForm());
+    act(() => {
+      result.current.handlePaste({ preventDefault: vi.fn(), clipboardData: { getData: () => '123456' } } as never);
+      result.current.handleChange(5, '');
+      result.current.handleKeyDown(5, { key: 'Backspace', preventDefault: vi.fn() } as never);
+    });
+    expect(result.current.digits).toEqual(['1', '2', '3', '4', '', '']);
+    act(() => {
+      result.current.reset();
+      result.current.handleChange(2, '9');
+    });
+    expect(result.current.digits).toEqual(['', '', '9', '', '', '']);
   });
   it('conta o tempo e permite reiniciar o envio', () => {
     vi.useFakeTimers();

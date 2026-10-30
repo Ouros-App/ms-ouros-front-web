@@ -17,17 +17,22 @@ export default function TarefasPage() {
   useEffect(() => {
     const controller = new AbortController();
     setCarregando(true);
+    setTarefas([]);
 
     Promise.all([
       listarTodasTarefas(controller.signal),
-      empresaSelecionada ? listarGranjas(controller.signal) : Promise.resolve([]),
+      empresaSelecionada != null ? listarGranjas(controller.signal) : Promise.resolve([]),
     ])
       .then(([dados, granjas]) => {
-        if (empresaSelecionada && granjas.length > 0) {
+        if (controller.signal.aborted) return;
+        if (empresaSelecionada != null) {
           const granjasEmpresa = granjas.filter((g) => g.idEnterprise === empresaSelecionada);
           const farmIds = new Set(granjasEmpresa.map((g) => g.id));
+          const regioes = new Set(granjasEmpresa.map((g) => g.regiao));
           setTarefas(
-            dados.filter((t) => t.tipo === 'estadual' || (t.idFarm != null && farmIds.has(t.idFarm))),
+            dados.filter((t) => t.tipo === 'estadual'
+              ? t.regiao != null && regioes.has(t.regiao)
+              : t.idFarm != null && farmIds.has(t.idFarm)),
           );
         } else {
           setTarefas(dados);

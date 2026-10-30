@@ -50,3 +50,15 @@ it('JWT e persistência de tokens respeitam expiração e papéis', async () => 
  limparTokens(); expect(isTokenExpirado()).toBe(true);
  expect(await executarRenovacaoToken()).toBeNull();
 });
+it('DEV falso impede mocks mesmo com MODE development e identificadores simulados', async () => {
+ vi.stubEnv('DEV', false); vi.stubEnv('MODE', 'development');
+ const fetcher = vi.fn().mockResolvedValueOnce(new Response('{"access_token":"verified"}'))
+  .mockResolvedValueOnce(new Response('{"access_token":"refreshed"}'));
+ vi.stubGlobal('fetch', fetcher);
+ expect((await verificarCodigoLogin({ email: 'gestor@ouros.com', password: 'ouros123', challengeId: 'mock-challenge-1', code: '123456' })).access_token).toBe('verified');
+ expect((await renovarToken('mock-refresh')).access_token).toBe('refreshed');
+ expect(fetcher).toHaveBeenCalledTimes(2);
+ fetcher.mockRejectedValue(new TypeError('offline'));
+ await expect(renovarToken('mock-refresh')).rejects.toThrow();
+ await expect(verificarCodigoLogin({ email: 'gestor@ouros.com', password: 'ouros123', challengeId: 'mock-challenge-1', code: '123456' })).rejects.toThrow();
+});

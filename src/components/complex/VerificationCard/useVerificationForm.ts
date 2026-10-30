@@ -7,7 +7,6 @@ interface UseVerificationFormOptions {
 export function useVerificationForm({ onComplete }: UseVerificationFormOptions = {}) {
   const [digits, setDigits] = useState<string[]>(['', '', '', '', '', '']);
   const digitsRef = useRef<string[]>(digits);
-  digitsRef.current = digits;
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const registerInputRef = useCallback((el: HTMLInputElement | null, index: number) => {
@@ -28,6 +27,7 @@ export function useVerificationForm({ onComplete }: UseVerificationFormOptions =
       if (!sanitized) {
         const next = [...digitsRef.current];
         next[index] = '';
+        digitsRef.current = next;
         setDigits(next);
         return;
       }
@@ -35,6 +35,7 @@ export function useVerificationForm({ onComplete }: UseVerificationFormOptions =
       if (sanitized.length === 1) {
         const next = [...digitsRef.current];
         next[index] = sanitized;
+        digitsRef.current = next;
         setDigits(next);
 
         if (index < 5) {
@@ -55,6 +56,7 @@ export function useVerificationForm({ onComplete }: UseVerificationFormOptions =
       for (let i = 0; i < chars.length && index + i < 6; i++) {
         next[index + i] = chars[i];
       }
+      digitsRef.current = next;
       setDigits(next);
 
       const nextFocus = Math.min(5, index + chars.length);
@@ -72,13 +74,12 @@ export function useVerificationForm({ onComplete }: UseVerificationFormOptions =
   const handleKeyDown = useCallback(
     (index: number, event: React.KeyboardEvent<HTMLInputElement>) => {
       if (event.key === 'Backspace') {
-        if (!digits[index] && index > 0) {
+        if (!digitsRef.current[index] && index > 0) {
           event.preventDefault();
-          setDigits((prev) => {
-            const next = [...prev];
-            next[index - 1] = '';
-            return next;
-          });
+          const next = [...digitsRef.current];
+          next[index - 1] = '';
+          digitsRef.current = next;
+          setDigits(next);
           focusInput(index - 1);
         }
         return;
@@ -96,7 +97,7 @@ export function useVerificationForm({ onComplete }: UseVerificationFormOptions =
         return;
       }
     },
-    [digits, focusInput],
+    [focusInput],
   );
 
   const handlePaste = useCallback(
@@ -109,6 +110,7 @@ export function useVerificationForm({ onComplete }: UseVerificationFormOptions =
       for (let i = 0; i < pasted.length; i++) {
         next[i] = pasted[i];
       }
+      digitsRef.current = next;
       setDigits(next);
 
       const nextFocus = Math.min(5, pasted.length);
@@ -124,7 +126,9 @@ export function useVerificationForm({ onComplete }: UseVerificationFormOptions =
   );
 
   const reset = useCallback(() => {
-    setDigits(['', '', '', '', '', '']);
+    const next = ['', '', '', '', '', ''];
+    digitsRef.current = next;
+    setDigits(next);
     focusInput(0);
   }, [focusInput]);
 

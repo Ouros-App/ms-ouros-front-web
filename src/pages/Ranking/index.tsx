@@ -4,6 +4,7 @@ import { PerfilUsuario } from '@/components/complex/PerfilUsuario';
 import { SeletorEmpresaAdm } from '@/components/complex/SeletorEmpresaAdm';
 import { useAdminEnterprise } from '@/context/AdminEnterpriseContext';
 import { obterRankingGeral, obterPodioRanking, sincronizarRanking, type RankingItem } from '@/services/rankingService';
+import { listarGranjas } from '@/services/farmService';
 import { isAbortError } from '@/utils/delay';
 import './Ranking.css';
 
@@ -19,22 +20,31 @@ export default function RankingPage() {
     const controller = new AbortController();
     setCarregando(true);
 
-    obterRankingGeral(empresaSelecionada ?? undefined, controller.signal)
-      .then(async (itensRanking) => {
+    setRanking([]);
+    setPodio([]);
+
+    Promise.all([
+      obterRankingGeral(empresaSelecionada ?? undefined, controller.signal),
+      listarGranjas(controller.signal),
+    ])
+      .then(async ([itensRanking, granjas]) => {
+        if (controller.signal.aborted) return;
         setRanking(itensRanking);
-        const topFarmId = itensRanking[0]?.idFarm;
+        const granja = empresaSelecionada != null
+          ? granjas.find((g) => g.idEnterprise === empresaSelecionada)
+          : granjas[0];
         let itensPodio: RankingItem[] = [];
-        if (topFarmId) {
+        if (granja) {
           try {
-            itensPodio = await obterPodioRanking(topFarmId, controller.signal);
-          } catch {
-            itensPodio = [];
+            itensPodio = await obterPodioRanking(granja.id, controller.signal);
+          } catch (error) {
+            if (controller.signal.aborted || isAbortError(error)) return;
+          }
+          if (!itensPodio || itensPodio.length === 0) {
+            itensPodio = itensRanking.slice(0, 3);
           }
         }
-        if (!itensPodio || itensPodio.length === 0) {
-          itensPodio = itensRanking.slice(0, 3);
-        }
-        setPodio(itensPodio);
+        if (!controller.signal.aborted) setPodio(itensPodio);
       })
       .catch((err) => {
         if (controller.signal.aborted || isAbortError(err)) return;
