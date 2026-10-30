@@ -11,6 +11,12 @@ export function formatarData(iso: string): string {
   return `${dia}/${mes}/${ano}`;
 }
 
+export function formatarDataHora(iso: string): string {
+  const [data, hora = '00:00'] = iso.split('T');
+  const [ano, mes, dia] = data.split('-');
+  return `${dia}/${mes}/${ano} | ${hora.slice(0, 5)}`;
+}
+
 export function formatarValorAbreviado(valor: number): string {
   if (Math.abs(valor) >= 1_000_000) {
     return `R$ ${(valor / 1_000_000).toFixed(1).replace('.', ',')}M`;

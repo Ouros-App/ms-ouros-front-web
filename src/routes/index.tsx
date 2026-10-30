@@ -10,7 +10,7 @@ const DashboardPage = lazy(() => import('@/pages/Dashboard'));
 const SimulacaoPage = lazy(() => import('@/pages/Simulacao'));
 const PerfilPage = lazy(() => import('@/pages/Perfil'));
 const RankingPage = lazy(() => import('@/pages/Ranking'));
-const TarefasPage = lazy(() => import('@/pages/Tarefas'));
+const MetasPage = lazy(() => import('@/pages/Metas'));
 const NotFoundPage = lazy(() => import('@/pages/NotFound'));
 
 function RootRoute() {
@@ -56,12 +56,16 @@ export function AppRoutes() {
         }
       />
       <Route
-        path="/tarefas"
+        path="/metas"
         element={
           <PrivateRoute>
-            <TarefasPage />
+            <MetasPage />
           </PrivateRoute>
         }
+      />
+      <Route
+        path="/tarefas"
+        element={<Navigate to="/metas" replace />}
       />
       <Route
         path="/simulacao"

@@ -1,207 +1,81 @@
-.ranking-page {
-  display: flex;
-  min-height: 100vh;
-  background-color: #f8fafc;
+.ranking-page{
+    display: flex;
+    min-height: 100vh;
+    background: #ffffff;
+    font-family: 'Poppins', sans-serif;
+    color: var(--ink);
 }
 
-.ranking-page__coluna {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  padding: 32px 40px;
-  max-width: 1400px;
+.ranking-page__pular{
+    position: absolute;
+    top: -48px;
+    left: 12px;
+    z-index: 100;
+    border-radius: 6px;
+    background: var(--indigo);
+    padding: 10px 16px;
+    color: #ffffff;
+    font-size: 0.85rem;
+    text-decoration: none;
 }
 
-.ranking-page__topo {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 16px;
-  margin-bottom: 24px;
+.ranking-page__pular:focus{
+    top: 12px;
 }
 
-.ranking-page__titulo {
-  font-size: 24px;
-  font-weight: 800;
-  color: #0f172a;
-  margin: 0;
+.ranking-page__coluna{
+    position: relative;
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+    padding: 24px 28px 40px 24px;
 }
 
-.ranking-page__subtitulo {
-  font-size: 14px;
-  color: #64748b;
-  margin: 4px 0 0;
+.ranking-page__fundo{
+    pointer-events: none;
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 70%;
+    max-width: 720px;
+    opacity: 0.6;
+    user-select: none;
 }
 
-.ranking-page__acoes-topo {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+.ranking-page__topo{
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 26px;
 }
 
-.ranking-page__barra-acoes {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 24px;
+.ranking-page__acoes-topo{
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
 }
 
-.ranking-page__btn-sync {
-  background-color: #1e293b;
-  color: #ffffff;
-  border: none;
-  padding: 10px 18px;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 13px;
-  cursor: pointer;
-  transition: background-color 0.2s;
+.ranking-page__titulo{
+    margin: 0;
+    border-left: 3px solid var(--gold);
+    padding-left: 12px;
+    color: #111827;
+    font-size: 1.6rem;
+    font-weight: 600;
 }
 
-.ranking-page__btn-sync:hover {
-  background-color: #0f172a;
+.ranking-page__conteudo{
+    position: relative;
+    z-index: 1;
 }
 
-.ranking-page__btn-sync:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.ranking-page__mensagem {
-  font-size: 13px;
-  font-weight: 600;
-  color: #059669;
-}
-
-.ranking-podio {
-  margin-bottom: 32px;
-}
-
-.ranking-podio__titulo {
-  font-size: 18px;
-  font-weight: 700;
-  color: #1e293b;
-  margin-bottom: 16px;
-}
-
-.ranking-podio__grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 20px;
-}
-
-.ranking-podio__card {
-  background-color: #ffffff;
-  padding: 20px;
-  border-radius: 12px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-.ranking-podio__card--1 {
-  border-color: #f59e0b;
-  background: linear-gradient(180deg, #fffbeb 0%, #ffffff 100%);
-}
-
-.ranking-podio__posicao {
-  font-size: 14px;
-  font-weight: 700;
-  margin-bottom: 8px;
-}
-
-.ranking-podio__nome {
-  font-size: 18px;
-  color: #0f172a;
-  margin-bottom: 8px;
-}
-
-.ranking-podio__cgi {
-  font-size: 13px;
-  color: #64748b;
-  margin-bottom: 12px;
-}
-
-.ranking-podio__liga {
-  background-color: #fef3c7;
-  color: #92400e;
-  font-size: 12px;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 12px;
-}
-
-.ranking-tabela-section {
-  background-color: #ffffff;
-  padding: 24px;
-  border-radius: 12px;
-  border: 1px solid #f1f5f9;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-.ranking-tabela-section__titulo {
-  font-size: 18px;
-  font-weight: 700;
-  color: #1e293b;
-  margin: 0 0 16px;
-}
-
-.ranking-tabela-wrapper {
-  overflow-x: auto;
-}
-
-.ranking-tabela {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-  font-size: 14px;
-}
-
-.ranking-tabela th {
-  background-color: #f8fafc;
-  padding: 12px 16px;
-  color: #475569;
-  font-weight: 600;
-  border-bottom: 2px solid #e2e8f0;
-}
-
-.ranking-tabela td {
-  padding: 14px 16px;
-  border-bottom: 1px solid #f1f5f9;
-  color: #334155;
-}
-
-.ranking-tabela__pos {
-  font-weight: 700;
-  color: #f59e0b;
-}
-
-.ranking-tabela__nome {
-  font-weight: 600;
-  color: #0f172a;
-}
-
-.ranking-tabela__liga {
-  background-color: #f1f5f9;
-  color: #475569;
-  font-size: 12px;
-  font-weight: 600;
-  padding: 3px 8px;
-  border-radius: 6px;
-}
-
-.ranking-tabela__status {
-  color: #059669;
-  font-weight: 600;
-  font-size: 12px;
-}
-
-.ranking-page__info {
-  text-align: center;
-  padding: 32px;
-  color: #64748b;
+@media (max-width: 640px){
+    .ranking-page__coluna{
+        padding: 18px 14px 32px;
+    }
 }

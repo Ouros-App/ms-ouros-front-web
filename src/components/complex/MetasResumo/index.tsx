@@ -1,0 +1,1 @@
+export { MetasResumo } from '../MetasReumo';
