@@ -5,12 +5,12 @@ vi.mock('@/components/complex/Sidebar', () => ({ Sidebar: () => null }));
 vi.mock('@/components/complex/PerfilUsuario', () => ({ PerfilUsuario: () => null }));
 vi.mock('@/components/complex/SeletorEmpresaAdm', () => ({ SeletorEmpresaAdm: () => null }));
 vi.mock('@/services/rankingService', () => ({
-  listarParticipantes: vi.fn(),
+  listarRankingPaginado: vi.fn(),
   atualizarParticipante: vi.fn(),
   excluirParticipante: vi.fn(),
 }));
 import { useAdminEnterprise } from '@/context/AdminEnterpriseContext';
-import { listarParticipantes } from '@/services/rankingService';
+import { listarRankingPaginado } from '@/services/rankingService';
 import Ranking from '@/pages/Ranking';
 
 function selectCompany(id: number | null) {
@@ -20,18 +20,18 @@ function selectCompany(id: number | null) {
 beforeEach(() => {
   vi.resetAllMocks();
   selectCompany(2);
-  vi.mocked(listarParticipantes).mockResolvedValue([
-    { id: '20', nome: 'Granja B', pontuacao: 8.4, atualizadoEm: '2026-10-30T10:00:00' },
-  ]);
+  vi.mocked(listarRankingPaginado).mockResolvedValue({ content: [
+    { id: '20', nome: 'Granja B', pontuacao: 8.4, atualizadoEm: '2026-10-30T10:00:00', posicao: 1, liga: 'ouro' },
+  ], page: 0, size: 10, totalElements: 1, totalPages: 1 });
 });
 afterEach(cleanup);
 
 it('ranking consulta a empresa selecionada e recarrega ao trocar de empresa', async () => {
   const { rerender } = render(<Ranking />);
-  await waitFor(() => expect(listarParticipantes).toHaveBeenCalledWith(expect.any(AbortSignal), 2));
+  await waitFor(() => expect(listarRankingPaginado).toHaveBeenCalledWith(expect.objectContaining({ page: 0, size: 10 }), expect.any(AbortSignal), 2));
   expect(await screen.findByText('Granja B')).toBeTruthy();
 
   selectCompany(1);
   rerender(<Ranking />);
-  await waitFor(() => expect(listarParticipantes).toHaveBeenLastCalledWith(expect.any(AbortSignal), 1));
+  await waitFor(() => expect(listarRankingPaginado).toHaveBeenLastCalledWith(expect.objectContaining({ page: 0, size: 10 }), expect.any(AbortSignal), 1));
 });

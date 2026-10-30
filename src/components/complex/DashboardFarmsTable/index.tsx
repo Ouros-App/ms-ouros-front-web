@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
-import { getCorporateFarms } from '@/services/telemetryDashboardService';
-import type { FarmSummaryItem } from '@/types/dashboard.types';
-import { isAbortError } from '@/utils/delay';
+import { useCallback, useState } from 'react';
+import { getCorporateFarmsPage } from '@/services/telemetryDashboardService';
+import { usePagedList } from '@/hooks/usePagedList';
+import { Pagination } from '@/components/common/Pagination';
 import './DashboardFarmsTable.css';
 
 interface DashboardFarmsTableProps {
@@ -12,48 +12,16 @@ interface DashboardFarmsTableProps {
 }
 
 export function DashboardFarmsTable({ enterpriseId, state, management, period }: DashboardFarmsTableProps) {
-  const [granjas, setGranjas] = useState<FarmSummaryItem[]>([]);
-  const [carregando, setCarregando] = useState(true);
-  const [erro, setErro] = useState<string | null>(null);
-  const [tentativa, setTentativa] = useState(0);
   const [busca, setBusca] = useState('');
-  const [pagina, setPagina] = useState(1);
-  const [total, setTotal] = useState(0);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    setCarregando(true);
-    setErro(null);
-
-    getCorporateFarms(
-      {
-        search: busca || undefined,
-        page: pagina,
-        limit: 10,
-        enterpriseId: enterpriseId ?? undefined,
-        state: state || undefined,
-        management: management || undefined,
-        month: period || undefined,
-      },
-      controller.signal,
-    )
-      .then((res) => {
-        setGranjas(res.items ?? []);
-        setTotal(res.total ?? 0);
-      })
-      .catch((err) => {
-        if (controller.signal.aborted || isAbortError(err)) return;
-        console.warn('Falha ao carregar tabela de granjas:', err);
-        setGranjas([]);
-        setTotal(0);
-        setErro('Não foi possível carregar os dados das granjas.');
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setCarregando(false);
-      });
-
-    return () => controller.abort();
-  }, [busca, pagina, enterpriseId, state, management, period, tentativa]);
+  const load = useCallback((page: number, size: number, signal: AbortSignal) =>
+    getCorporateFarmsPage({ page, size, search: busca }, {
+      enterpriseId: enterpriseId ?? undefined, state, management, month: period,
+    }, signal), [busca, enterpriseId, state, management, period]);
+  const list = usePagedList(load);
+  const granjas = list.items;
+  const total = list.pagination.totalElements;
+  const carregando = list.status === 'carregando';
+  const erro = list.status === 'erro' ? list.mensagemErro : null;
 
   return (
     <section className="dashboard-farms-table" aria-label="Tabela Corporativa de Granjas">
@@ -71,26 +39,25 @@ export function DashboardFarmsTable({ enterpriseId, state, management, period }:
           value={busca}
           onChange={(e) => {
             setBusca(e.target.value);
-            setPagina(1);
           }}
         />
       </header>
 
       {carregando ? (
-        <p className="dashboard-farms-table__info">Carregando dados das granjas...</p>
+        <p role="status" className="dashboard-farms-table__info">Carregando dados das granjas...</p>
       ) : erro ? (
-        <div className="dashboard-farms-table__info">
+        <div role="alert" className="dashboard-farms-table__info">
           <p>{erro}</p>
           <button
             type="button"
             className="dashboard-farms-table__btn"
-            onClick={() => setTentativa((n) => n + 1)}
+            onClick={list.recarregar}
           >
             Tentar novamente
           </button>
         </div>
       ) : granjas.length === 0 ? (
-        <p className="dashboard-farms-table__info">Nenhuma granja encontrada.</p>
+        <p role="status" className="dashboard-farms-table__info">Nenhuma granja encontrada.</p>
       ) : (
         <div className="dashboard-farms-table__wrapper">
           <table className="dashboard-farms-table__table">
@@ -122,27 +89,7 @@ export function DashboardFarmsTable({ enterpriseId, state, management, period }:
         </div>
       )}
 
-      {total > 10 && (
-        <footer className="dashboard-farms-table__footer">
-          <button
-            type="button"
-            disabled={pagina <= 1}
-            onClick={() => setPagina((p) => p - 1)}
-            className="dashboard-farms-table__btn"
-          >
-            Anterior
-          </button>
-          <span>Página {pagina} de {Math.ceil(total / 10)}</span>
-          <button
-            type="button"
-            disabled={pagina >= Math.ceil(total / 10)}
-            onClick={() => setPagina((p) => p + 1)}
-            className="dashboard-farms-table__btn"
-          >
-            Próxima
-          </button>
-        </footer>
-      )}
+      <Pagination {...list.pagination} />
     </section>
   );
 }

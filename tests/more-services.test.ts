@@ -46,7 +46,7 @@ it('perfil aceita foto persistível e rejeita telefone inválido', async () => {
  expect(JSON.parse((fetcher.mock.calls.at(-1) as unknown as [string, RequestInit])[1].body as string).photo_url).toBe('');
  await expect(perfil.atualizarPerfil('1', { nome: 'Ana', email: 'a@x.com', telefone: '1', avatarUrl: null })).rejects.toThrow();
 });
-for (const [index, call] of [() => ai.getAdminAiKpis(1), () => ai.getAdminAiTokenSpend(1), () => ai.getAdminAiLatency(1), () => ai.getAdminAiSessions({ page: 1, pageSize: 10, search: 'a', enterpriseId: 1 })].entries()) {
+for (const [index, call] of [() => ai.getAdminAiKpis(1), () => ai.getAdminAiTokenSpend(1), () => ai.getAdminAiLatency(1), () => ai.getAdminAiSessions({ page: 1, limit: 10, search: 'a', enterpriseId: 1 })].entries()) {
  it(`métricas administrativas ${index} preservam dados e falhas`, async () => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(new Response('{"ok":true}')).mockResolvedValueOnce(new Response('{}',{status:500})).mockRejectedValueOnce(new Error('offline')));
   expect(await call()).toEqual({ ok: true }); await expect(call()).rejects.toThrow(); await expect(call()).rejects.toThrow();

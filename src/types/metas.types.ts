@@ -40,6 +40,7 @@ export interface NovaMetaFormProps{
 }
 
 export interface MetasCardProps{
+    pagination?: import("./pagination.types").PaginationProps;
     metas: MetaEstadual[];
     status: MetasStatus;
     mensagemErro:string;

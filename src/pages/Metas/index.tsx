@@ -3,13 +3,12 @@ import { MetasResumo } from '@/components/complex/MetasReumo';
 import { PerfilUsuario } from '@/components/complex/PerfilUsuario';
 import { Sidebar } from '@/components/complex/Sidebar';
 import { useMetas } from '@/hooks/useMetas';
-import { useResumoMetas } from '@/hooks/useResumoMetas';
 import { asaFundo } from '../Registros/RegistrosAssets';
 import './Metas.css';
 
 export default function MetasPage(){
     const metas = useMetas();
-    const resumo = useResumoMetas(metas.todas, metas.status);
+    const resumo = { resumo: metas.resumo, status: metas.status, mensagemErro: metas.mensagemErro, recarregar: metas.recarregar };
 
     return(
         <div className="metas-page">
@@ -48,6 +47,7 @@ export default function MetasPage(){
                     onSalvar={metas.salvar}
                     onExcluir={metas.excluir}
                     onRecarregar={metas.recarregar}
+                    pagination={metas.pagination}
                     />
                 </main>
             </div>

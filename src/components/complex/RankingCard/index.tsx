@@ -1,3 +1,4 @@
+import { Pagination } from '@/components/common/Pagination';
 import { useCallback, useState } from 'react';
 import type { CampoOrdenacaoRanking, ParticipanteEdicao, ParticipanteRanking, RankingCardProps } from '@/types/ranking.types';
 import { opcoesOrdenacaoRanking } from '@/utils/ranking';
@@ -9,7 +10,7 @@ import './RankingCard.css';
 
 type DialogoAberto = | {tipo: 'editar'; participante: ParticipanteRanking} | {tipo: 'excluir'; participante: ParticipanteRanking} | null;
 
-export function RankingCard({ participantes, status, mensagemErro, busca, ordenacao, onBuscar, onOrdenar, onSalvar, onExcluir, onRecarregar}: RankingCardProps){
+export function RankingCard({ participantes, status, mensagemErro, busca, ordenacao, onBuscar, onOrdenar, onSalvar, onExcluir, onRecarregar, pagination }: RankingCardProps){
     const [dialogo, setDialogo] = useState<DialogoAberto>(null);
     const [aviso, setAviso] = useState('');
     const fechar = useCallback(() => setDialogo(null), []);
@@ -103,6 +104,7 @@ export function RankingCard({ participantes, status, mensagemErro, busca, ordena
             {dialogo?.tipo === 'excluir' && (
                 <ConfirmarExclusao participante={dialogo.participante} onFechar={fechar} onExcluir={excluirComAviso} />
             )}
+        {pagination && <Pagination {...pagination} />}
         </section>
     );
 }

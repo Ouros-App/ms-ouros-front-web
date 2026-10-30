@@ -90,7 +90,7 @@ export default defineConfig(({ mode, command, isPreview }) => {
     },
     preview: {
       host: '0.0.0.0',
-      port: Number(env.PORT || 4173),
+      port: Number(env.PORT || 5173),
     },
   };
 });

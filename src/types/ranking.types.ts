@@ -14,7 +14,7 @@ export interface ParticipanteRanking extends Participante{
 }
 
 export type ParticipanteEdicao = Pick<Participante, 'nome' | 'pontuacao'>;
-export type CampoOrdenacaoRanking = 'padrao' | 'nome' | 'pontuacao' | 'atualizacao';
+export type CampoOrdenacaoRanking = 'padrao' | 'nome' | 'pontuacao';
 export type RankingStatus = 'carregando' | 'pronto' | 'erro';
 
 export interface LigaInfo{
@@ -25,6 +25,7 @@ export interface LigaInfo{
 }
 
 export interface RankingCardProps{
+    pagination?: import("./pagination.types").PaginationProps;
     participantes: ParticipanteRanking[];
     status: RankingStatus;
     mensagemErro: string;

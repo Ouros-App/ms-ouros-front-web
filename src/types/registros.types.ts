@@ -25,6 +25,7 @@ export interface RegistroValores{
 }
 
 export type RegistrosCardProps ={
+    pagination?: import("./pagination.types").PaginationProps;
     registros: Registro[]
     status: RegistrosStatus
     mensagemErro: string

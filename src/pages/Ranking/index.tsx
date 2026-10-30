@@ -42,6 +42,7 @@ export default function RankingPage(){
                     onSalvar={ranking.salvar}
                     onExcluir={ranking.excluir}
                     onRecarregar={ranking.recarregar}
+                    pagination={ranking.pagination}
                     />
                     
                     <RankingInfo />
