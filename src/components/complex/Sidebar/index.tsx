@@ -18,7 +18,7 @@ function Item({ item }: { item: SidebarItem }) {
 export function Sidebar() {
     const { logout } = useAuth();
     const navigate = useNavigate();
-    const sair = () => { logout(); navigate('/login', { replace: true });};
+    const sair = () => { logout(); void navigate('/login', { replace: true });};
 
     return (
     <aside className="sidebar">

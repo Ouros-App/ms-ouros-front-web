@@ -1,0 +1,57 @@
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
+import { act, cleanup, renderHook } from '@testing-library/react';
+const login = vi.hoisted(() => vi.fn());
+vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ login }) }));
+vi.mock('@/services/authService', () => ({ iniciarLogin: vi.fn(), verificarCodigoLogin: vi.fn() }));
+vi.mock('@/services/passwordResetService', () => ({ iniciarRedefinicaoSenha: vi.fn(), verificarCodigoRedefinicao: vi.fn(), confirmarRedefinicaoSenha: vi.fn(), REGRA_SENHA: /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*!).{8,20}$/ }));
+import * as auth from '@/services/authService';
+import * as reset from '@/services/passwordResetService';
+import { useLogin } from '@/hooks/useLogin';
+import { usePasswordReset } from '@/hooks/usePasswordReset';
+beforeEach(() => vi.resetAllMocks()); afterEach(() => { cleanup(); vi.useRealTimers(); });
+const challenge = { challenge_id: 'c1', masked_email: 'a***@x.com', expires_in: 300 };
+it('login valida desafio, reenvia, autentica e descarta senha', async () => {
+ vi.useFakeTimers(); vi.mocked(auth.iniciarLogin).mockResolvedValue(challenge);
+ vi.mocked(auth.verificarCodigoLogin).mockResolvedValue({ access_token: 'a.' + btoa(JSON.stringify({ sub: 'u1', email: 'a@x.com' })) + '.b', refresh_token: 'r' } as never);
+ const { result } = renderHook(useLogin);
+ await act(async () => { await result.current.submitCredentials({ email: 'a@x.com', password: 'secret' }); });
+ expect(result.current.step).toBe('verification');
+ await act(async () => { await result.current.resendOtp(); });
+ expect(auth.iniciarLogin).toHaveBeenCalledTimes(2);
+ await act(async () => { await result.current.submitOtp('123456'); });
+ expect(result.current.pendingChallenge).toBeNull();
+ act(() => vi.advanceTimersByTime(600)); expect(login).toHaveBeenCalledWith(expect.objectContaining({ id: 'u1' }));
+ act(() => result.current.backToCredentials()); expect(result.current.step).toBe('credentials');
+});
+it('login apresenta erros em todas as etapas e permite voltar', async () => {
+ vi.mocked(auth.iniciarLogin).mockRejectedValueOnce(new Error('Senha inválida')).mockResolvedValueOnce(challenge).mockRejectedValueOnce(new Error('Reenvio falhou'));
+ vi.mocked(auth.verificarCodigoLogin).mockRejectedValue(new Error('Código inválido'));
+ const { result } = renderHook(useLogin);
+ await act(async () => { await result.current.submitOtp('123456'); await result.current.resendOtp(); });
+ await act(async () => { await result.current.submitCredentials({ email: 'a@x.com', password: 'bad' }); });
+ expect(result.current.message).toBe('Senha inválida');
+ await act(async () => { await result.current.submitCredentials({ email: 'a@x.com', password: 'secret' }); });
+ await act(async () => { await result.current.submitOtp('000000'); });
+ expect(result.current.message).toBe('Código inválido');
+ await act(async () => { await result.current.resendOtp(); }); expect(result.current.message).toBe('Reenvio falhou');
+ act(() => result.current.backToCredentials()); expect(result.current.pendingChallenge).toBeNull();
+});
+it('recuperação de senha percorre email, código, senha e conclusão', async () => {
+ vi.mocked(reset.iniciarRedefinicaoSenha).mockResolvedValue(challenge);
+ vi.mocked(reset.verificarCodigoRedefinicao).mockResolvedValue({ reset_token: 'r', expires_in: 300 });
+ vi.mocked(reset.confirmarRedefinicaoSenha).mockResolvedValue({ message: 'ok' });
+ const finish = vi.fn(); const { result } = renderHook(() => usePasswordReset(finish));
+ await act(async () => { await result.current.solicitarCodigo('a@x.com'); }); expect(result.current.step).toBe('verification');
+ await act(async () => { await result.current.reenviarCodigo(); });
+ await act(async () => { await result.current.verificarCodigo('123456'); }); expect(result.current.step).toBe('new-password');
+ await act(async () => { await result.current.confirmarSenha('bad'); }); expect(result.current.status).toBe('error');
+ await act(async () => { await result.current.confirmarSenha('Abcd1234!'); }); expect(result.current.step).toBe('done');
+ act(() => result.current.voltar()); expect(finish).toHaveBeenCalled();
+});
+it('recuperação comunica falhas de envio e volta ao email', async () => {
+ vi.mocked(reset.iniciarRedefinicaoSenha).mockRejectedValueOnce(new Error('offline')).mockResolvedValueOnce(challenge);
+ const { result } = renderHook(() => usePasswordReset(vi.fn()));
+ await act(async () => { await result.current.solicitarCodigo('a@x.com'); }); expect(result.current.message).toBe('offline');
+ await act(async () => { await result.current.solicitarCodigo('a@x.com'); });
+ act(() => result.current.voltar()); expect(result.current.step).toBe('email');
+});

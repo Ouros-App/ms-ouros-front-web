@@ -20,6 +20,13 @@ export class ServiceError extends Error {
   }
 }
 
+export class SessaoExpiradaError extends ServiceError {
+  constructor(status: number) {
+    super('Sessão expirada. Faça login novamente.', status);
+    this.name = 'SessaoExpiradaError';
+  }
+}
+
 interface UsuarioCadastrado extends User {
   password?: string;
 }
@@ -183,7 +190,7 @@ export async function iniciarLogin(
       // Se o backend estiver offline ou o proxy retornar 502/offline em ambiente de desenvolvimento
       if (
         (res.status === 502 || errorData?.offline) &&
-        (import.meta.env.DEV || import.meta.env.MODE === 'development')
+        import.meta.env.DEV
       ) {
         console.warn(
           '[Auth] Backend offline. Utilizando simulação de autenticação (código OTP de teste: 123456).',
@@ -209,7 +216,7 @@ export async function iniciarLogin(
     if (error instanceof ServiceError) throw error;
 
     // Fallback caso a conexão direta ao host falhe (ECONNREFUSED / Failed to fetch)
-    if (import.meta.env.DEV || import.meta.env.MODE === 'development') {
+    if (import.meta.env.DEV) {
       console.warn(
         '[Auth] Falha de conexão com ms-auth-service. Utilizando simulação de autenticação (código OTP de teste: 123456).',
       );
@@ -236,7 +243,7 @@ export async function verificarCodigoLogin(
   const emailLimpo = dados.email.trim().toLowerCase();
 
   // Se o desafio atual for simulado (apenas em desenvolvimento)
-  const isDev = Boolean(import.meta.env.DEV || import.meta.env.MODE === 'development');
+  const isDev = import.meta.env.DEV;
   if (isDev && dados.challengeId.startsWith('mock-challenge-')) {
     return executarMockVerify(
       emailLimpo,
@@ -275,7 +282,7 @@ export async function verificarCodigoLogin(
 
       if (
         (res.status === 502 || errorData?.offline) &&
-        (import.meta.env.DEV || import.meta.env.MODE === 'development')
+        import.meta.env.DEV
       ) {
         return executarMockVerify(
           emailLimpo,
@@ -296,7 +303,7 @@ export async function verificarCodigoLogin(
     if (isAbortError(error)) throw error;
     if (error instanceof ServiceError) throw error;
 
-    if (import.meta.env.DEV || import.meta.env.MODE === 'development') {
+    if (import.meta.env.DEV) {
       return executarMockVerify(
         emailLimpo,
         dados.password,
@@ -353,7 +360,7 @@ export async function renovarToken(
   signal?: AbortSignal,
 ): Promise<KeycloakTokenResponse> {
   // Se for token simulado em desenvolvimento
-  const isDev = Boolean(import.meta.env.DEV || import.meta.env.MODE === 'development');
+  const isDev = import.meta.env.DEV;
   if (isDev && (refreshToken.includes('mockSignature') || refreshToken.startsWith('mock-'))) {
     return executarMockRefresh(refreshToken, signal);
   }
@@ -371,20 +378,20 @@ export async function renovarToken(
 
     if (!res.ok) {
       if (res.status === 401 || res.status === 400) {
-        throw new ServiceError('Sessão expirada. Faça login novamente.', res.status);
+        throw new SessaoExpiradaError(res.status);
       }
 
       const errorData = (await res.json().catch(() => null)) as { detail?: string; offline?: boolean } | null;
 
       if (
         (res.status === 502 || errorData?.offline) &&
-        (import.meta.env.DEV || import.meta.env.MODE === 'development')
+        import.meta.env.DEV
       ) {
         console.warn('[Auth] Backend offline durante renovação. Utilizando refresh mock.');
         return executarMockRefresh(refreshToken, signal);
       }
 
-      throw new ServiceError(errorData?.detail || 'Sessão expirada. Faça login novamente.', res.status);
+      throw new ServiceError(errorData?.detail || 'Não foi possível renovar a sessão. Tente novamente.', res.status);
     }
 
     return (await res.json()) as KeycloakTokenResponse;
@@ -392,7 +399,7 @@ export async function renovarToken(
     if (isAbortError(error)) throw error;
     if (error instanceof ServiceError) throw error;
 
-    if (import.meta.env.DEV || import.meta.env.MODE === 'development') {
+    if (import.meta.env.DEV) {
       console.warn('[Auth] Conexão falhou durante renovação de token. Utilizando refresh mock.');
       return executarMockRefresh(refreshToken, signal);
     }

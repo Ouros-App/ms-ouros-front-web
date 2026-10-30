@@ -60,17 +60,17 @@ export function useGraficosTelemetryConjunto(filtros: FiltrosDashboard) {
   const [status, setStatus] = useState<GraficoStatus>('carregando');
   const [mensagemErro, setMensagemErro] = useState('');
   const [tentativa, setTentativa] = useState(0);
-  const { periodo, estado, gerencia } = filtros;
+  const { periodo, estado, gerencia, enterpriseId } = filtros;
 
   useEffect(() => {
     const controller = new AbortController();
     setStatus('carregando');
 
-    Promise.allSettled([
-      getCorporateChartData('cost-distribution-buckets', { periodo, estado, gerencia }, controller.signal),
-      getCorporateChartData('cost-by-lot-size-cohort', { periodo, estado, gerencia }, controller.signal),
-      getCorporateChartData('cost-by-region', { periodo, estado, gerencia }, controller.signal),
-      getCorporateChartData('monthly-cost', { periodo, estado, gerencia }, controller.signal),
+    void Promise.allSettled([
+      getCorporateChartData('cost-distribution-buckets', { periodo, estado, gerencia, enterpriseId }, controller.signal),
+      getCorporateChartData('cost-by-lot-size-cohort', { periodo, estado, gerencia, enterpriseId }, controller.signal),
+      getCorporateChartData('cost-by-region', { periodo, estado, gerencia, enterpriseId }, controller.signal),
+      getCorporateChartData('monthly-cost', { periodo, estado, gerencia, enterpriseId }, controller.signal),
     ]).then(([distRes, cohortRes, regionRes, monthRes]) => {
       if (controller.signal.aborted) return;
 
@@ -96,7 +96,7 @@ export function useGraficosTelemetryConjunto(filtros: FiltrosDashboard) {
     });
 
     return () => controller.abort();
-  }, [periodo, estado, gerencia, tentativa]);
+  }, [periodo, estado, gerencia, enterpriseId, tentativa]);
 
   const recarregar = useCallback(() => setTentativa((n) => n + 1), []);
 

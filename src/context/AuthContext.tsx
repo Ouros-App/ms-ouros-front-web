@@ -24,10 +24,18 @@ interface AuthValue {
 // eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext<AuthValue | null>(null);
 
+function persistirUsuario(user: User): User {
+  const perfil = { ...user };
+  delete perfil.token;
+  delete perfil.refreshToken;
+  salvarArmazenado(CHAVE_SESSAO, perfil);
+  return perfil;
+}
+
 function restaurarSessao(): AuthState {
   const user = lerArmazenado<User>(CHAVE_SESSAO);
   if (user && typeof user.id === 'string' && typeof user.name === 'string') {
-    return { user, isAuthenticated: true };
+    return { user: persistirUsuario(user), isAuthenticated: true };
   }
   return authInitialState;
 }
@@ -36,7 +44,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const [state, dispatch] = useReducer(authReducer, authInitialState, restaurarSessao);
 
   const login = (user: User) => {
-    salvarArmazenado(CHAVE_SESSAO, user);
+    limparTokens();
+    persistirUsuario(user);
     if (user.token) {
       salvarTokens({
         accessToken: user.token,
@@ -50,7 +59,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
     (dados: Partial<User>) => {
       if (state.user) {
         const atualizado = { ...state.user, ...dados };
-        salvarArmazenado(CHAVE_SESSAO, atualizado);
+        persistirUsuario(atualizado);
         if (dados.token) {
           salvarTokens({
             accessToken: dados.token,
@@ -86,7 +95,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
       if (document.visibilityState === 'visible' && state.isAuthenticated) {
         const token = obterAccessToken();
         if (token && isTokenExpirado(token, 60)) {
-          void executarRenovacaoToken();
+          void executarRenovacaoToken().catch((error: unknown) => {
+            console.warn('Não foi possível renovar a sessão:', error);
+          });
         }
       }
     };

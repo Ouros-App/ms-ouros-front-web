@@ -12,6 +12,8 @@ interface NotificationResponse {
 
 interface Page<T> {
     content: T[];
+    totalPages?: number;
+    last?: boolean;
 }
 
 function paraNotificacao(dto: NotificationResponse): Notificacao {
@@ -35,12 +37,25 @@ export async function contarNaoLidas(signal?: AbortSignal): Promise<number> {
 }
 
 export async function listarNotificacoes(signal?: AbortSignal, size = 50, page = 0): Promise<Notificacao[]> {
-    const pagina = await springRequest<Page<NotificationResponse>>(
-        '/notifications',
-        { query: { page, size }, signal },
-        'Não foi possível carregar as notificações.',
-    );
-    return (pagina?.content ?? []).map(paraNotificacao);
+    const notificacoes: Notificacao[] = [];
+    let paginaAtual = page;
+    while (true) {
+        const pagina = await springRequest<Page<NotificationResponse>>(
+            '/notifications',
+            { query: { page: paginaAtual, size }, signal },
+            'Não foi possível carregar as notificações.',
+        );
+        const itens = pagina?.content ?? [];
+        notificacoes.push(...itens.map(paraNotificacao));
+        paginaAtual++;
+        if (itens.length === 0 || pagina?.last === true) break;
+        if (pagina?.totalPages !== undefined) {
+            if (paginaAtual >= pagina.totalPages) break;
+        } else if (pagina?.last === undefined && itens.length < size) {
+            break;
+        }
+    }
+    return notificacoes;
 }
 
 export async function marcarComoLida(id: number): Promise<Notificacao> {

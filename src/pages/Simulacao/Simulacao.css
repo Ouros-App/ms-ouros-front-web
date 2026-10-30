@@ -31,15 +31,19 @@
     padding: 24px 28px 40px 24px;
 }
 
-.simulacao-page__fundo{
+.simulacao-page__fundo {
     pointer-events: none;
     position: absolute;
-    right: 0;
-    bottom: 0;
-    width: 70%;
-    max-width: 720px;
-    opacity: 0.6;
+    top: 50%;
+    left: 50%;
+    width: 75%;
+    max-width: 900px;
+    height: auto;
+    transform: translate(-50%, -50%);
+    opacity: 0.35;
     user-select: none;
+    z-index: 0;
+    object-fit: contain;
 }
 
 .simulacao-page__topo{

@@ -18,11 +18,18 @@ export function Dialogo({ titulo, onFechar, children }: DialogoSimulacaoProps) {
             destino?.focus();
         };
     }, []);
+
+    useEffect(() => {
+        const dialogo = ref.current;
+        const fecharAoClicarFora = (evento: MouseEvent) => {
+            if (evento.target === dialogo) onFechar();
+        };
+        dialogo?.addEventListener('click', fecharAoClicarFora);
+        return () => dialogo?.removeEventListener('click', fecharAoClicarFora);
+    }, [onFechar]);
     
     return (
-    <dialog ref={ref} className="simulacao-dialogo" aria-labelledby={tituloId} onClose={onFechar} onClick={(evento) => {
-        if (evento.target === ref.current) onFechar();
-    }}>
+    <dialog ref={ref} className="simulacao-dialogo" aria-labelledby={tituloId} onClose={onFechar}>
         
         <div className="simulacao-dialogo__corpo">
             <div className="simulacao-dialogo__topo">

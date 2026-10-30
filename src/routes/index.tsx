@@ -6,6 +6,7 @@ import { PrivateRoute } from './PrivateRoute';
 const LoginPage = lazy(() => import('@/pages/Login'));
 const RegistrosPage = lazy(() => import('@/pages/Registros'));
 const RegistroDetalhePage = lazy(() => import('@/pages/RegistroDetalhe'));
+const MetasPage = lazy(() => import('@/pages/Metas'));
 const DashboardPage = lazy(() => import('@/pages/Dashboard'));
 const SimulacaoPage = lazy(() => import('@/pages/Simulacao'));
 const PerfilPage = lazy(() => import('@/pages/Perfil'));
@@ -47,6 +48,7 @@ export function AppRoutes() {
           </PrivateRoute>
         }
       />
+      <Route path="/metas" element={<PrivateRoute><MetasPage /></PrivateRoute>} />
       <Route
         path="/ranking"
         element={

@@ -38,7 +38,7 @@ export function usePerfil(){
             if(!perfil) return;
             const atualizado = await atualizarPerfil(perfil.id, dados);
             setPerfil(atualizado);
-            updateUser({name: atualizado.nome, avatarUrl: atualizado.avatarUrl ?? undefined});
+            updateUser({name: atualizado.nome, email: atualizado.email, avatarUrl: atualizado.avatarUrl ?? undefined,});
         },
         [perfil, updateUser],
     );

@@ -53,3 +53,9 @@ export function formatarMes(isoOuMes: string): string {
   }
   return isoOuMes;
 }
+
+export function formatarDataHora(iso: string): string{
+    const [data, hora = '00:00'] = iso.split('T');
+    const [ano, mes, dia] = data.split('-');
+    return `${dia}/${mes}/${ano} | ${hora.slice(0, 5)}`;
+}

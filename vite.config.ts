@@ -1,9 +1,13 @@
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'node:path';
+import { validarSpringApiUrl } from './src/utils/validarSpringApiUrl';
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ mode, command, isPreview }) => {
   const env = loadEnv(mode, process.cwd(), '');
+  if (command === 'build' && !isPreview) {
+    validarSpringApiUrl(env.VITE_SPRING_API_URL);
+  }
   const authTarget = env.VITE_AUTH_API_URL || 'https://ms-auth-service.discloud.app';
   const springTarget = env.VITE_SPRING_API_URL || 'http://localhost:8080';
   const telemetryTarget = env.VITE_TELEMETRY_API_URL || 'https://ouros-dashboard.discloud.app';
