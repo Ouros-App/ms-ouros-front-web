@@ -24,7 +24,7 @@ const rawSpringUrl = import.meta.env.DEV
   ? (import.meta.env.VITE_FORCE_DIRECT_SPRING === 'true'
       ? (import.meta.env.VITE_SPRING_API_URL || 'http://localhost:8080')
       : '/spring')
-  : (import.meta.env.VITE_SPRING_API_URL || 'http://localhost:8080');
+  : (import.meta.env.VITE_SPRING_API_URL || '');
 
 export const SPRING_API_URL = rawSpringUrl.replace(/\/+$/, '');
 

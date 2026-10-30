@@ -19,13 +19,13 @@ export function useGraficoTelemetry<K extends keyof DadosGraficosCorporativos>(
   const [status, setStatus] = useState<GraficoStatus>('carregando');
   const [mensagemErro, setMensagemErro] = useState('');
   const [tentativa, setTentativa] = useState(0);
-  const { periodo, estado, gerencia } = filtros;
+  const { periodo, estado, gerencia, enterpriseId } = filtros;
 
   useEffect(() => {
     const controller = new AbortController();
     setStatus('carregando');
 
-    getCorporateChartData(id, { periodo, estado, gerencia }, controller.signal)
+    getCorporateChartData(id, { periodo, estado, gerencia, enterpriseId }, controller.signal)
       .then((resultado) => {
         setDados(resultado);
         setStatus('pronto');
@@ -37,7 +37,7 @@ export function useGraficoTelemetry<K extends keyof DadosGraficosCorporativos>(
       });
 
     return () => controller.abort();
-  }, [id, periodo, estado, gerencia, tentativa]);
+  }, [id, periodo, estado, gerencia, enterpriseId, tentativa]);
 
   const recarregar = useCallback(() => setTentativa((n) => n + 1), []);
   return { dados, status, mensagemErro, recarregar };

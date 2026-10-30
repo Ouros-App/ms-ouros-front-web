@@ -11,9 +11,12 @@ import { lerArmazenado } from '@/utils/storage';
 import { claimsToUser, parseJwt } from './tokenService';
 
 export class ServiceError extends Error {
-  constructor(message: string) {
+  status?: number;
+
+  constructor(message: string, status?: number) {
     super(message);
     this.name = 'ServiceError';
+    this.status = status;
   }
 }
 
@@ -232,8 +235,9 @@ export async function verificarCodigoLogin(
 ): Promise<KeycloakTokenResponse> {
   const emailLimpo = dados.email.trim().toLowerCase();
 
-  // Se o desafio atual for simulado
-  if (dados.challengeId.startsWith('mock-challenge-')) {
+  // Se o desafio atual for simulado (apenas em desenvolvimento)
+  const isDev = Boolean(import.meta.env.DEV || import.meta.env.MODE === 'development');
+  if (isDev && dados.challengeId.startsWith('mock-challenge-')) {
     return executarMockVerify(
       emailLimpo,
       dados.password,
@@ -349,10 +353,8 @@ export async function renovarToken(
   signal?: AbortSignal,
 ): Promise<KeycloakTokenResponse> {
   // Se for token simulado em desenvolvimento
-  if (
-    refreshToken.includes('mockSignature') ||
-    ((import.meta.env.DEV || import.meta.env.MODE === 'development') && refreshToken.startsWith('mock-'))
-  ) {
+  const isDev = Boolean(import.meta.env.DEV || import.meta.env.MODE === 'development');
+  if (isDev && (refreshToken.includes('mockSignature') || refreshToken.startsWith('mock-'))) {
     return executarMockRefresh(refreshToken, signal);
   }
 
@@ -369,7 +371,7 @@ export async function renovarToken(
 
     if (!res.ok) {
       if (res.status === 401 || res.status === 400) {
-        throw new ServiceError('Sessão expirada. Faça login novamente.');
+        throw new ServiceError('Sessão expirada. Faça login novamente.', res.status);
       }
 
       const errorData = (await res.json().catch(() => null)) as { detail?: string; offline?: boolean } | null;
@@ -382,7 +384,7 @@ export async function renovarToken(
         return executarMockRefresh(refreshToken, signal);
       }
 
-      throw new ServiceError(errorData?.detail || 'Sessão expirada. Faça login novamente.');
+      throw new ServiceError(errorData?.detail || 'Sessão expirada. Faça login novamente.', res.status);
     }
 
     return (await res.json()) as KeycloakTokenResponse;

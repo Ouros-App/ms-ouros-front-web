@@ -8,13 +8,13 @@ export function useIndicadoresDashboard(filtros: FiltrosDashboard) {
   const [status, setStatus] = useState<DashboardStatus>('carregando');
   const [mensagemErro, setMensagemErro] = useState('');
   const [tentativa, setTentativa] = useState(0);
-  const { periodo, estado, gerencia } = filtros;
+  const { periodo, estado, gerencia, enterpriseId } = filtros;
 
   useEffect(() => {
     const controller = new AbortController();
     setStatus('carregando');
 
-    getCorporateKpis({ periodo, estado, gerencia }, controller.signal)
+    getCorporateKpis({ periodo, estado, gerencia, enterpriseId }, controller.signal)
       .then((dados) => {
         setIndicadores(dados);
         setStatus('pronto');
@@ -28,7 +28,7 @@ export function useIndicadoresDashboard(filtros: FiltrosDashboard) {
       });
 
     return () => controller.abort();
-  }, [periodo, estado, gerencia, tentativa]);
+  }, [periodo, estado, gerencia, enterpriseId, tentativa]);
 
   const recarregar = useCallback(() => setTentativa((n) => n + 1), []);
 

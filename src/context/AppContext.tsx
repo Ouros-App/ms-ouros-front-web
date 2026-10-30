@@ -7,6 +7,7 @@ interface AppValue {
   setTitle: (v: string) => void;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const AppContext = createContext<AppValue | null>(null);
 
 export function AppProvider({ children }: PropsWithChildren) {

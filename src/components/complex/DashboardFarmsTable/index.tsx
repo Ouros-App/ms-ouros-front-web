@@ -6,11 +6,16 @@ import './DashboardFarmsTable.css';
 
 interface DashboardFarmsTableProps {
   enterpriseId?: number | null;
+  state?: string;
+  management?: string;
+  period?: string;
 }
 
-export function DashboardFarmsTable({ enterpriseId }: DashboardFarmsTableProps) {
+export function DashboardFarmsTable({ enterpriseId, state, management, period }: DashboardFarmsTableProps) {
   const [granjas, setGranjas] = useState<FarmSummaryItem[]>([]);
   const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState<string | null>(null);
+  const [tentativa, setTentativa] = useState(0);
   const [busca, setBusca] = useState('');
   const [pagina, setPagina] = useState(1);
   const [total, setTotal] = useState(0);
@@ -18,6 +23,7 @@ export function DashboardFarmsTable({ enterpriseId }: DashboardFarmsTableProps) 
   useEffect(() => {
     const controller = new AbortController();
     setCarregando(true);
+    setErro(null);
 
     getCorporateFarms(
       {
@@ -25,6 +31,9 @@ export function DashboardFarmsTable({ enterpriseId }: DashboardFarmsTableProps) 
         page: pagina,
         limit: 10,
         enterpriseId: enterpriseId ?? undefined,
+        state: state || undefined,
+        management: management || undefined,
+        month: period || undefined,
       },
       controller.signal,
     )
@@ -35,13 +44,16 @@ export function DashboardFarmsTable({ enterpriseId }: DashboardFarmsTableProps) 
       .catch((err) => {
         if (controller.signal.aborted || isAbortError(err)) return;
         console.warn('Falha ao carregar tabela de granjas:', err);
+        setGranjas([]);
+        setTotal(0);
+        setErro('Não foi possível carregar os dados das granjas.');
       })
       .finally(() => {
         if (!controller.signal.aborted) setCarregando(false);
       });
 
     return () => controller.abort();
-  }, [busca, pagina, enterpriseId]);
+  }, [busca, pagina, enterpriseId, state, management, period, tentativa]);
 
   return (
     <section className="dashboard-farms-table" aria-label="Tabela Corporativa de Granjas">
@@ -66,6 +78,17 @@ export function DashboardFarmsTable({ enterpriseId }: DashboardFarmsTableProps) 
 
       {carregando ? (
         <p className="dashboard-farms-table__info">Carregando dados das granjas...</p>
+      ) : erro ? (
+        <div className="dashboard-farms-table__info">
+          <p>{erro}</p>
+          <button
+            type="button"
+            className="dashboard-farms-table__btn"
+            onClick={() => setTentativa((n) => n + 1)}
+          >
+            Tentar novamente
+          </button>
+        </div>
       ) : granjas.length === 0 ? (
         <p className="dashboard-farms-table__info">Nenhuma granja encontrada.</p>
       ) : (

@@ -2,11 +2,14 @@ import { useEffect, useState } from 'react';
 import { Sidebar } from '@/components/complex/Sidebar';
 import { PerfilUsuario } from '@/components/complex/PerfilUsuario';
 import { SeletorEmpresaAdm } from '@/components/complex/SeletorEmpresaAdm';
+import { useAdminEnterprise } from '@/context/AdminEnterpriseContext';
+import { listarGranjas } from '@/services/farmService';
 import { listarTodasTarefas, type TarefaMeta } from '@/services/tarefasService';
 import { isAbortError } from '@/utils/delay';
 import './Tarefas.css';
 
 export default function TarefasPage() {
+  const { empresaSelecionada } = useAdminEnterprise();
   const [tarefas, setTarefas] = useState<TarefaMeta[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [filtroTipo, setFiltroTipo] = useState<'todas' | 'estadual' | 'individual'>('todas');
@@ -15,9 +18,20 @@ export default function TarefasPage() {
     const controller = new AbortController();
     setCarregando(true);
 
-    listarTodasTarefas(controller.signal)
-      .then((dados) => {
-        setTarefas(dados);
+    Promise.all([
+      listarTodasTarefas(controller.signal),
+      empresaSelecionada ? listarGranjas(controller.signal) : Promise.resolve([]),
+    ])
+      .then(([dados, granjas]) => {
+        if (empresaSelecionada && granjas.length > 0) {
+          const granjasEmpresa = granjas.filter((g) => g.idEnterprise === empresaSelecionada);
+          const farmIds = new Set(granjasEmpresa.map((g) => g.id));
+          setTarefas(
+            dados.filter((t) => t.tipo === 'estadual' || (t.idFarm != null && farmIds.has(t.idFarm))),
+          );
+        } else {
+          setTarefas(dados);
+        }
       })
       .catch((err) => {
         if (controller.signal.aborted || isAbortError(err)) return;
@@ -28,7 +42,7 @@ export default function TarefasPage() {
       });
 
     return () => controller.abort();
-  }, []);
+  }, [empresaSelecionada]);
 
   const tarefasFiltradas = tarefas.filter((t) => {
     if (filtroTipo === 'todas') return true;

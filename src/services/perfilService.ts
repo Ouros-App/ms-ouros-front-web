@@ -66,7 +66,11 @@ export async function atualizarPerfil(id: string, dados: PerfilAtualizacao): Pro
         if (dados.novaSenha) corpo.password = dados.novaSenha;
         // photo_url aceita no máximo 500 caracteres: data-URLs (base64) não são enviadas ao backend.
         const fotoPersistivel = dados.avatarUrl !== null && URL_HTTP.test(dados.avatarUrl);
-        if (fotoPersistivel && dados.avatarUrl) corpo.photo_url = dados.avatarUrl;
+        if (fotoPersistivel && dados.avatarUrl) {
+            corpo.photo_url = dados.avatarUrl;
+        } else if (dados.avatarUrl === null) {
+            corpo.photo_url = '';
+        }
 
         const dto = await springRequest<CompanyEmployeeResponse>(
             `/company-employees/${encodeURIComponent(id)}`,
@@ -75,7 +79,9 @@ export async function atualizarPerfil(id: string, dados: PerfilAtualizacao): Pro
         );
         const perfil = paraPerfil(dto);
         // Foto local (data-URL) vale apenas durante a sessão enquanto o backend não suporta upload.
-        return fotoPersistivel ? perfil : { ...perfil, avatarUrl: dados.avatarUrl ?? perfil.avatarUrl };
+        return fotoPersistivel
+            ? perfil
+            : { ...perfil, avatarUrl: dados.avatarUrl === null ? null : (dados.avatarUrl ?? perfil.avatarUrl) };
     } catch (error) {
         throw falhar(error, 'Não foi possível salvar o perfil.');
     }

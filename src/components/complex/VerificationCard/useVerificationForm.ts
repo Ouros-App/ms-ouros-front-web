@@ -6,6 +6,8 @@ interface UseVerificationFormOptions {
 
 export function useVerificationForm({ onComplete }: UseVerificationFormOptions = {}) {
   const [digits, setDigits] = useState<string[]>(['', '', '', '', '', '']);
+  const digitsRef = useRef<string[]>(digits);
+  digitsRef.current = digits;
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const registerInputRef = useCallback((el: HTMLInputElement | null, index: number) => {
@@ -24,53 +26,45 @@ export function useVerificationForm({ onComplete }: UseVerificationFormOptions =
       const sanitized = rawValue.replace(/\D/g, '');
 
       if (!sanitized) {
-        setDigits((prev) => {
-          const next = [...prev];
-          next[index] = '';
-          return next;
-        });
+        const next = [...digitsRef.current];
+        next[index] = '';
+        setDigits(next);
         return;
       }
 
       if (sanitized.length === 1) {
-        setDigits((prev) => {
-          const next = [...prev];
-          next[index] = sanitized;
+        const next = [...digitsRef.current];
+        next[index] = sanitized;
+        setDigits(next);
 
-          if (index < 5) {
-            window.requestAnimationFrame(() => {
-              inputRefs.current[index + 1]?.focus();
-            });
-          }
-
-          if (next.every((d) => d.length === 1)) {
-            onComplete?.(next.join(''));
-          }
-
-          return next;
-        });
-        return;
-      }
-
-      // Colar múltiplos dígitos direto no input
-      setDigits((prev) => {
-        const next = [...prev];
-        const chars = sanitized.slice(0, 6);
-        for (let i = 0; i < chars.length && index + i < 6; i++) {
-          next[index + i] = chars[i];
+        if (index < 5) {
+          window.requestAnimationFrame(() => {
+            inputRefs.current[index + 1]?.focus();
+          });
         }
-
-        const nextFocus = Math.min(5, index + chars.length);
-        window.requestAnimationFrame(() => {
-          inputRefs.current[nextFocus]?.focus();
-        });
 
         if (next.every((d) => d.length === 1)) {
           onComplete?.(next.join(''));
         }
+        return;
+      }
 
-        return next;
+      // Colar múltiplos dígitos direto no input
+      const next = [...digitsRef.current];
+      const chars = sanitized.slice(0, 6);
+      for (let i = 0; i < chars.length && index + i < 6; i++) {
+        next[index + i] = chars[i];
+      }
+      setDigits(next);
+
+      const nextFocus = Math.min(5, index + chars.length);
+      window.requestAnimationFrame(() => {
+        inputRefs.current[nextFocus]?.focus();
       });
+
+      if (next.every((d) => d.length === 1)) {
+        onComplete?.(next.join(''));
+      }
     },
     [onComplete],
   );
@@ -111,23 +105,20 @@ export function useVerificationForm({ onComplete }: UseVerificationFormOptions =
       const pasted = event.clipboardData.getData('text/plain').replace(/\D/g, '').slice(0, 6);
       if (!pasted) return;
 
-      setDigits(() => {
-        const next = ['', '', '', '', '', ''];
-        for (let i = 0; i < pasted.length; i++) {
-          next[i] = pasted[i];
-        }
+      const next = ['', '', '', '', '', ''];
+      for (let i = 0; i < pasted.length; i++) {
+        next[i] = pasted[i];
+      }
+      setDigits(next);
 
-        const nextFocus = Math.min(5, pasted.length);
-        window.requestAnimationFrame(() => {
-          inputRefs.current[nextFocus]?.focus();
-        });
-
-        if (next.every((d) => d.length === 1)) {
-          onComplete?.(next.join(''));
-        }
-
-        return next;
+      const nextFocus = Math.min(5, pasted.length);
+      window.requestAnimationFrame(() => {
+        inputRefs.current[nextFocus]?.focus();
       });
+
+      if (next.every((d) => d.length === 1)) {
+        onComplete?.(next.join(''));
+      }
     },
     [onComplete],
   );

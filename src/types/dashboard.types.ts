@@ -2,6 +2,7 @@ export interface FiltrosDashboard {
   periodo: string;
   estado: string;
   gerencia?: string;
+  enterpriseId?: number | null;
 }
 
 export interface OpcaoFiltro {

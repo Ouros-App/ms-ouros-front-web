@@ -17,7 +17,11 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const { empresaSelecionada } = useAdminEnterprise();
   const { filtros, setFiltros, opcoes, carregandoOpcoes } = useFiltrosDashboard();
-  const indicadores = useIndicadoresDashboard(filtros);
+  const filtrosEfetivos = {
+    ...filtros,
+    enterpriseId: empresaSelecionada,
+  };
+  const indicadores = useIndicadoresDashboard(filtrosEfetivos);
   const isAdmin = user?.role === 'admin' || user?.accountType === 'admin';
 
   return (
@@ -59,10 +63,15 @@ export default function DashboardPage() {
             onRecarregar={indicadores.recarregar}
           />
 
-          <GraficosDashboard filtros={filtros} />
+          <GraficosDashboard filtros={filtrosEfetivos} />
 
           {/* Tabela Corporativa de Granjas integrada ao Telemetry Service */}
-          <DashboardFarmsTable enterpriseId={empresaSelecionada} />
+          <DashboardFarmsTable
+            enterpriseId={empresaSelecionada}
+            state={filtros.estado !== 'todos' ? filtros.estado : undefined}
+            management={filtros.gerencia !== 'todas' && filtros.gerencia !== 'Todas' ? filtros.gerencia : undefined}
+            period={filtros.periodo !== 'todos' ? filtros.periodo : undefined}
+          />
 
           {/* Painel de Métricas de IA Midas exclusivo para ADM */}
           {isAdmin && <DashboardAiMetrics enterpriseId={empresaSelecionada} />}

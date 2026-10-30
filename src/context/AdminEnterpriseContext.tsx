@@ -56,6 +56,7 @@ export function AdminEnterpriseProvider({ children }: PropsWithChildren) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAdminEnterprise() {
   return useContext(AdminEnterpriseContext);
 }

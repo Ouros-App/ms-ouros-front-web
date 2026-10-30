@@ -34,10 +34,10 @@ export async function contarNaoLidas(signal?: AbortSignal): Promise<number> {
     return dto?.unread_count ?? 0;
 }
 
-export async function listarNotificacoes(signal?: AbortSignal, size = 20): Promise<Notificacao[]> {
+export async function listarNotificacoes(signal?: AbortSignal, size = 50, page = 0): Promise<Notificacao[]> {
     const pagina = await springRequest<Page<NotificationResponse>>(
         '/notifications',
-        { query: { page: 0, size }, signal },
+        { query: { page, size }, signal },
         'Não foi possível carregar as notificações.',
     );
     return (pagina?.content ?? []).map(paraNotificacao);

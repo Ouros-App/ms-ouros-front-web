@@ -19,12 +19,21 @@ export default function RankingPage() {
     const controller = new AbortController();
     setCarregando(true);
 
-    Promise.all([
-      obterRankingGeral(empresaSelecionada ?? undefined, controller.signal),
-      obterPodioRanking(1, controller.signal),
-    ])
-      .then(([itensRanking, itensPodio]) => {
+    obterRankingGeral(empresaSelecionada ?? undefined, controller.signal)
+      .then(async (itensRanking) => {
         setRanking(itensRanking);
+        const topFarmId = itensRanking[0]?.idFarm;
+        let itensPodio: RankingItem[] = [];
+        if (topFarmId) {
+          try {
+            itensPodio = await obterPodioRanking(topFarmId, controller.signal);
+          } catch {
+            itensPodio = [];
+          }
+        }
+        if (!itensPodio || itensPodio.length === 0) {
+          itensPodio = itensRanking.slice(0, 3);
+        }
         setPodio(itensPodio);
       })
       .catch((err) => {

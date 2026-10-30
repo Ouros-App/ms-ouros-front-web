@@ -102,7 +102,11 @@ export function obterRefreshToken(): string | null {
   return lerArmazenado<string>(CHAVE_REFRESH_TOKEN);
 }
 
+let versaoSessao = 0;
+
 export function limparTokens(): void {
+  versaoSessao++;
+  promessaRenovacaoEmAndamento = null;
   removerArmazenado(CHAVE_TOKEN);
   removerArmazenado(CHAVE_REFRESH_TOKEN);
 }
@@ -144,7 +148,9 @@ export async function executarRenovacaoToken(): Promise<string | null> {
     return promessaRenovacaoEmAndamento;
   }
 
-  promessaRenovacaoEmAndamento = (async () => {
+  const versaoAtual = versaoSessao;
+
+  const promessa = (async () => {
     const refreshToken = obterRefreshToken();
     if (!refreshToken) {
       notificarSessaoExpirada();
@@ -155,6 +161,10 @@ export async function executarRenovacaoToken(): Promise<string | null> {
       const { renovarToken } = await import('./authService');
       const response = await renovarToken(refreshToken);
 
+      if (versaoAtual !== versaoSessao) {
+        return null;
+      }
+
       salvarTokens({
         accessToken: response.access_token,
         refreshToken: response.refresh_token,
@@ -162,7 +172,7 @@ export async function executarRenovacaoToken(): Promise<string | null> {
 
       // Atualiza a sessão persistida do usuário se existir
       const sessaoAtual = lerArmazenado<User>(CHAVE_SESSAO);
-      if (sessaoAtual) {
+      if (sessaoAtual && versaoAtual === versaoSessao) {
         salvarArmazenado(CHAVE_SESSAO, {
           ...sessaoAtual,
           token: response.access_token,
@@ -171,7 +181,7 @@ export async function executarRenovacaoToken(): Promise<string | null> {
       }
 
       // Notifica as abas e componentes sobre o novo token
-      if (typeof window !== 'undefined') {
+      if (typeof window !== 'undefined' && versaoAtual === versaoSessao) {
         window.dispatchEvent(
           new CustomEvent('auth:token_refreshed', {
             detail: {
@@ -183,13 +193,25 @@ export async function executarRenovacaoToken(): Promise<string | null> {
       }
 
       return response.access_token;
-    } catch {
+    } catch (error: unknown) {
+      if (versaoAtual !== versaoSessao) {
+        return null;
+      }
+      const { ServiceError } = await import('./authService');
+      if (error instanceof ServiceError && error.status && error.status !== 400 && error.status !== 401 && error.status !== 403) {
+        return null;
+      }
       notificarSessaoExpirada();
       return null;
-    } finally {
-      promessaRenovacaoEmAndamento = null;
     }
   })();
 
-  return promessaRenovacaoEmAndamento;
+  promessaRenovacaoEmAndamento = promessa;
+  void promessa.finally(() => {
+    if (promessaRenovacaoEmAndamento === promessa) {
+      promessaRenovacaoEmAndamento = null;
+    }
+  });
+
+  return promessa;
 }
