@@ -132,7 +132,7 @@ export function SimulacaoModal({ simulacao, onFechar, onSalvar }: SimulacaoModal
                 Cancelar
             </button>
 
-            <button type="submit" className="simulacoes-botao" disabled={enviando}>
+            <button type="submit" className="simulacoes-botao--salavar" disabled={enviando}>
                 {enviando ? 'Salvando...' : 'Salvar'}
             </button>
         </div>

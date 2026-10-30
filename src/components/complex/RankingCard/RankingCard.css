@@ -1,0 +1,351 @@
+.ranking-card{
+  position: relative;
+  z-index: 1;
+  border: 1px solid #e6e9f2;
+  border-radius: 14px;
+  background: #ffffff;
+  padding: 24px 18px;
+  box-shadow: 0 10px 30px rgba(10, 20, 80, 0.08);
+  font-family: 'Poppins', sans-serif;
+}
+  
+.ranking-card__oculto{
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+  
+.ranking-card__ferramentas{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 22px;
+}
+  
+.ranking-card__busca{
+  position: relative;
+  flex: 1 1 240px;
+  max-width: 250px;
+}
+  
+.ranking-card__lupa{
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    color: #6b7280;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+  
+  .ranking-card__campo {
+    width: 100%;
+    height: 38px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    background: #f3f4f6;
+    padding: 0 12px 0 32px;
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 0.8rem;
+  }
+  
+  .ranking-card__campo::placeholder {
+    color: #6b7280;
+  }
+  
+  .ranking-card__ordenar {
+    width: 190px;
+    max-width: 100%;
+    height: 38px;
+    border: 1px solid var(--gold-border);
+    border-radius: 6px;
+    background: #ffffff;
+    padding: 0 10px;
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+  
+  .ranking-botao {
+    display: inline-flex;
+    min-height: 38px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--gold-border);
+    border-radius: 6px;
+    background: #deab55;
+    padding: 0 18px;
+    color: #1a1a1a;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  
+  .ranking-botao:hover:not(:disabled) {
+    background: #d49d3f;
+  }
+  
+  .ranking-botao:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+  
+  .ranking-botao--secundario {
+    background: #ffffff;
+    color: var(--ink);
+    border-color: #cbd5e1;
+  }
+  
+  .ranking-botao--secundario:hover:not(:disabled) {
+    background: #f1f5f9;
+  }
+  
+  .ranking-botao--perigo {
+    background: var(--danger);
+    border-color: var(--danger);
+    color: #ffffff;
+  }
+  
+  .ranking-botao--perigo:hover:not(:disabled) {
+    background: #991b1b;
+  }
+  
+  .ranking-card__estado {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin: 32px 0;
+    color: var(--ink-soft);
+    font-size: 0.9rem;
+    text-align: center;
+  }
+  
+  .ranking-tabela__moldura {
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+  }
+  
+  .ranking-tabela__rolagem {
+    overflow-x: auto;
+  }
+  
+  .ranking-tabela {
+    width: 100%;
+    min-width: 760px;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+    text-align: center;
+  }
+  
+  .ranking-tabela thead th {
+    background: #f3f4f6;
+    padding: 12px 8px;
+    color: #4b5563;
+    font-weight: 500;
+    border-right: 1px solid #e5e7eb;
+  }
+  
+  .ranking-tabela thead th:last-child {
+    border-right: 0;
+  }
+  
+  .ranking-tabela tbody td {
+    height: 52px;
+    padding: 0 8px;
+    border-right: 1px solid #eef0f4;
+    color: #111827;
+    font-weight: 600;
+  }
+  
+  .ranking-tabela tbody td:last-child {
+    border-right: 0;
+  }
+  
+  .ranking-tabela__vazio {
+    height: 90px;
+    color: var(--ink-soft);
+    font-weight: 400;
+  }
+  
+  .ranking-tabela__participante,
+  .ranking-tabela__liga {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+  }
+  
+  .ranking-tabela__participante {
+    width: 170px;
+  }
+  
+  .ranking-tabela__liga {
+    width: 90px;
+  }
+  
+  .ranking-tabela__avatar {
+    display: inline-block;
+    height: 24px;
+    width: 24px;
+    border-radius: 50%;
+    background: #fbcfe8;
+  }
+  
+  .ranking-tabela__ponto {
+    display: inline-block;
+    height: 14px;
+    width: 14px;
+    border-radius: 50%;
+  }
+  
+  .ranking-tabela__acoes {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+  
+  .ranking-tabela__acao {
+    display: inline-flex;
+    height: 32px;
+    width: 32px;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #111827;
+    cursor: pointer;
+  }
+  
+  .ranking-tabela__acao:hover {
+    background: #f1f5f9;
+  }
+  
+  .ranking-dialogo {
+    width: min(520px, calc(100vw - 32px));
+    max-height: calc(100vh - 32px);
+    border: 0;
+    border-radius: 14px;
+    padding: 0;
+    color: var(--ink);
+    font-family: 'Poppins', sans-serif;
+    box-shadow: 0 24px 60px rgba(2, 10, 46, 0.35);
+  }
+  
+  .ranking-dialogo::backdrop {
+    background: rgba(2, 10, 46, 0.55);
+  }
+  
+  .ranking-dialogo__corpo {
+    padding: 22px 24px 24px;
+  }
+  
+  .ranking-dialogo__topo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+  
+  .ranking-dialogo__titulo {
+    margin: 0;
+    color: var(--indigo);
+    font-size: 1.15rem;
+    font-weight: 700;
+  }
+  
+  .ranking-dialogo__fechar {
+    display: inline-flex;
+    height: 36px;
+    width: 36px;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--ink);
+    font-size: 1.6rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+  
+  .ranking-dialogo__fechar:hover {
+    background: #f1f5f9;
+  }
+  
+  .ranking-form__grade {
+    display: grid;
+    gap: 14px;
+  }
+  
+  @media (min-width: 520px) {
+    .ranking-form__grade {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  
+  .ranking-form__campo {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 6px;
+  }
+  
+  .ranking-form__rotulo {
+    color: var(--ink);
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  
+  .ranking-form__input {
+    width: 100%;
+    box-sizing: border-box;
+    height: 40px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #ffffff;
+    padding: 0 12px;
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 0.9rem;
+  }
+  
+  .ranking-form__input--erro {
+    border-color: var(--danger);
+  }
+  
+  .ranking-form__erro,
+  .ranking-form__falha {
+    margin: 0;
+    color: var(--danger);
+    font-size: 0.75rem;
+  }
+  
+  .ranking-form__falha {
+    margin-top: 14px;
+    font-size: 0.85rem;
+  }
+  
+  .ranking-form__texto {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+  
+  .ranking-form__acoes {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 22px;
+  }

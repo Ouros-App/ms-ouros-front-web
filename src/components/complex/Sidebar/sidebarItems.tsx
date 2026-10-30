@@ -54,8 +54,8 @@ export const ItensPrincipais: SidebarItem[] = [
         ),
     },
     {
-        rotulo: 'Tarefas',
-        caminho: '/tarefas',
+        rotulo: 'Metas',
+        caminho: '/metas',
         icone: (
             <svg {...props}>
                 <circle cx="12" cy="12" r="9" />

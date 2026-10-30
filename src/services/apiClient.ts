@@ -7,6 +7,13 @@ import {
   obterRefreshToken,
 } from './tokenService';
 
+export class ApiRequestError extends Error {
+  constructor(readonly status: number) {
+    super(`API request failed with status ${status}`);
+    this.name = 'ApiRequestError';
+  }
+}
+
 /**
  * Wrapper de fetch com injeção de Bearer Token e renovação automática via refresh_token.
  * - Antes da requisição: se o token existir e estiver expirado/quase expirando, renova preventivamente.

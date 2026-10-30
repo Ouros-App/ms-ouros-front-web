@@ -48,7 +48,7 @@ export function PerfilForm({ perfil, onSalvar, onSair }: PerfilFormProps) {
 
         <form className="perfil-form__corpo" onSubmit={enviar} noValidate>
             <CampoPerfil id="perfil-nome" rotulo="Nome" value={values.nome} onChange={(valor) => change('nome', valor)} erro={errors.nome} autoComplete="name" maxLength={80} desabilitado={enviando}/>
-            <CampoPerfil id="perfil-email" rotulo="Email" tipo="email" value={perfil.email} somenteLeitura />
+            <CampoPerfil id="perfil-email" rotulo="Email" tipo="email" value={values.email} onChange={(valor) => change('email', valor)} erro={errors.email} autoComplete="email" maxLength={120} desabilitado={enviando} />
             
             <div className="perfil-form__dupla">
                 <CampoPerfil id="perfil-cpf" rotulo="CPF" value={mascaraCpf(perfil.cpf)} somenteLeitura />

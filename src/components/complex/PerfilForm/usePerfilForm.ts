@@ -4,8 +4,13 @@ import { mascaraTelefone } from '@/utils/mascaras';
 import { validatePerfil } from '@/utils/perfilValidators';
 import { sanitizeText } from '@/utils/sanitizers';
 
-function iniciais(perfil: Perfil): PerfilValores{
-    return { nome: perfil.nome, telefone: perfil.telefone, senha: '' };
+function iniciais(perfil: Perfil): PerfilValores {
+    return {
+        nome: perfil.nome,
+        email: perfil.email,
+        telefone: perfil.telefone,
+        senha: '',
+    };
 }
 
 export function usePerfilForm(perfil: Perfil){
@@ -29,6 +34,7 @@ const validar = (): PerfilDadosFormulario | null => {
     
     return{
         nome: sanitizeText(values.nome.trim()),
+        email: values.email.trim().toLowerCase(),
         telefone: mascaraTelefone(values.telefone),
         novaSenha: values.senha,
     };

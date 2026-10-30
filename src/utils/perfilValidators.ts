@@ -23,6 +23,14 @@ export function validatePerfil(values: PerfilValores): PerfilErros{
     else if (!/^\p{L}[\p{L} '.-]*$/u.test(nome)){
     errors.nome = 'Use apenas letras, espaços, apóstrofo, ponto e hífen.';
     }
+
+    const email = values.email.trim();
+    if (!email){
+        errors.email = 'Informe seu e-mail.'
+    } 
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        errors.email = 'Informe um e-mail válido.';
+    }
     
     const digitosTelefone = apenasDigitos(values.telefone);
     if (!isRequired(values.telefone)){
