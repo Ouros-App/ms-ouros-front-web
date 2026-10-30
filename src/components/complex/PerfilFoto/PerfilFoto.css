@@ -1,0 +1,111 @@
+.perfil-foto{
+    font-family: 'Poppins', sans-serif;
+}
+
+.perfil-foto__moldura{
+    position: relative;
+    display: flex;
+    width: 400px;
+    height: 640px;
+    min-height: 480px;
+    align-items: flex-end;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 11px;
+    background: #dba536;
+    padding-bottom: 12px;
+    top: 70px;
+    margin-left: 70px;
+}
+
+.perfil-foto__imagem{
+    position: absolute;
+    inset: 0;
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+}
+
+.perfil-foto__asa{
+    position: absolute;
+    top: 15%;
+    left: 50%;
+    width: 78%;
+    height: 65%;
+    object-fit: contain;
+    transform: translateX(-50%);
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+.perfil-foto__acoes{
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 10px;
+}
+
+.perfil-foto__arquivo{
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    opacity: 0;
+}
+
+.perfil-foto__botao {
+    min-height: 27px;
+    border: 1px solid #14113f;
+    border-radius: 999px;
+    background: #14113f;
+    padding: 0 13px;
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 0.68rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.perfil-foto__botao:hover:not(:disabled){
+    background: #241f66;
+}
+
+.perfil-foto__asa{
+    position: absolute;
+    top: 16%;
+    left: 50%;
+    width: 78%;
+    height: 65%;
+    object-fit: contain;
+    transform: translateX(-50%);
+    opacity: 0.3;
+    filter: brightness(0) invert(1);
+    pointer-events: none;
+}
+
+.perfil-foto__botao:disabled{
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.perfil-foto__botao--secundario{
+    border-color: #ffffff;
+    background: rgba(255, 255, 255, 0.9);
+    color: #14113f;
+}
+
+.perfil-foto__botao--secundario:hover:not(:disabled){
+    background: #ffffff;
+}
+
+.perfil-foto__erro{
+    margin: 10px 0 0;
+    color: var(--danger);
+    font-size: 0.78rem;
+}

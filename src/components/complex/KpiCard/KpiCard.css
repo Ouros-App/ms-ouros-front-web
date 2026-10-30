@@ -1,0 +1,38 @@
+.kpi-card{
+    min-width: 0;
+    border-radius: 10px;
+    background: linear-gradient(100deg, #0b0b45 0%, #1c1a78 65%, #0e0e50 100%);
+    padding: 16px 20px;
+    color: #ffffff;
+    font-family: 'Poppins', sans-serif;
+    box-shadow: 0 8px 22px rgba(10, 10, 80, 0.25);
+}
+
+.kpi-card__rotulo{
+    margin: 0;
+    color: #e2e8f0;
+    font-size: 0.65rem;
+    font-weight: 400;
+}
+
+.kpi-card__valor{
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    margin: 2px 0 0;
+    font-size: 1.45rem;
+    font-weight: 600;
+    line-height: 1.15;
+}
+
+.kpi-card__prefixo{
+    font-size: 0.65rem;
+    font-weight: 500;
+}
+
+.kpi-card__descricao{
+    margin: 2px 0 0;
+    color: #f1f5f9;
+    font-size: 0.7rem;
+    font-weight: 400;
+}

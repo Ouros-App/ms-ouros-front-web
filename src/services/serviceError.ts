@@ -1,0 +1,1 @@
+export { ServiceError } from './authService';

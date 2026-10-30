@@ -1,44 +1,106 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/common/Button/Button';
-import { Input } from '@/components/common/Input/Input';
+import { Navigate, useLocation } from 'react-router-dom';
+import { LoginCard } from '@/components/complex/LoginCard';
+import { PasswordResetFlow } from '@/components/complex/PasswordResetFlow';
+import { VerificationCard } from '@/components/complex/VerificationCard';
 import { useAuth } from '@/hooks/useAuth';
-import { isEmail, isRequired } from '@/utils/validators';
+import { useLogin } from '@/hooks/useLogin';
+import { efeitoDireito, efeitoEsquerdo, logo, mascote } from './LoginAssets';
+import { destaques } from './LoginContent';
+import './Login.css';
+
+interface LoginLocationState {
+  from?: string;
+}
 
 export default function LoginPage() {
-  const nav = useNavigate();
-  const { login } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const { isAuthenticated } = useAuth();
+  const location = useLocation();
+  const [redefinindoSenha, setRedefinindoSenha] = useState(false);
+  const {
+    step,
+    status,
+    message,
+    pendingChallenge,
+    submitCredentials,
+    submitOtp,
+    resendOtp,
+    backToCredentials,
+  } = useLogin();
 
-  function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!isEmail(email) || !isRequired(password)) return;
+  const redirectTo = (location.state as LoginLocationState | null)?.from ?? '/ranking';
 
-    login({ id: '1', name: 'Demo User', email, role: 'admin', token: 'token' });
-    nav('/');
+  if (isAuthenticated) {
+    return <Navigate to={redirectTo} replace />;
   }
 
   return (
-    <section className="mx-auto flex min-h-[70vh] max-w-md items-center px-6 py-12">
-      <form
-        onSubmit={onSubmit}
-        className="w-full rounded-3xl border border-slate-800 bg-slate-900/80 p-8 shadow-soft"
-      >
-        <h1 className="mb-6 text-3xl font-bold text-white">Entrar</h1>
-        <div className="space-y-4">
-          <Input label="E-mail" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-          <Input
-            label="Senha"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+    <main className="login-page">
+      {efeitoEsquerdo && <img src={efeitoEsquerdo} alt="" className="login-page__effect-left" />}
+
+      <div className="login-page__grid">
+        <section className="login-hero" aria-label="Apresentação do OUROS">
+          {efeitoDireito && <img src={efeitoDireito} alt="" className="login-hero__effect-right" />}
+
+          {logo ? (
+            <img src={logo} alt="OUROS" className="login-hero__logo" />
+          ) : (
+            <p className="login-hero__logo-text">
+              OUROS<span className="login-hero__highlight" aria-hidden="true">.</span>
+            </p>
+          )}
+
+          <div className="login-hero__divider" />
+
+          <p className="login-hero__tagline">
+            Monitoramento inteligente
+            <br />
+            para granjas mais <span className="login-hero__highlight">eficientes.</span>
+          </p>
+
+          <ul className="login-hero__features">
+            {destaques.map((destaque) => (
+              <li key={destaque.title} className="login-hero__feature">
+                <span className="login-hero__feature-icon">{destaque.icon}</span>
+                <div>
+                  <p className="login-hero__feature-title">{destaque.title}</p>
+                  <p className="login-hero__feature-text">{destaque.text}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          {mascote && (
+            <img
+              src={mascote}
+              alt="Mascote do OUROS, um pintinho amarelo de macacão"
+              className="login-hero__mascot"
+            />
+          )}
+        </section>
+
+        {redefinindoSenha ? (
+          <PasswordResetFlow onClose={() => setRedefinindoSenha(false)} />
+        ) : step === 'credentials' || !pendingChallenge ? (
+          <LoginCard
+            status={status}
+            message={message}
+            onSubmit={submitCredentials}
+            onForgotPassword={() => setRedefinindoSenha(true)}
           />
-          <Button type="submit" className="w-full">
-            Acessar
-          </Button>
-        </div>
-      </form>
-    </section>
+        ) : (
+          <VerificationCard
+            maskedEmail={pendingChallenge.maskedEmail}
+            status={status}
+            message={message}
+            onVerify={submitOtp}
+            onResend={resendOtp}
+            onBack={backToCredentials}
+            expiresIn={pendingChallenge.expiresIn}
+            isMock={pendingChallenge.isMock}
+          />
+        )}
+      </div>
+    </main>
   );
 }

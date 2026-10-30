@@ -1,0 +1,30 @@
+.indicador-card{
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 14px;
+    border-radius: 10px;
+    background: linear-gradient(100deg, #0b0b45 0%, #1c1a78 65%, #0e0e50 100%);
+    padding: 20px 19px;
+    color: #fff;
+    font-family: 'Poppins', sans-serif;
+    box-shadow: 0 8px 22px rgba(10, 10, 80, 0.25);
+}
+
+.indicador-card__texto{
+    min-width: 0;
+}
+
+.indicador-card__rotulo{
+    margin: 0;
+    color: #e2e8f0;
+    font-size: 0.7rem;
+    font-weight: 400;
+}
+
+.indicador-card__valor{
+    margin: 2px 0 0;
+    font-size: 1.6rem;
+    font-weight: 600;
+    line-height: 1.1;
+}

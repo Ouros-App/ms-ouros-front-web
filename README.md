@@ -1,4 +1,4 @@
-# MS Webfront Template
+# Ouros
 
 <!-- REPO-METADATA:START -->
 <div align="center">
@@ -42,7 +42,17 @@ npm install
 cp .env.example .env
 ~~~
 
+<!-- coderabbit-ai-generated:v1 -->
+
+<!-- coderabbit-ai-generated-section:v1:42eb1d7b55795cc2fa8b24c35bf0b5e30cdcdb7383ab048704167fd30d0ce9f6 -->
+
 Ajuste o arquivo .env conforme o ambiente:
+
+O build exige `VITE_SPRING_API_URL` com uma URL HTTPS pública (como a de `.env.example`) ou um caminho de proxy de mesma origem, como `/spring`. O proxy deve ser configurado no servidor de produção; o Nginx fornecido serve apenas arquivos estáticos. Use `/` somente quando as rotas da API forem atendidas na raiz da mesma origem. Endereços locais e HTTP são permitidos somente no desenvolvimento.
+
+O login web usa refresh token em cookie `HttpOnly` e mantém o access token apenas em memória. Configure `OUROS_WEB_ALLOWED_ORIGINS` no `ms-auth-service` com a origem HTTPS exata deste frontend em produção. Não inclua curingas nessa lista.
+
+<!-- /coderabbit-ai-generated:v1 -->
 
 | Variável | Uso no projeto |
 | --- | --- |

@@ -1,0 +1,75 @@
+.painel-grafico {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    min-width: 0;
+    min-height: 330px;
+    flex-direction: column;
+    border: 1px solid #e6e9f2;
+    border-radius: 12px;
+    background: #ffffff;
+    padding: 16px 18px;
+    box-shadow: 0 4px 16px rgba(10, 20, 80, 0.05);
+    font-family: 'Poppins', sans-serif;
+}
+
+.painel-grafico__titulo{
+    margin: 0;
+    color: #111827;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.painel-grafico__area{
+    display: flex;
+    flex: 1;
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    margin-top: 10px;
+    border-radius: 8px;
+    background: #f8fafc;
+    padding: 12px;
+    box-sizing: border-box;
+}
+
+.painel-grafico__aviso{
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 0.8rem;
+    text-align: center;
+    align-self: center;
+}
+
+.painel-grafico__erro{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    color: var(--danger);
+    font-size: 0.8rem;
+    text-align: center;
+    align-self: center;
+}
+
+.painel-grafico__erro p{
+    margin: 0;
+}
+
+.painel-grafico__botao{
+    min-height: 34px;
+    border: 1px solid var(--gold-border);
+    border-radius: 6px;
+    background: #deab55;
+    padding: 0 16px;
+    color: #1a1a1a;
+    font-family: inherit;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.painel-grafico__botao:hover{
+    background: #d49d3f;
+}

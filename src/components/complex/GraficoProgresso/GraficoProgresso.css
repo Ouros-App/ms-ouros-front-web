@@ -1,0 +1,34 @@
+.grafico-progresso{
+    display: block;
+    height: 130px;
+    width: 130px;
+    flex-shrink: 0;
+}
+
+.grafico-progresso__fundo,
+.grafico-progresso__valor{
+    fill: none;
+    stroke-width: 18;
+}
+
+.grafico-progresso__fundo{
+    stroke: #f2dfc0;
+}
+
+.grafico-progresso__valor{
+    stroke: #1a1596;
+    transition: stroke-dasharray 0.5s ease;
+}
+
+.grafico-progresso__texto{
+    fill: #0f172a;
+    font-family: 'Poppins', sans-serif;
+    font-size: 26px;
+    font-weight: 600;
+}
+
+@media(prefers-reduced-motion: reduce){
+    .grafico-progresso__valor{
+        transition: none;
+    }
+}

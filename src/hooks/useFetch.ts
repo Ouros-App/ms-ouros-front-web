@@ -18,6 +18,7 @@ export function useFetch<T>(fn: (signal: AbortSignal) => Promise<T>, deps: unkno
       .finally(() => setLoading(false));
 
     return () => ctl.abort();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 
   return { data, loading, error };
