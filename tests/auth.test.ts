@@ -4,11 +4,13 @@ import { entrar, entrarComGoogle, iniciarLogin, verificarCodigoLogin, renovarTok
 import { parseJwt, claimsToUser, salvarTokens, obterAccessToken, obterRefreshToken, limparTokens, isTokenExpirado, executarRenovacaoToken } from '@/services/tokenService';
 afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); limparTokens(); });
 it('login e verificação usam contratos HTTP e normalizam o e-mail', async () => {
- const fetcher = vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({ challenge_id: 'c1', expires_in: 300, masked_email: 'a***@x.com' }))).mockResolvedValueOnce(new Response(JSON.stringify({ access_token: 'abc', refresh_token: 'r' })));
+ const fetcher = vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({ challenge_id: 'c1', expires_in: 300, masked_email: 'a***@x.com' }))).mockResolvedValueOnce(new Response(JSON.stringify({ access_token: 'abc', expires_in: 300, token_type: 'Bearer' })));
  vi.stubGlobal('fetch', fetcher);
  expect((await iniciarLogin({ email: ' A@X.COM ', password: '123456' })).challenge_id).toBe('c1');
  expect(JSON.parse(fetcher.mock.calls[0][1].body).email).toBe('a@x.com');
  expect((await verificarCodigoLogin({ email: 'a@x.com', password: '123456', challengeId: 'c1', code: '123456' })).access_token).toBe('abc');
+ expect(fetcher.mock.calls[1][0]).toContain('/v1/auth/web/login/verify');
+ expect(fetcher.mock.calls[1][1].credentials).toBe('include');
 });
 it('autenticação comunica erros de credenciais, tentativas e expiração', async () => {
  vi.stubEnv('DEV', false); vi.stubEnv('MODE', 'production');
@@ -48,6 +50,7 @@ it('JWT e persistência de tokens respeitam expiração e papéis', async () => 
  expect(obterAccessToken()).toBe(token); expect(obterRefreshToken()).toBe('refresh');
  expect(isTokenExpirado(token)).toBe(false);
  limparTokens(); expect(isTokenExpirado()).toBe(true);
+ vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 401 })));
  expect(await executarRenovacaoToken()).toBeNull();
 });
 it('DEV falso impede mocks mesmo com MODE development e identificadores simulados', async () => {

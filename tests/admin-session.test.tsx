@@ -4,6 +4,7 @@ import { DashboardAiMetrics } from '@/components/complex/DashboardAiMetrics';
 import { DashboardFarmsTable } from '@/components/complex/DashboardFarmsTable';
 import { AuthProvider } from '@/context/AuthContext';
 import { useAuth } from '@/hooks/useAuth';
+import { obterAccessToken } from '@/services/tokenService';
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); localStorage.clear(); });
 it('painel administrativo exibe custos, distribuição e auditoria', async () => {
  const card = { label: 'Tokens', formattedValue: 'R$ 10', periodComparisonText: 'Mês atual' };
@@ -31,12 +32,15 @@ it('tabela corporativa pesquisa, pagina e recupera falhas', async () => {
  await waitFor(() => expect(fetcher.mock.calls.some(c => String(c[0]).includes('search=teste'))).toBe(true));
 });
 it('sessão persiste login, sincroniza renovação e limpa logout', () => {
+ const fetcher = vi.fn().mockResolvedValue(new Response(null, { status: 204 }));
+ vi.stubGlobal('fetch', fetcher);
  const { result } = renderHook(useAuth, { wrapper: AuthProvider });
  expect(result.current.isAuthenticated).toBe(false);
  act(() => result.current.login({ id: '1', name: 'Ana', email: 'a@x.com', token: 't', refreshToken: 'r' }));
  expect(result.current.isAuthenticated).toBe(true);
  act(() => result.current.updateUser({ name: 'Bia', token: 't2' })); expect(result.current.user?.name).toBe('Bia');
- act(() => window.dispatchEvent(new CustomEvent('auth:token_refreshed', { detail: { accessToken: 't3', refreshToken: 'r3' } })));
- expect(result.current.user?.token).toBe('t3');
+ act(() => window.dispatchEvent(new CustomEvent('auth:token_refreshed', { detail: { accessToken: 't3' } })));
+ expect(obterAccessToken()).toBe('t3');
  act(() => window.dispatchEvent(new Event('auth:session_expired'))); expect(result.current.isAuthenticated).toBe(false);
+ expect(fetcher).toHaveBeenCalledWith('/v1/auth/web/logout', expect.objectContaining({ credentials: 'include' }));
 });

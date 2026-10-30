@@ -27,7 +27,7 @@ for (const status of [400, 401, 403, 500, 503]) {
       } else {
         await expect(executarRenovacaoToken()).rejects.toThrow();
         expect(obterAccessToken()).toBe('old');
-        expect(obterRefreshToken()).toBe('r');
+        expect(obterRefreshToken()).toBeNull();
         expect(expired).not.toHaveBeenCalled();
       }
     } finally {
@@ -44,15 +44,19 @@ it('falha de rede preserva tokens e libera a renovação para nova tentativa', a
   vi.stubGlobal('fetch', fetcher);
   await expect(executarRenovacaoToken()).rejects.toThrow();
   expect(obterAccessToken()).toBe('old');
+  expect(obterRefreshToken()).toBeNull();
   await expect(executarRenovacaoToken()).resolves.toBe('new');
   expect(fetcher).toHaveBeenCalledTimes(2);
 });
 
 it('renovação sem refresh não deixa mutex bloqueado', async () => {
   limparTokens();
+  const fetcher = vi.fn()
+    .mockResolvedValueOnce(new Response('{}', { status: 401 }))
+    .mockResolvedValueOnce(new Response('{"access_token":"new"}'));
+  vi.stubGlobal('fetch', fetcher);
   expect(await executarRenovacaoToken()).toBeNull();
   salvarTokens({ accessToken: 'old', refreshToken: 'r' });
-  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{"access_token":"new"}')));
   await expect(executarRenovacaoToken()).resolves.toBe('new');
 });
 
@@ -62,10 +66,13 @@ for (const nextSession of ['logout', 'login'] as const) {
       const { result } = renderHook(useAuth, { wrapper: AuthProvider });
       act(() => result.current.login(user));
       let finish!: (value: Response) => void;
-      const fetcher = vi.fn(() => new Promise<Response>((resolve) => { finish = resolve; }));
+      const fetcher = vi.fn((input: RequestInfo | URL) => {
+        if (String(input).includes('/logout')) return Promise.resolve(new Response(null, { status: 204 }));
+        return new Promise<Response>((resolve) => { finish = resolve; });
+      });
       vi.stubGlobal('fetch', fetcher);
       const renewal = executarRenovacaoToken();
-      await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(1));
+      await waitFor(() => expect(fetcher.mock.calls.some(([input]) => String(input).includes('/token/refresh'))).toBe(true));
       act(() => {
         if (nextSession === 'logout') result.current.logout();
         else result.current.login({ ...user, id: '2', token: 'other', refreshToken: 'other-r' });
@@ -76,7 +83,7 @@ for (const nextSession of ['logout', 'login'] as const) {
       });
       expect(obterAccessToken()).toBe(nextSession === 'logout' ? null : 'other');
       expect(result.current.isAuthenticated).toBe(nextSession !== 'logout');
-      expect(result.current.user?.token).not.toBe('stale');
+      expect(result.current.user?.token).toBeUndefined();
     });
   }
 }
@@ -89,13 +96,16 @@ it('perfil persistido não duplica tokens durante login, atualização e renova�
   act(() => result.current.updateUser({ name: 'Bia', token: 'new' }));
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{"access_token":"renewed","refresh_token":"r2"}')));
   await act(async () => { await executarRenovacaoToken(); });
-  expect(result.current.user?.token).toBe('renewed');
+  expect(obterAccessToken()).toBe('renewed');
+  expect(obterRefreshToken()).toBeNull();
   expect(lerArmazenado(CHAVE_SESSAO)).toEqual({ id: '1', name: 'Bia', email: 'a@x.com', role: 'admin' });
 });
 
-it('remove duplicações legadas ao restaurar o perfil', () => {
+it('remove duplicações legadas ao restaurar o perfil', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{"access_token":"restored"}')));
   salvarArmazenado(CHAVE_SESSAO, user);
   renderHook(useAuth, { wrapper: AuthProvider });
+  await waitFor(() => expect(obterAccessToken()).toBe('restored'));
   expect(lerArmazenado(CHAVE_SESSAO)).not.toHaveProperty('token');
   expect(lerArmazenado(CHAVE_SESSAO)).not.toHaveProperty('refreshToken');
 });
