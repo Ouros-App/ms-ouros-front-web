@@ -45,8 +45,7 @@ it('recuperação de senha percorre email, código, senha e conclusão', async (
  await act(async () => { await result.current.reenviarCodigo(); });
  await act(async () => { await result.current.verificarCodigo('123456'); }); expect(result.current.step).toBe('new-password');
  await act(async () => { await result.current.confirmarSenha('bad'); }); expect(result.current.status).toBe('error');
- await act(async () => { await result.current.confirmarSenha('Abcd1234!'); }); expect(result.current.step).toBe('done');
- act(() => result.current.voltar()); expect(finish).toHaveBeenCalled();
+ await act(async () => { await result.current.confirmarSenha('Abcd1234!'); }); expect(finish).toHaveBeenCalledTimes(1);
 });
 it('recuperação comunica falhas de envio e volta ao email', async () => {
  vi.mocked(reset.iniciarRedefinicaoSenha).mockRejectedValueOnce(new Error('offline')).mockResolvedValueOnce(challenge);

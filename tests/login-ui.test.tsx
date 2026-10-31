@@ -44,6 +44,7 @@ it('redefinição valida email, confirmação de senha e conclusão', () => {
  fireEvent.submit(view.container.querySelector('form')!); expect(screen.getByText('As senhas não conferem.')).toBeTruthy();
  fireEvent.change(inputs[1], { target: { value: 'Abcd1234!' } }); fireEvent.submit(view.container.querySelector('form')!);
  expect(resetState.confirmarSenha).toHaveBeenCalledWith('Abcd1234!');
- resetState.step = 'done'; view.rerender(<PasswordResetFlow onClose={close} />);
- fireEvent.click(screen.getByRole('button', { name: 'Voltar ao login' })); expect(close).toHaveBeenCalled();
+ const toggles = screen.getAllByRole('button', { name: 'Mostrar senha' });
+ fireEvent.click(toggles[0]); expect(inputs[0].type).toBe('text'); expect(inputs[1].type).toBe('password');
+ fireEvent.click(screen.getByRole('button', { name: 'Ocultar senha' })); expect(inputs[0].type).toBe('password');
 });

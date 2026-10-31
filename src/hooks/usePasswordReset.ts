@@ -8,7 +8,7 @@ import {
 import type { LoginStatus } from '@/types/auth.types';
 import { isAbortError } from '@/utils/delay';
 
-export type PasswordResetStep = 'email' | 'verification' | 'new-password' | 'done';
+export type PasswordResetStep = 'email' | 'verification' | 'new-password';
 
 interface Desafio {
   email: string;
@@ -118,14 +118,12 @@ export function usePasswordReset(onFinish: () => void) {
       try {
         await confirmarRedefinicaoSenha({ resetToken, novaSenha }, controller.signal);
         setResetToken('');
-        setStep('done');
-        setStatus('success');
-        setMessage('Senha redefinida com sucesso!');
+        onFinish();
       } catch (error) {
         falha(error, 'Não foi possível redefinir a senha.');
       }
     },
-    [resetToken],
+    [onFinish, resetToken],
   );
 
   const voltar = useCallback(() => {

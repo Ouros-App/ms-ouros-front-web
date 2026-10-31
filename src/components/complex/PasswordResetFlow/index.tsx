@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { PasswordVisibilityButton } from '@/components/complex/LoginCard/PasswordVisibilityButton';
 import { VerificationCard } from '@/components/complex/VerificationCard';
 import { usePasswordReset } from '@/hooks/usePasswordReset';
 import '@/components/complex/LoginCard/LoginCard.css';
@@ -16,6 +17,8 @@ export function PasswordResetFlow({ onClose }: PasswordResetFlowProps) {
   const [senha, setSenha] = useState('');
   const [confirmacao, setConfirmacao] = useState('');
   const [erroLocal, setErroLocal] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
 
   const busy = reset.status === 'loading' || reset.status === 'success';
 
@@ -63,21 +66,6 @@ export function PasswordResetFlow({ onClose }: PasswordResetFlowProps) {
     </p>
   );
 
-  if (reset.step === 'done') {
-    return (
-      <section className="login-card" aria-labelledby="reset-title">
-        <header className="login-card-header">
-          <h1 id="reset-title" className="login-card-title">Senha redefinida</h1>
-          <p className="login-card-subtitle">Agora você já pode entrar com a nova senha.</p>
-        </header>
-        {statusMessage}
-        <button type="button" className="login-card-submit" onClick={onClose}>
-          Voltar ao login
-        </button>
-      </section>
-    );
-  }
-
   if (reset.step === 'new-password') {
     return (
       <section className="login-card" aria-labelledby="reset-title">
@@ -90,9 +78,10 @@ export function PasswordResetFlow({ onClose }: PasswordResetFlowProps) {
         <form onSubmit={enviarSenha} noValidate className="login-card__form">
           <div className="login-card-field">
             <label htmlFor="reset-senha" className="login-card__label_email">Nova senha</label>
+            <div className="login-card__password">
             <input
               id="reset-senha"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               autoComplete="new-password"
               maxLength={20}
               value={senha}
@@ -100,12 +89,15 @@ export function PasswordResetFlow({ onClose }: PasswordResetFlowProps) {
               onChange={(e) => setSenha(e.target.value)}
               className="login-card__input"
             />
+            <PasswordVisibilityButton visible={showPassword} onToggle={() => setShowPassword(!showPassword)} disabled={busy} />
+            </div>
           </div>
           <div className="login-card-field">
             <label htmlFor="reset-confirmacao" className="login-card__label_email">Confirmar senha</label>
+            <div className="login-card__password">
             <input
               id="reset-confirmacao"
-              type="password"
+              type={showConfirmation ? 'text' : 'password'}
               autoComplete="new-password"
               maxLength={20}
               value={confirmacao}
@@ -115,6 +107,8 @@ export function PasswordResetFlow({ onClose }: PasswordResetFlowProps) {
               aria-describedby={erroLocal ? 'reset-erro' : undefined}
               className="login-card__input"
             />
+            <PasswordVisibilityButton visible={showConfirmation} onToggle={() => setShowConfirmation(!showConfirmation)} disabled={busy} />
+            </div>
             {erroLocal && <p id="reset-erro" role="alert" className="login-card-error">{erroLocal}</p>}
           </div>
           {statusMessage}

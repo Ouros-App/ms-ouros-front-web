@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { PasswordVisibilityButton } from './PasswordVisibilityButton';
 import type { LoginCardProps, LoginHelp } from '@/types/auth.types';
 import { useLoginForm } from './useLoginForm';
 import './LoginCard.css';
@@ -18,6 +20,7 @@ export function LoginCard({ status, message, onSubmit, onForgotPassword }: Login
         handleSubmit,
     } = useLoginForm(onSubmit);
 
+    const [showPassword, setShowPassword] = useState(false);
     const busy = status === 'loading' || status === 'success';
 
     return (
@@ -72,7 +75,7 @@ export function LoginCard({ status, message, onSubmit, onForgotPassword }: Login
                     )}
                 </div>
 
-                <div className="login-card-field">
+                <div className="login-card-field login-card-field--password">
                     <label
                         htmlFor="password"
                         className={`login-card__label_senha ${
@@ -92,9 +95,10 @@ export function LoginCard({ status, message, onSubmit, onForgotPassword }: Login
                         </button>
                     </div>
 
+                    <div className="login-card__password">
                     <input
                         id="password"
-                        type="password"
+                        type={showPassword ? 'text' : 'password'}
                         autoComplete="current-password"
                         placeholder="********"
                         maxLength={67}
@@ -109,6 +113,9 @@ export function LoginCard({ status, message, onSubmit, onForgotPassword }: Login
                             errors.password ? 'login-card__input--error' : ''
                         }`.trim()}
                     />
+
+                    <PasswordVisibilityButton visible={showPassword} onToggle={() => setShowPassword(!showPassword)} disabled={busy} />
+                    </div>
 
                     {errors.password && (
                         <p
@@ -169,3 +176,4 @@ export function LoginCard({ status, message, onSubmit, onForgotPassword }: Login
         
     );
 }
+
