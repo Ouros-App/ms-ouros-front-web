@@ -22,6 +22,35 @@ describe('serviço de registros', () => {
     expect(await obterRegistro('3')).toEqual(expect.objectContaining({ id: '3' }));
     expect(await obterRegistro('outro')).toBeNull();
   });
+  it('obterRegistro consome endpoint unitário diretamente quando disponível', async () => {
+    request.mockResolvedValueOnce(dto);
+    const resultado = await obterRegistro('3');
+    expect(resultado).toEqual(expect.objectContaining({ id: '3', idLote: 'L1' }));
+    expect(request).toHaveBeenCalledWith('/lots/production-summaries/3', expect.any(Object), expect.any(String));
+  });
+  it('cria registro com hidrômetro via endpoint agregado', async () => {
+    request.mockResolvedValueOnce({ id: 5 }).mockResolvedValueOnce([{ ...dto, id: 5, hidrometro: 120.5 }]);
+    const resultado = await criarRegistro({ ...dados, hidrometro: 120.5 });
+    expect(resultado.id).toBe('5');
+    expect(request).toHaveBeenNthCalledWith(
+      1,
+      '/lots/aggregated',
+      expect.objectContaining({
+        method: 'POST',
+        body: expect.objectContaining({ hydrometer_reading: 120.5, received_chickens: 20, id_farm: 4 }),
+      }),
+      expect.any(String),
+    );
+  });
+  it('cria registro com fallback para /lots se /lots/aggregated falhar', async () => {
+    request.mockRejectedValueOnce(new Error('Endpoint não encontrado'))
+      .mockResolvedValueOnce({ id: 9 })
+      .mockResolvedValueOnce([{ ...dto, id: 9 }]);
+    const resultado = await criarRegistro(dados);
+    expect(resultado.id).toBe('9');
+    expect(request).toHaveBeenNthCalledWith(1, '/lots/aggregated', expect.any(Object), expect.any(String));
+    expect(request).toHaveBeenNthCalledWith(2, '/lots', expect.any(Object), expect.any(String));
+  });
   it('cria, atualiza e exclui registro', async () => {
     request.mockResolvedValueOnce({ id: 3 }).mockResolvedValueOnce([dto]);
     expect((await criarRegistro(dados)).id).toBe('3');

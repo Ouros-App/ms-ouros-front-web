@@ -39,8 +39,6 @@ export default function RankingPage(){
                     ordenacao={ranking.ordenacao}
                     onBuscar={ranking.setBusca}
                     onOrdenar={ranking.setOrdenacao}
-                    onSalvar={ranking.salvar}
-                    onExcluir={ranking.excluir}
                     onRecarregar={ranking.recarregar}
                     pagination={ranking.pagination}
                     />

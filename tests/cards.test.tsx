@@ -10,7 +10,6 @@ afterEach(cleanup);
 const common = () => ({ status: 'pronto' as const, mensagemErro: 'Servidor indisponível', busca: '', ordenacao: 'padrao' as const, onBuscar: vi.fn(), onOrdenar: vi.fn(), onSalvar: vi.fn().mockResolvedValue(undefined), onExcluir: vi.fn().mockResolvedValue(undefined), onRecarregar: vi.fn() });
 const cases = [
  { Component: MetasCard, list: { metas: [{ id: '1', estado: 'SP', meta: 'Economia', totalGranjas: 10, concluidos: 4 }] }, edit: 'Editar meta Economia de SP', remove: 'Excluir meta Economia de SP' },
- { Component: RankingCard, list: { participantes: [{ id: '1', nome: 'Ana', pontuacao: 8, atualizadoEm: '2026-01-01', posicao: 1, liga: 'ouro' }] }, edit: 'Editar Ana', remove: 'Excluir Ana' },
  { Component: RegistroCard, list: { registros: [{ id: '1', idLote: 'L1', dataEmissao: '2026-01-01', entraram: 100, sairam: 2, custo: 10, hidrometro: 20 }] }, edit: 'Editar lote L1', remove: 'Excluir lote L1' },
  { Component: SimulacoesCard, list: { simulacoes: [{ id: '1', idLote: 'L1', consumoAtual: 2, consumoAlvo: 1, precoAgua: 3, precoEnergia: 4, quantidadeAves: 100, gastoAlvoEnergia: 2 }] }, edit: 'Editar simulação do lote L1', remove: 'Excluir simulação do lote L1' },
 ];
@@ -53,3 +52,16 @@ for (const spec of cases) {
   });
  });
 }
+
+it('ranking é somente leitura e mantém pesquisa e recuperação', () => {
+ const props = common();
+ const participantes = [{ id: '1', nome: 'Ana', pontuacao: 8, atualizadoEm: '2026-01-01', posicao: 1, liga: 'ouro' as const }];
+ const view = render(<MemoryRouter><RankingCard {...props} participantes={participantes} /></MemoryRouter>);
+ expect(screen.getByText('Ana')).toBeTruthy();
+ expect(screen.queryByRole('button', { name: /Editar Ana|Excluir Ana/ })).toBeNull();
+ fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'Ana' } });
+ expect(props.onBuscar).toHaveBeenCalledWith('Ana');
+ view.rerender(<MemoryRouter><RankingCard {...props} status="erro" participantes={participantes} /></MemoryRouter>);
+ fireEvent.click(screen.getByRole('button', { name: /Tentar novamente/i }));
+ expect(props.onRecarregar).toHaveBeenCalled();
+});
