@@ -33,15 +33,11 @@ export interface RankingCardProps{
     ordenacao: CampoOrdenacaoRanking;
     onBuscar: (valor: string) => void;
     onOrdenar: (campo: CampoOrdenacaoRanking) => void;
-    onSalvar: (id: string, dados: ParticipanteEdicao) => Promise<void>;
-    onExcluir: (id: string) => Promise<void>;
     onRecarregar: () => void;
 }
 
 export interface RankingTabelaProps{
     participantes: ParticipanteRanking[];
-    onEditar: (participante: ParticipanteRanking) => void;
-    onExcluir: (participante: ParticipanteRanking) => void;
 }
 
 export interface RankingModalProps{

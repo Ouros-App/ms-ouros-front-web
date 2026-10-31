@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
-import { atualizarMeta, excluirMeta, lancarMetaEstadual, listarMetasPaginadas } from '@/services/metas.Service';
+import { atualizarMeta, excluirMeta, lancarMetaEstadual, listarMetasPaginadas } from '@/services/metasService';
 import type { MetaEdicao } from '@/types/metas.types';
-import type { MetasPageResponse } from '@/services/metas.Service';
+import type { MetasPageResponse } from '@/services/metasService';
 import { usePagedList } from './usePagedList';
 
 export function useMetas() {
@@ -10,9 +10,9 @@ export function useMetas() {
         listarMetasPaginadas({ page, size, search: busca }, signal), [busca]);
     const list = usePagedList<MetasPageResponse>(load);
     const lancar = async (titulo: string) => {
-        const criadas = await lancarMetaEstadual(titulo);
+        await lancarMetaEstadual(titulo);
         list.recarregar();
-        return criadas.length;
+        return 1;
     };
     const salvar = async (id: string, dados: MetaEdicao) => { await atualizarMeta(id, dados); list.recarregar(); };
     const excluir = async (id: string) => { await excluirMeta(id); list.recarregar(); };
