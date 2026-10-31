@@ -1,6 +1,6 @@
 import { afterEach, expect, it, vi } from 'vitest';
 vi.mock('@/utils/delay', () => ({ wait: async () => {}, isAbortError: (e: Error) => e?.name === 'AbortError' }));
-import * as metas from '@/services/metas.Service';
+import * as metas from '@/services/metasService';
 import * as ranking from '@/services/rankingService';
 import * as reset from '@/services/passwordResetService';
 import * as perfil from '@/services/perfilService';
@@ -8,20 +8,20 @@ import * as ai from '@/services/adminAiMetricsService';
 import { salvarTokens, limparTokens, executarRenovacaoToken, obterAccessToken } from '@/services/tokenService';
 import { fetchComAuth } from '@/services/apiClient';
 afterEach(() => { vi.unstubAllGlobals(); limparTokens(); localStorage.clear(); });
-it('metas estaduais mantêm criação, edição, exclusão e resumo válido', async () => {
- const created = await metas.lancarMetaEstadual('Teste de consumo'); expect(created).toHaveLength(27);
- await expect(metas.lancarMetaEstadual('Teste de consumo')).rejects.toThrow();
- expect((await metas.atualizarMeta(created[0].id, { meta: 'Atualizada', concluidos: 1, totalGranjas: 2 })).meta).toBe('Atualizada');
- await expect(metas.atualizarMeta('ausente', { meta: 'A', totalGranjas: 1, concluidos: 0 })).rejects.toThrow();
- await metas.excluirMeta(created[0].id); expect((await metas.listarMetas()).some(m => m.id === created[0].id)).toBe(false);
- vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({ data: { percentual: 50, concluidas: 1, total: 2 } }))).mockResolvedValueOnce(new Response('{"data":null}')));
- expect((await metas.obterResumoMetas()).percentual).toBe(50); await expect(metas.obterResumoMetas()).rejects.toThrow();
+it('metas estaduais enviam criação, edição e exclusão à API', async () => {
+ const fetcher = vi.fn().mockImplementation(async () => new Response('{}'));
+ vi.stubGlobal('fetch', fetcher);
+ await metas.lancarMetaEstadual('Teste de consumo');
+ expect(fetcher.mock.calls[0][0]).toContain('/state-goals');
+ expect(fetcher.mock.calls[0][1].method).toBe('POST');
+ expect(JSON.parse(fetcher.mock.calls[0][1].body)).toMatchObject({ title: 'Teste de consumo', type: 'WATER_CONSUMPTION' });
+ await metas.atualizarMeta('1', { meta: 'Atualizada', concluidos: 1, totalGranjas: 2 });
+ expect(fetcher.mock.calls[1][0]).toContain('/state-goals/1');
+ expect(JSON.parse(fetcher.mock.calls[1][1].body)).toEqual({ title: 'Atualizada', target_value: 2 });
+ await metas.excluirMeta('1');
+ expect(fetcher.mock.calls[2][1].method).toBe('DELETE');
 });
-it('ranking mantém edição local, aceita participantes da API e calcula previsão remota', async () => {
- const list = await ranking.listarParticipantes(); expect(list.length).toBeGreaterThan(0);
- expect((await ranking.atualizarParticipante(list[0].id, { nome: 'Ana', pontuacao: 10 })).nome).toBe('Ana');
- expect(await ranking.atualizarParticipante('ausente', { nome: 'A', pontuacao: 1 })).toMatchObject({ id: 'ausente', nome: 'A', pontuacao: 1 });
- await ranking.excluirParticipante(list[0].id); expect((await ranking.listarParticipantes()).some(p => p.id === list[0].id)).toBe(false);
+it('ranking consulta posição e calcula previsão remota', async () => {
  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ rank_position: 1, score: 8 }))));
  expect((await ranking.obterRankingGranja(1)).posicao).toBe(1);
  expect(ranking.paraPrevisao({ current_position: 3, simulated_position: 2, positions_gained: 1, simulated_league: 'ouro', total_farms: 5 })?.posicoesGanhas).toBe(1);

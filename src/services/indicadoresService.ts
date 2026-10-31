@@ -29,7 +29,11 @@ export async function obterIndicadoresSimulacao(signal?: AbortSignal, filtro?: F
                 `/farms/${granja.id}/metrics/water-consumption`,
                 { signal },
                 'Não foi possível carregar o consumo de água.',
-            ),
+            ).catch(async (error: unknown) => {
+                if (isAbortError(error)) throw error;
+                const registros = await springRequest<Array<{ start_hydrometer: number; end_hydrometer: number }>>('/water-registries', { query: { farm_id: granja.id }, signal });
+                return { water_consumption: registros.reduce((total, r) => total + Math.max(0, Number(r.end_hydrometer) - Number(r.start_hydrometer)), 0) };
+            }),
             listarSimulacoes(signal, { idFarm: granja.id }),
         ]);
 
@@ -42,7 +46,7 @@ export async function obterIndicadoresSimulacao(signal?: AbortSignal, filtro?: F
             posicao: ranking.posicao ?? 0,
         };
     } catch (error) {
-        if (isAbortError(error) && error instanceof Error) throw error;
+        if (isAbortError(error)) throw error;
         if (error instanceof ServiceError) throw error;
         throw new ServiceError('Não foi possível carregar os indicadores.');
     }
