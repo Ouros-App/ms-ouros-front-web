@@ -39,3 +39,11 @@ it('não inventa granja nem valor alvo para criar uma meta', async () => {
   await expect(lancarMetaEstadual('Economizar água')).rejects.toThrow('Informe');
   expect(request).not.toHaveBeenCalled();
 });
+
+it('cria a meta com o status reconhecido pelo cálculo de progresso do banco', async () => {
+  request.mockResolvedValueOnce({ id: 1 });
+  await lancarMetaEstadual('Economizar água', { idFarm: 4, targetValue: 12.5 });
+  expect(request).toHaveBeenCalledWith('/state-goals', expect.objectContaining({
+    body: expect.objectContaining({ status: 'Em andamento' }),
+  }));
+});

@@ -8,7 +8,7 @@ export async function lancarMetaEstadual(titulo: string, options?: MetaCreation)
     const hoje = new Date();
     const fim = new Date(hoje.getTime() + 90 * 86400000);
     await springRequest('/state-goals', { method: 'POST', body: {
-        title: titulo, type: 'WATER_CONSUMPTION', status: 'IN_PROGRESS', target_value: options.targetValue,
+        title: titulo, type: 'WATER_CONSUMPTION', status: 'Em andamento', target_value: options.targetValue,
         date_creation: hoje.toISOString().slice(0, 10), date_end: fim.toISOString().slice(0, 10), id_farm: options.idFarm,
     } });
 }
