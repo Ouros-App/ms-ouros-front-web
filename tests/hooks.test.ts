@@ -4,8 +4,8 @@ import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
 import { useVerificationForm } from '@/components/complex/VerificationCard/useVerificationForm';
 import { useOtpCountdown } from '@/hooks/useOtpCountdown';
 import { useMetas } from '@/hooks/useMetas';
-vi.mock('@/services/metas.Service', () => ({ listarMetasPaginadas: vi.fn(), lancarMetaEstadual: vi.fn(), atualizarMeta: vi.fn(), excluirMeta: vi.fn() }));
-import { listarMetasPaginadas } from '@/services/metas.Service';
+vi.mock('@/services/metasService', () => ({ listarMetasPaginadas: vi.fn(), lancarMetaEstadual: vi.fn(), atualizarMeta: vi.fn(), excluirMeta: vi.fn() }));
+import { listarMetasPaginadas } from '@/services/metasService';
 
 afterEach(() => { cleanup(); vi.useRealTimers(); vi.resetAllMocks(); });
 describe('código OTP', () => {
