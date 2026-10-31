@@ -46,7 +46,7 @@ export async function obterIndicadoresSimulacao(signal?: AbortSignal, filtro?: F
             posicao: ranking.posicao ?? 0,
         };
     } catch (error) {
-        if (isAbortError(error) && error instanceof Error) throw error;
+        if (isAbortError(error)) throw error;
         if (error instanceof ServiceError) throw error;
         throw new ServiceError('Não foi possível carregar os indicadores.');
     }

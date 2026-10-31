@@ -1,7 +1,7 @@
 import { afterEach, expect, it, vi } from 'vitest';
 vi.mock('@/services/springClient', () => ({ springRequest: vi.fn() }));
 import { springRequest } from '@/services/springClient';
-import { listarNotificacoes } from '@/services/notificacaoService';
+import { listarNotificacoes, marcarTodasComoLidas } from '@/services/notificacaoService';
 const request = vi.mocked(springRequest);
 const notification = (id: number) => ({ id, title: `Aviso ${id}`, message: 'Consumo', type: 'info', is_read: false, created_at: '2026-01-01' });
 afterEach(() => vi.resetAllMocks());
@@ -34,4 +34,9 @@ it('propaga abort de uma página intermediária', async () => {
       throw new DOMException('Aborted', 'AbortError');
     });
   await expect(listarNotificacoes(controller.signal)).rejects.toHaveProperty('name', 'AbortError');
+});
+
+it('marca todas as notificações como lidas pela API', async () => {
+  await marcarTodasComoLidas();
+  expect(request).toHaveBeenCalledWith('/notifications/read-all', { method: 'PATCH' });
 });
