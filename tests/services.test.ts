@@ -23,9 +23,9 @@ describe('serviço de registros', () => {
     expect(await obterRegistro('outro')).toBeNull();
   });
   it('cria, atualiza e exclui registro', async () => {
-    request.mockResolvedValueOnce({ id: 3 }).mockResolvedValueOnce([dto]);
+    request.mockResolvedValueOnce({ id: 3 });
     expect((await criarRegistro(dados)).id).toBe('3');
-    request.mockResolvedValueOnce({ id: 3 }).mockResolvedValueOnce([]);
+    request.mockResolvedValueOnce({ losts: 0 }).mockResolvedValueOnce({ id: 3 });
     expect((await atualizarRegistro('3', dados)).id).toBe('3');
     request.mockResolvedValueOnce(undefined);
     await excluirRegistro('3');
@@ -33,7 +33,7 @@ describe('serviço de registros', () => {
   });
   it('informa falha ao criar sem granja disponível', async () => {
     farms.mockResolvedValue([]);
-    await expect(criarRegistro({ ...dados, idFarm: undefined })).rejects.toThrow('Nenhuma granja');
+    await expect(criarRegistro({ ...dados, idFarm: undefined })).rejects.toThrow('Selecione a granja');
   });
 });
 describe('serviço de simulações', () => {

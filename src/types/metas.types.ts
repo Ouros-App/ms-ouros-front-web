@@ -1,4 +1,6 @@
+export interface MetaCreation { idFarm: number; targetValue: number; }
 export interface MetaEstadual{
+    status?: string;
     id: string;
     estado: string;
     meta: string;
@@ -32,11 +34,11 @@ export interface MetasResumoProps{
     status: MetasStatus;
     mensagemErro: string;
     onRecarregar: () => void;
-    onLancar: (titulo: string) => Promise<number>;
+    onLancar: (titulo: string, options?: MetaCreation) => Promise<number>;
 }
 
 export interface NovaMetaFormProps{
-    onLancar: (titulo: string) => Promise<number>;
+    onLancar: (titulo: string, options?: MetaCreation) => Promise<number>;
 }
 
 export interface MetasCardProps{

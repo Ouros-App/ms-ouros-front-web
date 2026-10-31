@@ -33,7 +33,7 @@ describe('tabela de metas', () => {
     const editar = vi.fn();
     const excluir = vi.fn();
     render(<MetasTabela metas={[meta]} onEditar={editar} onExcluir={excluir} />);
-    expect(screen.getByText('40%')).toBeTruthy();
+    expect(screen.getByText('Não informado')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Editar meta Economia de SP' }));
     fireEvent.click(screen.getByRole('button', { name: 'Excluir meta Economia de SP' }));
     expect(editar).toHaveBeenCalledWith(meta);

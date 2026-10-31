@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+import { listarGranjas, type Granja } from '@/services/farmService';
 import { IndicadoresSimulacao } from '@/components/complex/IndicadoresSimulacao';
 import { PerfilUsuario } from '@/components/complex/PerfilUsuario';
 import { Sidebar } from '@/components/complex/Sidebar';
@@ -8,7 +10,17 @@ import { asaFundo } from '../Registros/RegistrosAssets';
 import './Simulacao.css';
 
 export default function SimulacaoPage(){
-    const indicadores = useIndicadoresSimulacao();
+    const [granjas, setGranjas] = useState<Granja[]>([]);
+    const [idFarm, setIdFarm] = useState('');
+    const [erroGranjas, setErroGranjas] = useState('');
+    useEffect(() => {
+        const controller = new AbortController();
+        listarGranjas(controller.signal).then(setGranjas).catch((error: unknown) => {
+            if (!controller.signal.aborted) setErroGranjas(error instanceof Error ? error.message : 'Falha ao carregar granjas.');
+        });
+        return () => controller.abort();
+    }, []);
+    const indicadores = useIndicadoresSimulacao(idFarm ? Number(idFarm) : undefined);
     const simulacoes = useSimulacoes();
     
     return (
@@ -29,6 +41,13 @@ export default function SimulacaoPage(){
             </header>
             
             <main id="conteudo-principal" className="simulacao-page__conteudo" tabIndex={-1}>
+                <label>Granja dos indicadores
+                    <select aria-label="Granja dos indicadores" value={idFarm} onChange={(e) => setIdFarm(e.target.value)}>
+                        <option value="">Selecione a granja</option>
+                        {granjas.map((g) => <option key={g.id} value={g.id}>{g.nome}</option>)}
+                    </select>
+                </label>
+                {erroGranjas && <p role="alert">{erroGranjas}</p>}
                 <IndicadoresSimulacao
                 indicadores={indicadores.indicadores}
                 status={indicadores.status}

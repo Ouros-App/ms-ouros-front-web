@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { listarGranjas, type Granja } from '@/services/farmService';
+import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import type { RegistroModalProps, RegistroValores } from '@/types/registros.types';
 import { isAbortError } from '@/utils/delay';
@@ -14,8 +15,7 @@ interface CampoConfig {
 }
 
 const campos: CampoConfig[] = [
-    { nome: 'idLote', rotulo: 'Id do lote', tipo: 'text' },
-    { nome: 'dataEmissao', rotulo: 'Data de emissão', tipo: 'date' },
+        { nome: 'dataEmissao', rotulo: 'Data de emissão', tipo: 'date' },
     { nome: 'hidrometro', rotulo: 'Hidrômetro (m³)', tipo: 'number', passo: 'any' },
     { nome: 'custo', rotulo: 'Custo do lote (R$)', tipo: 'number', passo: '0.01' },
     { nome: 'entraram', rotulo: 'Galinhas que entraram', tipo: 'number', passo: '1' },
@@ -24,6 +24,15 @@ const campos: CampoConfig[] = [
 
 export function RegistroModal({ registro, onFechar, onSalvar }: RegistroModalProps) {
     const { values, errors, change, validar, atuais } = useRegistroForm(registro);
+    const [granjas, setGranjas] = useState<Granja[]>([]);
+    const [idFarm, setIdFarm] = useState(registro?.idFarm ? String(registro.idFarm) : '');
+    useEffect(() => {
+        const controller = new AbortController();
+        listarGranjas(controller.signal).then(setGranjas).catch((error: unknown) => {
+            if (!controller.signal.aborted) setFalha(error instanceof Error ? error.message : 'Não foi possível carregar as granjas.');
+        });
+        return () => controller.abort();
+    }, []);
     const [enviando, setEnviando] = useState(false);
     const [falha, setFalha] = useState('');
 
@@ -31,11 +40,12 @@ export function RegistroModal({ registro, onFechar, onSalvar }: RegistroModalPro
         evento.preventDefault();
         const dados = validar();
         if (!dados) return;
+        if (!idFarm) { setFalha('Selecione a granja.'); return; }
         setEnviando(true);
         setFalha('');
         
         try {
-            await onSalvar(dados, registro?.id);
+            await onSalvar({ ...dados, idFarm: Number(idFarm) }, registro?.id);
             onFechar();
         }
         catch (error){
@@ -49,6 +59,12 @@ export function RegistroModal({ registro, onFechar, onSalvar }: RegistroModalPro
     <Dialogo titulo={registro ? 'Editar registro' : 'Novo registro'} onFechar={onFechar}>
         <form className="registro-form" onSubmit={enviar} noValidate>
             <div className="registro-form__grade">
+                <label>Granja
+                    <select aria-label="Granja" value={idFarm} onChange={(e) => setIdFarm(e.target.value)} disabled={enviando || Boolean(registro)} required>
+                        <option value="">Selecione a granja</option>
+                        {granjas.map((g) => <option key={g.id} value={g.id}>{g.nome}</option>)}
+                    </select>
+                </label>
                 {campos.map((campo) => {
                     const id = `registro-${campo.nome}`;
                     const erro = errors[campo.nome];
@@ -69,7 +85,7 @@ export function RegistroModal({ registro, onFechar, onSalvar }: RegistroModalPro
                         onChange={(evento) => change(campo.nome, evento.target.value)}
                         aria-invalid={erro ? true : undefined}
                         aria-describedby={erro ? `${id}-erro` : undefined}
-                        disabled={enviando}
+                        disabled={enviando || (Boolean(registro) && campo.nome === 'hidrometro')}
                         />
                         
                         {erro && (
@@ -92,6 +108,7 @@ export function RegistroModal({ registro, onFechar, onSalvar }: RegistroModalPro
                 </div>
             </div>
 
+            <p>A leitura inicial é registrada na granja. Na edição, o hidrômetro mostra o consumo acumulado da granja em m³.</p>
             {falha && (
                 <p className="registro-form__falha" role="alert">
                     {falha}

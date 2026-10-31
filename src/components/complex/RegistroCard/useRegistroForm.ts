@@ -5,7 +5,7 @@ import { sanitizeText } from '@/utils/sanitizers';
 import { validateRegistro } from '@/utils/validators';
 
 const vazio: RegistroValores = {
-    idLote: '',
+    idLote: 'AUTO',
     dataEmissao: '',
     hidrometro: '',
     custo: '',

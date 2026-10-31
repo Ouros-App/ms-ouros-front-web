@@ -8,14 +8,14 @@ import * as ai from '@/services/adminAiMetricsService';
 import { salvarTokens, limparTokens, executarRenovacaoToken, obterAccessToken } from '@/services/tokenService';
 import { fetchComAuth } from '@/services/apiClient';
 afterEach(() => { vi.unstubAllGlobals(); limparTokens(); localStorage.clear(); });
-it('metas estaduais mantêm criação, edição, exclusão e resumo válido', async () => {
- const created = await metas.lancarMetaEstadual('Teste de consumo'); expect(created).toHaveLength(27);
- await expect(metas.lancarMetaEstadual('Teste de consumo')).rejects.toThrow();
- expect((await metas.atualizarMeta(created[0].id, { meta: 'Atualizada', concluidos: 1, totalGranjas: 2 })).meta).toBe('Atualizada');
- await expect(metas.atualizarMeta('ausente', { meta: 'A', totalGranjas: 1, concluidos: 0 })).rejects.toThrow();
- await metas.excluirMeta(created[0].id); expect((await metas.listarMetas()).some(m => m.id === created[0].id)).toBe(false);
- vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({ data: { percentual: 50, concluidas: 1, total: 2 } }))).mockResolvedValueOnce(new Response('{"data":null}')));
- expect((await metas.obterResumoMetas()).percentual).toBe(50); await expect(metas.obterResumoMetas()).rejects.toThrow();
+it('metas persistem na API e calculam resumo pelos status reais', async () => {
+ const fetcher = vi.fn(async (_url: unknown, _init?: RequestInit) => new Response(JSON.stringify({content: [], totalElements: 2, totalPages: 1, page: 0, size: 10, statusCounts: { COMPLETED: 1, Pendente: 1 }})));
+ vi.stubGlobal('fetch', fetcher);
+ await metas.lancarMetaEstadual('Teste de consumo', { idFarm: 4, targetValue: 12.5 });
+ expect(JSON.parse((fetcher.mock.calls[0][1]?.body as string)).target_value).toBe(12.5);
+ await metas.atualizarMeta('1', { meta: 'Atualizada', concluidos: 0, totalGranjas: 12.5 });
+ await metas.excluirMeta('1');
+ expect((await metas.obterResumoMetas()).percentual).toBe(50);
 });
 it('ranking mantém edição local, aceita participantes da API e calcula previsão remota', async () => {
  const list = await ranking.listarParticipantes(); expect(list.length).toBeGreaterThan(0);
@@ -29,7 +29,7 @@ it('ranking mantém edição local, aceita participantes da API e calcula previs
 it('redefinição serializa cada etapa e traduz erros da API', async () => {
  const fetcher = vi.fn().mockImplementation(async () => new Response('{"reset_token":"r","message":"ok"}'));
  vi.stubGlobal('fetch', fetcher);
- await reset.iniciarRedefinicaoSenha(' A@X.COM '); expect(JSON.parse(fetcher.mock.calls[0][1].body).email).toBe('a@x.com');
+ await reset.iniciarRedefinicaoSenha(' A@X.COM '); expect(JSON.parse((fetcher.mock.calls[0][1]?.body as string)).email).toBe('a@x.com');
  await reset.verificarCodigoRedefinicao({ email: 'a@x.com', challengeId: 'c', code: '123456' });
  await reset.confirmarRedefinicaoSenha({ resetToken: 'r', novaSenha: 'Abcd1234!' });
  for(const status of [400,429,503]) { fetcher.mockResolvedValueOnce(new Response('{}', { status })); await expect(reset.iniciarRedefinicaoSenha('a@x.com')).rejects.toThrow(); }
@@ -40,7 +40,7 @@ it('perfil aceita foto persistível e rejeita telefone inválido', async () => {
  const fetcher = vi.fn(async () => new Response(JSON.stringify(dto)));
  vi.stubGlobal('fetch', fetcher);
  expect((await perfil.obterPerfil())?.nome).toBe('Ana');
- expect((await perfil.atualizarPerfil('1', { nome: 'Ana', email: 'a@x.com', telefone: '11999999999', avatarUrl: 'https://x.com/a.png', novaSenha: 'abc' })).id).toBe('1');
+ expect((await perfil.atualizarPerfil('1', { nome: 'Ana', email: 'a@x.com', telefone: '11999999999', avatarUrl: 'https://x.com/a.png' })).id).toBe('1');
  const removed = await perfil.atualizarPerfil('1', { nome: 'Ana', email: 'a@x.com', telefone: '11999999999', avatarUrl: null });
  expect(removed.avatarUrl).toBeNull();
  expect(JSON.parse((fetcher.mock.calls.at(-1) as unknown as [string, RequestInit])[1].body as string).photo_url).toBe('');

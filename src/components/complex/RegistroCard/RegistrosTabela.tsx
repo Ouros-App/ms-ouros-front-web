@@ -7,7 +7,7 @@ import { galinhasAtuais } from '@/utils/registros';
 const colunas = [
     'Id do lote',
     'Data de emissão',
-    'Hidrômetro (m3)',
+    'Consumo acumulado da granja (m³)',
     'Custo do lote',
     'Galinhas que entraram',
     'Galinhas que saíram',

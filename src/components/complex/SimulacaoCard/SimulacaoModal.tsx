@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import type { SimulacaoModalProps, SimulacaoValores } from '@/types/simulacoes.types';
-import { listarGranjas } from '@/services/farmService';
+import { listarGranjas, type Granja } from '@/services/farmService';
 import { simularRanking, type PrevisaoRanking } from '@/services/rankingService';
 import { isAbortError } from '@/utils/delay';
 import { Dialogo } from './Dialogo';
@@ -26,6 +26,15 @@ const campos: CampoConfig[] = [
 
 export function SimulacaoModal({ simulacao, onFechar, onSalvar }: SimulacaoModalProps) {
     const { values, errors, change, validar } = useSimulacaoForm(simulacao);
+    const [granjas, setGranjas] = useState<Granja[]>([]);
+    const [idFarm, setIdFarm] = useState(simulacao?.idFarm ? String(simulacao.idFarm) : '');
+    useEffect(() => {
+        const controller = new AbortController();
+        listarGranjas(controller.signal).then(setGranjas).catch((error: unknown) => {
+            if (!controller.signal.aborted) setFalha(error instanceof Error ? error.message : 'Não foi possível carregar as granjas.');
+        });
+        return () => controller.abort();
+    }, []);
     const [enviando, setEnviando] = useState(false);
     const [falha, setFalha] = useState('');
     const [previsao, setPrevisao] = useState<PrevisaoRanking | undefined>(simulacao?.previsao);
@@ -41,9 +50,9 @@ export function SimulacaoModal({ simulacao, onFechar, onSalvar }: SimulacaoModal
         setCalculando(true);
         setErroPrevisao('');
         try {
-            const idFarm = simulacao?.idFarm ?? (await listarGranjas())[0]?.id;
-            if (!idFarm) throw new Error('Nenhuma granja disponível para calcular a previsão.');
-            setPrevisao(await simularRanking(idFarm, alvo));
+            const farmId = Number(idFarm);
+            if (!farmId) throw new Error('Nenhuma granja disponível para calcular a previsão.');
+            setPrevisao(await simularRanking(farmId, alvo));
         } catch (error) {
             setErroPrevisao(error instanceof Error ? error.message : 'Não foi possível calcular a previsão.');
         } finally {
@@ -55,11 +64,12 @@ export function SimulacaoModal({ simulacao, onFechar, onSalvar }: SimulacaoModal
         evento.preventDefault();
         const dados = validar();
         if (!dados) return;
+        if (!idFarm) { setFalha('Selecione a granja.'); return; }
         setEnviando(true);
         setFalha('');
         
         try{
-            await onSalvar(dados, simulacao?.id);
+            await onSalvar({ ...dados, idFarm: Number(idFarm) }, simulacao?.id);
             onFechar();
         }
         catch(error){
@@ -73,6 +83,12 @@ export function SimulacaoModal({ simulacao, onFechar, onSalvar }: SimulacaoModal
     <Dialogo titulo={simulacao ? 'Editar simulação' : 'Nova simulação'} onFechar={onFechar}>
         <form className="simulacao-form" onSubmit={enviar} noValidate>
             <div className="simulacao-form__grade">
+                <label>Granja
+                    <select aria-label="Granja" value={idFarm} onChange={(e) => setIdFarm(e.target.value)} disabled={enviando || Boolean(simulacao)} required>
+                        <option value="">Selecione a granja</option>
+                        {granjas.map((g) => <option key={g.id} value={g.id}>{g.nome}</option>)}
+                    </select>
+                </label>
                 {campos.map((campo) => {
                     const id = `simulacao-${campo.nome}`;
                     const erro = errors[campo.nome];

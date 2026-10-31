@@ -1,4 +1,5 @@
-import {useState} from 'react';
+import { listarGranjas, type Granja } from '@/services/farmService';
+import {useEffect, useState} from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import type { NovaMetaFormProps } from '@/types/metas.types';
 import { isAbortError } from '@/utils/delay';
@@ -7,6 +8,16 @@ import { sanitizeText } from '@/utils/sanitizadores';
 import './NovaMetaForm.css'
 
 export function NovaMetaForm({onLancar}: NovaMetaFormProps){
+    const [granjas, setGranjas] = useState<Granja[]>([]);
+    const [idFarm, setIdFarm] = useState('');
+    const [target, setTarget] = useState('');
+    useEffect(() => {
+        const controller = new AbortController();
+        listarGranjas(controller.signal).then(setGranjas).catch((error: unknown) => {
+            if (!controller.signal.aborted) setErro(error instanceof Error ? error.message : 'Falha ao carregar granjas.');
+        });
+        return () => controller.abort();
+    }, []);
     const [titulo, setTitulo] = useState('');
     const [erro, setErro] = useState('');
     const [aviso, setAviso] = useState('');
@@ -21,6 +32,7 @@ export function NovaMetaForm({onLancar}: NovaMetaFormProps){
     const enviar = async(evento: FormEvent<HTMLFormElement>) =>{
         evento.preventDefault();
 
+        if (!idFarm || !(Number(target) > 0)) { setErro('Informe a granja e o valor alvo.'); return; }
         const mensagem = validateTituloMeta(titulo);
         if (mensagem){
             setErro(mensagem);
@@ -33,9 +45,9 @@ export function NovaMetaForm({onLancar}: NovaMetaFormProps){
             setAviso('');
 
             try{
-                const quantidade = await onLancar(sanitizeText(titulo.trim()));
+                await onLancar(sanitizeText(titulo.trim()), { idFarm: Number(idFarm), targetValue: Number(target) });
                 setTitulo('');
-                setAviso(`Meta lançada para ${quantidade} estados.`);
+                setAviso('Meta de consumo de água criada para a granja selecionada.');
             }
             catch(error){
                 if (isAbortError(error)) return;
@@ -52,6 +64,15 @@ export function NovaMetaForm({onLancar}: NovaMetaFormProps){
                 Adicionar meta estadual:
             </label>
 
+            <label>Granja
+                <select aria-label="Granja" value={idFarm} onChange={(e) => setIdFarm(e.target.value)} disabled={enviando}>
+                    <option value="">Selecione a granja</option>
+                    {granjas.map((g) => <option key={g.id} value={g.id}>{g.nome}</option>)}
+                </select>
+            </label>
+            <label>Valor alvo de consumo de água (m³)
+                <input aria-label="Valor alvo" type="number" min="0" step="any" value={target} onChange={(e) => setTarget(e.target.value)} disabled={enviando} />
+            </label>
             <div className='nova-meta__linha'>
                 <input
                 id="meta-nova"
@@ -66,7 +87,7 @@ export function NovaMetaForm({onLancar}: NovaMetaFormProps){
                 disabled={enviando}
                 />
 
-                <button type='submit' className='nova-meta__botao' aria-label='Lançar meta para todos os estados' title='Lançar para todos os estados' disabled={enviando}>
+                <button type='submit' className='nova-meta__botao' aria-label='Criar meta para a granja' title='Criar meta' disabled={enviando}>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
                         <path d="m5 12 5 5 9-11" />
                     </svg>

@@ -2,7 +2,6 @@ import type { PageQuery, PageResponse } from '@/types/pagination.types';
 import type { Simulacao, SimulacaoNova } from "@/types/simulacoes.types";
 import { isAbortError } from "@/utils/delay";
 import { ServiceError } from "./authService";
-import { listarGranjas } from "./farmService";
 import { paraPrevisao, type SimulacaoRankingDto } from "./rankingService";
 import { springRequest } from "./springClient";
 
@@ -70,15 +69,10 @@ export async function listarSimulacoes(signal?: AbortSignal, filtro?: FiltroSimu
     }
 }
 
-export async function criarSimulacao(dados: SimulacaoNova, filtro?: FiltroSimulacoes): Promise<Simulacao> {
+export async function criarSimulacao(dados: SimulacaoNova, _filtro?: FiltroSimulacoes): Promise<Simulacao> {
     try {
-        let idFarm = dados.idFarm;
-        if (!idFarm) {
-            const granjas = await listarGranjas();
-            const doContexto = filtro?.idEnterprise ? granjas.filter((g) => g.idEnterprise === filtro.idEnterprise) : granjas;
-            idFarm = doContexto[0]?.id;
-        }
-        if (!idFarm) throw new ServiceError('Nenhuma granja disponível para vincular a simulação.');
+        const idFarm = dados.idFarm;
+        if (!idFarm) throw new ServiceError('Selecione a granja da simulação.');
         const dto = await springRequest<FarmSimulationDto>(
             '/farms/simulations',
             { method: 'POST', body: { ...paraCorpo(dados), id_farm: idFarm } },

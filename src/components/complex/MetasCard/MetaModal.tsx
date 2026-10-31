@@ -15,8 +15,7 @@ interface CampoConfig{
 
 const campos: CampoConfig[] =[
     { nome: 'meta', rotulo: 'Meta estadual', tipo: 'text', completo: true },
-    { nome: 'totalGranjas', rotulo: 'Total de granjas', tipo: 'number' },
-    { nome: 'concluidos', rotulo: 'Concluídos', tipo: 'number' },
+    { nome: 'totalGranjas', rotulo: 'Valor alvo da métrica', tipo: 'number' },
 ];
 
 export function MetaModal({ meta, onFechar, onSalvar }: MetaModalProps){
@@ -60,7 +59,7 @@ export function MetaModal({ meta, onFechar, onSalvar }: MetaModalProps){
                                 id={id}
                                 name={campo.nome}
                                 type={campo.tipo}
-                                step={campo.tipo === 'number' ? '1' : undefined}
+                                step={campo.tipo === 'number' ? 'any' : undefined}
                                 min={campo.tipo === 'number' ? 0 : undefined}
                                 maxLength={campo.tipo === 'text' ? LIMITES_META.tituloMax : undefined}
                                 className={`metas-form__input${erro ? ' metas-form__input--erro' : ''}`}

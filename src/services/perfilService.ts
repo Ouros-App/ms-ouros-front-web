@@ -55,15 +55,15 @@ export async function obterPerfil(signal?: AbortSignal): Promise<Perfil | null> 
     }
 }
 
-export async function atualizarPerfil(id: string, dados: PerfilAtualizacao): Promise<Perfil> {
+export async function atualizarPerfil(_id: string, dados: PerfilAtualizacao): Promise<Perfil> {
     try {
         const digitos = apenasDigitos(dados.telefone);
-        if (digitos.length < 10 || digitos.length > 11) {
+        if (digitos.length > 0 && (digitos.length < 10 || digitos.length > 13)) {
             throw new ServiceError('Telefone inválido.');
         }
 
         const corpo: CompanyEmployeePatch = { name: dados.nome, telephone: digitos };
-        if (dados.novaSenha) corpo.password = dados.novaSenha;
+        if (dados.novaSenha) throw new ServiceError('Use a recuperação de senha para alterar a senha de acesso.');
         // photo_url aceita no máximo 500 caracteres: data-URLs (base64) não são enviadas ao backend.
         const fotoPersistivel = dados.avatarUrl !== null && URL_HTTP.test(dados.avatarUrl);
         if (fotoPersistivel && dados.avatarUrl) {
@@ -73,7 +73,7 @@ export async function atualizarPerfil(id: string, dados: PerfilAtualizacao): Pro
         }
 
         const dto = await springRequest<CompanyEmployeeResponse>(
-            `/company-employees/${encodeURIComponent(id)}`,
+            '/company-employees/me',
             { method: 'PATCH', body: corpo },
             'Não foi possível salvar o perfil.',
         );

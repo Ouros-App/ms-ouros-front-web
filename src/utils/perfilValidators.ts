@@ -33,10 +33,7 @@ export function validatePerfil(values: PerfilValores): PerfilErros{
     }
     
     const digitosTelefone = apenasDigitos(values.telefone);
-    if (!isRequired(values.telefone)){
-        errors.telefone = 'Informe seu telefone.';
-    } 
-    else if (digitosTelefone.length < 10 || digitosTelefone.length > 11){
+    if (isRequired(values.telefone) && (digitosTelefone.length < 10 || digitosTelefone.length > 13)){
         errors.telefone = 'Digite um telefone com DDD, como (11) 99925-1812.';
     }
     
