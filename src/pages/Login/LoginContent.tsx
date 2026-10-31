@@ -7,7 +7,7 @@ interface Destaque{
 }
 
 const svgProps= {
-    widht: 22,
+    width: 22,
     height: 22,
     viewBox: '0 0 24 24',
     fill: 'none',
