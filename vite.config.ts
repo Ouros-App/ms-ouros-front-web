@@ -8,9 +8,9 @@ export default defineConfig(({ mode, command, isPreview }) => {
   if (command === 'build' && !isPreview) {
     validarSpringApiUrl(env.VITE_SPRING_API_URL);
   }
-  const authTarget = env.VITE_AUTH_API_URL || 'https://ms-auth-service.discloud.app';
-  const springTarget = env.VITE_SPRING_API_URL || 'http://localhost:8080';
-  const telemetryTarget = env.VITE_TELEMETRY_API_URL || 'https://ouros-dashboard.discloud.app';
+  const authTarget = (env.VITE_AUTH_API_URL || 'https://ms-auth-service.discloud.app').replace(/\/+$/, '');
+  const springTarget = (env.VITE_SPRING_API_URL || 'http://localhost:8080').replace(/\/+$/, '');
+  const telemetryTarget = (env.VITE_TELEMETRY_API_URL || 'https://ouros-dashboard.discloud.app').replace(/\/+$/, '');
 
   return {
     plugins: [react()],

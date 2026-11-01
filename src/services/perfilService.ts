@@ -70,12 +70,15 @@ export async function atualizarPerfil(_id: string, dados: PerfilAtualizacao): Pr
             corpo.telephone = digitos;
         }
         if (dados.novaSenha) throw new ServiceError("Use a recuperação de senha para alterar a senha de acesso.");
-        // photo_url aceita no máximo 500 caracteres: data-URLs (base64) não são enviadas ao backend.
-        const fotoPersistivel = dados.avatarUrl !== null && URL_HTTP.test(dados.avatarUrl);
-        if (fotoPersistivel && dados.avatarUrl) {
-            corpo.photo_url = dados.avatarUrl;
-        } else if (dados.avatarUrl === null) {
-            corpo.photo_url = "";
+
+        // photo_url aceita no máximo 500 caracteres: apenas envia se o usuário alterou a foto
+        const fotoPersistivel = dados.avatarUrl !== undefined && dados.avatarUrl !== null && URL_HTTP.test(dados.avatarUrl);
+        if (dados.avatarUrl !== undefined) {
+            if (fotoPersistivel && dados.avatarUrl) {
+                corpo.photo_url = dados.avatarUrl;
+            } else if (dados.avatarUrl === null) {
+                corpo.photo_url = "";
+            }
         }
 
         const dto = await springRequest<CompanyEmployeeResponse>(
