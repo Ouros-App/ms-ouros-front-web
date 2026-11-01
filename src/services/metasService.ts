@@ -12,16 +12,16 @@ export function dataLocal(date: Date): string {
     return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
 }
 export async function lancarMetaEstadual(titulo: string, options?: MetaCreation): Promise<StateGoalCreated> {
-    if (!options?.state || !(options.targetValue > 0) || !options.dateEnd) throw new ServiceError('Informe a UF, o valor alvo e o prazo.');
+    if (!options?.state || !options.dateEnd) throw new ServiceError('Informe a UF e o prazo.');
     return springRequest('/state-goals/by-state', { method: 'POST', body: {
         state: options.state, id_enterprise: options.idEnterprise ?? undefined,
-        goal: { title: titulo, type: 'WATER_CONSUMPTION', target_value: options.targetValue,
+        goal: { title: titulo,
             date_creation: dataLocal(new Date()), date_end: options.dateEnd },
     } });
 }
 
 export async function atualizarMeta(id: string, dados: MetaEdicao): Promise<void> {
-    await springRequest(`/state-goals/${encodeURIComponent(id)}`, { method: 'PATCH', body: { title: dados.meta, target_value: dados.totalGranjas } });
+    await springRequest(`/state-goals/${encodeURIComponent(id)}`, { method: 'PATCH', body: { title: dados.meta, ...(dados.type === 'TASK_COMPLETION' ? {} : { target_value: dados.totalGranjas }) } });
 }
 
 export async function excluirMeta(id: string): Promise<void> {

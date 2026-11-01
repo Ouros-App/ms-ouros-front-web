@@ -16,7 +16,6 @@ export function NovaMetaForm({ onLancar }: NovaMetaFormProps) {
     const admin = session?.user?.role === 'admin' || session?.user?.accountType === 'admin';
     const enterpriseId = admin ? empresaSelecionada : null;
     const [state, setState] = useState('');
-    const [target, setTarget] = useState('');
     const [title, setTitle] = useState('');
     const [deadline, setDeadline] = useState(() => dataLocal(new Date(Date.now() + 90 * 86400000)));
     const [audience, setAudience] = useState<(StateGoalAudience & { scope: number | null }) | null>(null);
@@ -47,14 +46,14 @@ export function NovaMetaForm({ onLancar }: NovaMetaFormProps) {
         event.preventDefault();
         const titleError = validateTituloMeta(title);
         if (titleError) { setError(titleError); return; }
-        if (!state || !Number.isFinite(Number(target)) || !(Number(target) > 0) || !deadline || deadline < dataLocal(new Date())) {
-            setError('Informe a UF, um valor alvo positivo e um prazo a partir de hoje.'); return;
+        if (!state || !deadline || deadline < dataLocal(new Date())) {
+            setError('Informe a UF e um prazo a partir de hoje.'); return;
         }
         if (!ready || count === 0) { setError('Consulte uma UF com granjas participantes antes de lançar.'); return; }
         setSending(true); setError(''); setMessage('');
         try {
             const actualCount = await onLancar(sanitizeText(title.trim()), {
-                state, targetValue: Number(target), dateEnd: deadline, idEnterprise: enterpriseId,
+                state, dateEnd: deadline, idEnterprise: enterpriseId,
             });
             setTitle('');
             setMessage(`Meta criada para ${actualCount} granja(s) de ${state}. Cada granja terá seu próprio andamento.`);
@@ -75,11 +74,6 @@ export function NovaMetaForm({ onLancar }: NovaMetaFormProps) {
             </select>
         </div>
         <div className="nova-meta__grupo">
-            <label className="nova-meta__rotulo" htmlFor="meta-target">Valor alvo de consumo de água (m³)</label>
-            <input id="meta-target" className="nova-meta__campo" type="number" min="0" step="0.0001"
-                value={target} onChange={(e) => setTarget(e.target.value)} disabled={sending} />
-        </div>
-        <div className="nova-meta__grupo">
             <label className="nova-meta__rotulo" htmlFor="meta-prazo">Prazo</label>
             <input id="meta-prazo" className="nova-meta__campo" type="date" min={dataLocal(new Date())}
                 value={deadline} onChange={(e) => setDeadline(e.target.value)} disabled={sending} />
@@ -87,7 +81,7 @@ export function NovaMetaForm({ onLancar }: NovaMetaFormProps) {
         <div className="nova-meta__grupo">
             <label className="nova-meta__rotulo" htmlFor="meta-nova">Título da meta</label>
             <input id="meta-nova" className="nova-meta__campo" value={title} onChange={(e) => setTitle(e.target.value)}
-                maxLength={LIMITES_META.tituloMax} placeholder="Reduzir o consumo de água" disabled={sending} />
+                maxLength={LIMITES_META.tituloMax} placeholder="Realizar manutenção preventiva" disabled={sending} />
         </div>
         <div className="nova-meta__aviso" role="status" aria-live="polite">
             {state && !ready && !audienceError && !(admin && !enterpriseId) && 'Consultando granjas participantes...'}

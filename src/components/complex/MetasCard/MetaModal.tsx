@@ -46,7 +46,7 @@ export function MetaModal({ meta, onFechar, onSalvar }: MetaModalProps){
         <Dialogo titulo={`Editar meta de ${meta.estado}`} onFechar={onFechar}>
             <form className="metas-form" onSubmit={enviar} noValidate>
                 <div className="metas-form__grade">
-                    {campos.map((campo) =>{
+                    {campos.filter((campo) => meta.type !== 'TASK_COMPLETION' || campo.nome === 'meta').map((campo) =>{
                         const id = `meta-${campo.nome}`;
                         const erro = errors[campo.nome];
                         return(

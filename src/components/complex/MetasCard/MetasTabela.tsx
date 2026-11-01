@@ -32,7 +32,7 @@ function MetasTabelaBase({ metas, onEditar, onExcluir }: MetasTabelaProps){
                             <tr key={meta.id}>
                                 <td>{meta.estado}</td>
                                 <td>{meta.meta}</td>
-                                <td>{meta.totalGranjas}</td>
+                                <td>{meta.type === "TASK_COMPLETION" ? "Conclusão por status" : meta.totalGranjas}</td>
                                 <td>{meta.status ?? "Não informado"}</td>
 
                                 <td>

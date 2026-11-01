@@ -27,6 +27,7 @@ export function useMetaForm(meta: MetaEstadual){
         }
 
         return{
+            type: meta.type,
             meta: sanitizeText(values.meta.trim()),
             totalGranjas: Number(values.totalGranjas),
             concluidos: Number(values.concluidos),
