@@ -6,7 +6,7 @@ import { lerArmazenado, salvarArmazenado } from '@/utils/storage';
 import { usePagedList } from './usePagedList';
 
 const CHAVE = 'ouros:registro-ordenacao';
-export function useRegistros() {
+export function useRegistros(empresaSelecionada?: number | null) {
     const [busca, setBusca] = useState('');
     const [ordenacao, setOrdenacaoEstado] = useState<CampoOrdenacao>(() => {
         const value = lerArmazenado<CampoOrdenacao>(CHAVE);
@@ -15,8 +15,11 @@ export function useRegistros() {
     const load = useCallback((page: number, size: number, signal: AbortSignal) => {
         const orders = {padrao: { sort: 'padrao', direction: 'desc' }, hidrometro: { sort: 'hidrometro', direction: 'desc' }, custo: { sort: 'custo', direction: 'desc' }, entraram: { sort: 'entraram', direction: 'desc' }, sairam: { sort: 'sairam', direction: 'desc' }, atuais: { sort: 'galinhas_atuais', direction: 'desc' }} as const;
         const order = orders[ordenacao as keyof typeof orders] ?? orders.padrao;
+        if (empresaSelecionada != null) {
+            return listarRegistrosPaginados({ page, size, search: busca, ...order }, signal, { idEnterprise: empresaSelecionada });
+        }
         return listarRegistrosPaginados({ page, size, search: busca, ...order }, signal);
-    }, [busca, ordenacao]);
+    }, [busca, ordenacao, empresaSelecionada]);
     const list = usePagedList(load);
     const setOrdenacao = useCallback((campo: CampoOrdenacao) => {
         setOrdenacaoEstado(campo);

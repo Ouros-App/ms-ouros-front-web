@@ -50,12 +50,12 @@ export interface MetasPageResponse extends PageResponse<MetaEstadual> {
     summary: ResumoMetas;
 }
 
-export async function listarMetasPaginadas(query: PageQuery, signal?: AbortSignal): Promise<MetasPageResponse> {
+export async function listarMetasPaginadas(query: PageQuery, signal?: AbortSignal, idEnterprise?: number | null): Promise<MetasPageResponse> {
     const data = await springRequest<PageResponse<{
         id: number; region?: string; title: string; description?: string; type?: string;
         status: string; target_value?: number; date_creation?: string; date_end?: string;
     }> & { statusCounts: Record<string, number> }>('/state-goals/paged', {
-        query: { ...query, sort: mapearSortMeta(query.sort) }, signal,
+        query: { ...query, sort: mapearSortMeta(query.sort), id_enterprise: idEnterprise ?? undefined }, signal,
     });
     if (!data.statusCounts || Object.values(data.statusCounts).some((count) => !Number.isFinite(count))) {
         throw new ServiceError('Resumo global de metas indisponível.');

@@ -25,6 +25,7 @@ function montarParametrosFiltros(filtros?: Partial<FiltrosDashboard>): string {
     params.set('management', filtros.gerencia);
   }
   if (filtros.enterpriseId != null) {
+    params.set('enterprise_id', String(filtros.enterpriseId));
     params.set('enterpriseId', String(filtros.enterpriseId));
   }
   const queryString = params.toString();

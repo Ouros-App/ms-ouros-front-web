@@ -47,6 +47,12 @@
     object-fit: contain;
 }
 
+.registros-page__acoes-topo{
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
 .registros-page__topo{
     position: relative;
     z-index: 2;

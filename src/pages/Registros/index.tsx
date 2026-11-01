@@ -1,16 +1,19 @@
 import { PerfilUsuario } from '@/components/complex/PerfilUsuario';
 import { RegistroCard } from '@/components/complex/RegistroCard';
+import { SeletorEmpresaAdm } from '@/components/complex/SeletorEmpresaAdm';
 import { Sidebar } from '@/components/complex/Sidebar';
+import { useAdminEnterprise } from '@/context/AdminEnterpriseContext';
 import { useRegistros } from '@/hooks/useRegistros';
 import { asaFundo } from './RegistrosAssets';
 import './Registros.css';
 
 export default function RegistrosPage() {
-    const registros = useRegistros();
+    const { empresaSelecionada } = useAdminEnterprise();
+    const registros = useRegistros(empresaSelecionada);
     
     return (
     <div className="registros-page">
-        <a href="#conteudo-principal" className="registros-page__pular"> Pular para o conteÃºdo </a>
+        <a href="#conteudo-principal" className="registros-page__pular"> Pular para o conteúdo </a>
         
         <Sidebar />
         
@@ -20,7 +23,10 @@ export default function RegistrosPage() {
             <header className="registros-page__topo">
                 <h1 className="registros-page__titulo">Registros</h1>
                 
-                <PerfilUsuario />
+                <div className="registros-page__acoes-topo">
+                    <SeletorEmpresaAdm />
+                    <PerfilUsuario />
+                </div>
             </header>
             
             <main id="conteudo-principal" className="registros-page__conteudo" tabIndex={-1}>
