@@ -12,19 +12,23 @@ interface PasswordResetFlowProps{
     readonly onSuccess?: () => void;
 }
 
-interface NewPasswordCardProps{
+interface NewPasswordCardProps {
+
     readonly busy: boolean;
     readonly statusMessage: ReactNode;
     readonly onSave: (password: string) => void;
+    readonly onClose?: () => void;
 }
 
-interface EmailRequestCardProps{
+interface EmailRequestCardProps {
+
     readonly busy: boolean;
     readonly email: string;
     readonly initialEmail?: string;
     readonly statusMessage: ReactNode;
     readonly onEmailChange: (value: string) => void;
     readonly onRequestCode: (email: string) => void;
+    readonly onClose: () => void;
 }
 
 const EMAIL_VALIDO = /^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/;
@@ -32,7 +36,8 @@ const EMAIL_VALIDO = /^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/;
 function NewPasswordCard({
     busy,
     statusMessage,
-    onSave
+    onSave,
+    onClose
 }: Readonly<NewPasswordCardProps>) {
     const [senha, setSenha] = useState('');
     const [confirmacao, setConfirmacao] = useState('');
@@ -156,6 +161,13 @@ function NewPasswordCard({
                     {busy ? 'Salvando...' : 'Salvar nova senha'}
                 </button>
             </form>
+            {onClose && (
+                <p className="login-card-footer">
+                    <button type="button" className="login-card__link" onClick={onClose}>
+                        Cancelar
+                    </button>
+                </p>
+            )}
         </section>
     );
 }
@@ -166,7 +178,8 @@ function EmailRequestCard({
     initialEmail,
     statusMessage,
     onEmailChange,
-    onRequestCode
+    onRequestCode,
+    onClose
 }: Readonly<EmailRequestCardProps>) {
     const [erroLocal, setErroLocal] = useState('');
 
@@ -251,6 +264,11 @@ function EmailRequestCard({
                     {busy ? 'Enviando...' : 'Enviar código'}
                 </button>
             </form>
+            <p className="login-card-footer">
+                <button type="button" className="login-card__link" onClick={onClose}>
+                    {initialEmail ? 'Cancelar' : 'Voltar ao login'}
+                </button>
+            </p>
         </section>
     );
 }
@@ -310,6 +328,7 @@ export function PasswordResetFlow({
                 onSave={(novaSenha) =>
                     void reset.confirmarSenha(novaSenha)
                 }
+                onClose={onClose}
             />
         );
     }
@@ -324,6 +343,7 @@ export function PasswordResetFlow({
             onRequestCode={(emailInformado) =>
                 void reset.solicitarCodigo(emailInformado)
             }
+            onClose={onClose}
         />
     );
 }

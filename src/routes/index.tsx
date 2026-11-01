@@ -61,7 +61,7 @@ export function AppRoutes() {
         }
       />
       <Route
-        path="/metas"
+        path="/tarefas"
         element={<Navigate to="/metas" replace />}
       />
       <Route

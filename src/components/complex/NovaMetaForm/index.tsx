@@ -116,8 +116,13 @@ export function NovaMetaForm({ onLancar }: NovaMetaFormProps) {
                 maxLength={LIMITES_META.tituloMax} placeholder="Realizar manutenção preventiva" disabled={sending} />
         </div>
 
+        <div className="nova-meta__aviso" role="status" aria-live="polite">
+            {state && !ready && !audienceError && !(admin && !enterpriseId) && 'Consultando granjas participantes...'}
+            {ready && (count ? `${count} granja(s) de ${state} receberão a meta na empresa selecionada.` : 'Nenhuma granja elegível nesta UF e empresa.')}
+        </div>
         {audienceError && <div role="alert"><p>{audienceError}</p>
             <button type="button" onClick={() => setAttempt((n) => n + 1)}>Consultar novamente</button></div>}
+        <p className="nova-meta__aviso">Serão incluídas as granjas elegíveis no momento do lançamento. Novas granjas não entram automaticamente.</p>
         <button type="submit" className="nova-meta__botao nova-meta__botao--lancar" disabled={sending || !ready || count === 0}>
             {sending ? 'Lançando...' : 'Lançar meta estadual'}
         </button>
