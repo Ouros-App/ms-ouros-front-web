@@ -7,7 +7,7 @@ import { mascaraCpf } from '@/utils/mascaras';
 import { usePerfilForm } from './usePerfilForm';
 import './PerfilForm.css';
 
-export function PerfilForm({ perfil, onSalvar, onSair, onTrocarSenha }: PerfilFormProps) {
+export function PerfilForm({ perfil, onSalvar, onSair, onTrocarSenha }: Readonly<PerfilFormProps>) {
     const { values, errors, change, validar } = usePerfilForm(perfil);
     const [enviando, setEnviando] = useState(false);
     const [falha, setFalha] = useState('');

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ErrorPage } from '@/components/complex/ErrorPage';
 import { PasswordResetFlow } from '@/components/complex/PasswordResetFlow';
@@ -19,14 +19,31 @@ export default function PerfilPage() {
     const foto = usePerfilFoto(perfil?.avatarUrl ?? null);
     const [redefinindoSenha, setRedefinindoSenha] = useState(false);
     const [avisoSenha, setAvisoSenha] = useState('');
+    const dialogRef = useRef<HTMLDialogElement>(null);
 
     useEffect(() => {
-        if (!redefinindoSenha) return;
-        const aoTeclar = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') setRedefinindoSenha(false);
+        const dialog = dialogRef.current;
+        if (!dialog) return;
+
+        if (redefinindoSenha) {
+            if (!dialog.open) dialog.showModal();
+        } else if (dialog.open) {
+            dialog.close();
+        }
+    }, [redefinindoSenha]);
+
+    useEffect(() => {
+        const dialog = dialogRef.current;
+        if (!dialog) return;
+
+        const fecharAoClicarBackdrop = (evento: MouseEvent) => {
+            if (evento.target === dialog) {
+                setRedefinindoSenha(false);
+            }
         };
-        window.addEventListener('keydown', aoTeclar);
-        return () => window.removeEventListener('keydown', aoTeclar);
+
+        dialog.addEventListener('click', fecharAoClicarBackdrop);
+        return () => dialog.removeEventListener('click', fecharAoClicarBackdrop);
     }, [redefinindoSenha]);
 
     const salvarPerfil = useCallback(
@@ -110,14 +127,11 @@ export default function PerfilPage() {
             </div>
 
             {redefinindoSenha && perfil && (
-                <div
-                    className="perfil-page__modal-overlay"
-                    role="dialog"
-                    aria-modal="true"
+                <dialog
+                    ref={dialogRef}
+                    className="perfil-page__modal-dialog"
                     aria-labelledby="reset-title"
-                    onClick={(e) => {
-                        if (e.target === e.currentTarget) setRedefinindoSenha(false);
-                    }}
+                    onClose={() => setRedefinindoSenha(false)}
                 >
                     <div className="perfil-page__modal-conteudo">
                         <PasswordResetFlow
@@ -129,7 +143,7 @@ export default function PerfilPage() {
                             }}
                         />
                     </div>
-                </div>
+                </dialog>
             )}
         </div>
     );

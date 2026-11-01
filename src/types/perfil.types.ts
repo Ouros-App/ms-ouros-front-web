@@ -57,8 +57,8 @@ export interface PerfilFotoProps {
 }
 
 export interface PerfilFormProps {
-    perfil: Perfil;
-    onSalvar: (dados: PerfilDadosFormulario) => Promise<void>;
-    onSair: () => void;
-    onTrocarSenha?: () => void;
+    readonly perfil: Perfil;
+    readonly onSalvar: (dados: PerfilDadosFormulario) => Promise<void>;
+    readonly onSair: () => void;
+    readonly onTrocarSenha?: () => void;
 }

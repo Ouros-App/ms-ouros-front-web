@@ -39,7 +39,7 @@ export async function uploadParaCloudinary(
   const formData = new FormData();
   formData.append('file', arquivo);
   formData.append('upload_preset', uploadPreset);
-  if (folder && folder.trim()) {
+  if (folder?.trim()) {
     formData.append('folder', folder.trim());
   }
 
@@ -50,9 +50,9 @@ export async function uploadParaCloudinary(
       body: formData,
       signal,
     });
-  } catch (erro) {
-    if (erro instanceof DOMException && erro.name === 'AbortError') {
-      throw erro;
+  } catch (error_) {
+    if (error_ instanceof DOMException && error_.name === 'AbortError') {
+      throw error_;
     }
     throw new CloudinaryUploadError('Sem conexão ao enviar foto. Verifique sua internet.');
   }

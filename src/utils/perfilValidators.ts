@@ -7,6 +7,8 @@ export const LIMITES_PERFIL = {
     nomeMax: 80,
 } as const;
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/;
+
 export function validatePerfil(values: PerfilValores): PerfilErros {
     const errors: PerfilErros = {};
     const nome = values.nome.trim();
@@ -24,7 +26,7 @@ export function validatePerfil(values: PerfilValores): PerfilErros {
     const email = values.email.trim();
     if (!email) {
         errors.email = 'Informe seu e-mail.';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    } else if (!EMAIL_REGEX.test(email)) {
         errors.email = 'Informe um e-mail válido.';
     }
     

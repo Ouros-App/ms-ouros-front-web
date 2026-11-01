@@ -2,6 +2,16 @@ import { useCallback, useState } from 'react';
 import { uploadParaCloudinary } from '@/services/cloudinaryService';
 import { prepararFoto, validarFoto } from '@/utils/fotos';
 
+function resolverFotoAtual(
+    removido: boolean,
+    preview: string | null | undefined,
+    salva: string | null,
+): string | null {
+    if (removido) return null;
+    if (preview !== undefined) return preview;
+    return salva;
+}
+
 export function usePerfilFoto(salva: string | null) {
     const [preview, setPreview] = useState<string | null | undefined>(undefined);
     const [arquivoPendente, setArquivoPendente] = useState<File | null>(null);
@@ -9,8 +19,7 @@ export function usePerfilFoto(salva: string | null) {
     const [erro, setErro] = useState('');
     const [processando, setProcessando] = useState(false);
 
-    // Se o usuário removeu explicitamente, é null. Se há preview, usa preview. Senão, usa a foto salva.
-    const foto = removido ? null : (preview !== undefined ? preview : salva);
+    const foto = resolverFotoAtual(removido, preview, salva);
 
     const escolher = useCallback(async (arquivo: File) => {
         setErro('');

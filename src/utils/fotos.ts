@@ -1,6 +1,6 @@
-const TIPOS_ACEITOS = ['image/jpeg', 'image/png', 'image/webp'];
-const LIMITES_BYTES = 5 * 1024 * 1024;
-const LADO_MAXIMO = 480;
+export const TIPOS_ACEITOS = ['image/jpeg', 'image/png', 'image/webp'];
+export const LIMITES_BYTES = 5 * 1024 * 1024;
+export const LADO_MAXIMO = 480;
 
 export class FotoInvalidaError extends Error {
     constructor(message: string) {
@@ -9,8 +9,8 @@ export class FotoInvalidaError extends Error {
     }
 }
 
-export function validarFoto(arquivo: File): void {
-    if (!arquivo || !arquivo.type || !TIPOS_ACEITOS.includes(arquivo.type.toLowerCase())) {
+export function validarFoto(arquivo?: File | null): void {
+    if (!arquivo?.type || !TIPOS_ACEITOS.includes(arquivo.type.toLowerCase())) {
         throw new FotoInvalidaError('Use uma imagem JPG, PNG ou WebP.');
     }
     if (arquivo.size > LIMITES_BYTES) {
