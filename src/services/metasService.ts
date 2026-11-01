@@ -5,6 +5,9 @@ import { ServiceError } from './authService';
 
 export interface StateGoalAudience { state: string; id_enterprise: number; participants_count: number; }
 export interface StateGoalCreated extends StateGoalAudience { id: number; }
+export async function obterEstadosComGranjas(idEnterprise?: number | null, signal?: AbortSignal): Promise<string[]> {
+    return springRequest('/state-goals/states', { query: { id_enterprise: idEnterprise }, signal });
+}
 export async function obterPublicoMeta(state: string, idEnterprise?: number | null, signal?: AbortSignal): Promise<StateGoalAudience> {
     return springRequest('/state-goals/audience', { query: { state, id_enterprise: idEnterprise }, signal });
 }

@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import { AuthContext } from '@/context/AuthContext';
 import { useAdminEnterprise } from '@/context/AdminEnterpriseContext';
-import { obterPublicoMeta, dataLocal, type StateGoalAudience } from '@/services/metasService';
+import { obterEstadosComGranjas, obterPublicoMeta, dataLocal, type StateGoalAudience } from '@/services/metasService';
 import type { NovaMetaFormProps } from '@/types/metas.types';
 import { estadosBrasil } from '@/utils/metas';
 import { isAbortError } from '@/utils/delay';
@@ -15,6 +15,7 @@ export function NovaMetaForm({ onLancar }: NovaMetaFormProps) {
     const { empresaSelecionada } = useAdminEnterprise();
     const admin = session?.user?.role === 'admin' || session?.user?.accountType === 'admin';
     const enterpriseId = admin ? empresaSelecionada : null;
+    const [estadosDisponiveis, setEstadosDisponiveis] = useState<{ uf: string; nome: string }[]>(estadosBrasil);
     const [state, setState] = useState('');
     const [title, setTitle] = useState('');
     const [deadline, setDeadline] = useState(() => dataLocal(new Date(Date.now() + 90 * 86400000)));
@@ -26,6 +27,35 @@ export function NovaMetaForm({ onLancar }: NovaMetaFormProps) {
     const [sending, setSending] = useState(false);
     const ready = Boolean(audience && audience.state === state && audience.scope === enterpriseId);
     const count = ready ? audience!.participants_count : 0;
+
+    useEffect(() => {
+        if (admin && !enterpriseId) {
+            setEstadosDisponiveis([]);
+            setState('');
+            return;
+        }
+        const controller = new AbortController();
+        obterEstadosComGranjas(enterpriseId, controller.signal)
+            .then((ufs) => {
+                if (controller.signal.aborted) return;
+                if (Array.isArray(ufs)) {
+                    if (ufs.length > 0) {
+                        const filtrados = estadosBrasil.filter((e) => ufs.includes(e.uf));
+                        setEstadosDisponiveis(filtrados.length > 0 ? filtrados : estadosBrasil);
+                        if (filtrados.length === 1) {
+                            setState(filtrados[0].uf);
+                        }
+                    } else {
+                        setEstadosDisponiveis([]);
+                        setState('');
+                    }
+                }
+            })
+            .catch(() => {
+                if (!controller.signal.aborted) setEstadosDisponiveis(estadosBrasil);
+            });
+        return () => controller.abort();
+    }, [enterpriseId, admin]);
 
     useEffect(() => {
         setAudience(null);
@@ -68,9 +98,9 @@ export function NovaMetaForm({ onLancar }: NovaMetaFormProps) {
         <div className="nova-meta__grupo">
             <label className="nova-meta__rotulo" htmlFor="meta-uf">Estado</label>
             <select id="meta-uf" className="nova-meta__campo nova-meta__select" value={state}
-                onChange={(e) => { setState(e.target.value); setError(''); }} disabled={sending || (admin && !enterpriseId)}>
-                <option value="">Selecione a UF</option>
-                {estadosBrasil.map((uf) => <option key={uf.uf} value={uf.uf}>{uf.nome} ({uf.uf})</option>)}
+                onChange={(e) => { setState(e.target.value); setError(''); }} disabled={sending || (admin && !enterpriseId) || estadosDisponiveis.length === 0}>
+                <option value="">{estadosDisponiveis.length === 0 ? (admin && !enterpriseId ? 'Selecione uma empresa' : 'Nenhum estado com granjas cadastradas') : 'Selecione a UF'}</option>
+                {estadosDisponiveis.map((uf) => <option key={uf.uf} value={uf.uf}>{uf.nome} ({uf.uf})</option>)}
             </select>
         </div>
         <div className="nova-meta__grupo">
