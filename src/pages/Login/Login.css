@@ -258,3 +258,144 @@
         margin-top: 45px;
     }
 }
+
+/* =========================================
+   RESPONSIVIDADE
+   Mantém as proporções originais
+========================================= */
+
+/* Notebooks menores */
+@media (max-width: 1200px) and (min-width: 768px) {
+
+    .login-page {
+        padding: 16px;
+    }
+
+    .login-page__grid {
+        grid-template-columns:
+            minmax(0, 300px)
+            minmax(0, 352px);
+
+        gap: clamp(12px, 2vw, 32px);
+        max-width: 100%;
+    }
+
+    .login-card {
+        width: 100%;
+        max-width: 100%;
+        margin-left: 0;
+    }
+
+    .login-hero__logo {
+        max-width: 100%;
+    }
+
+    .login-hero__tagline,
+    .login-hero__feature-text {
+        max-width: 100%;
+    }
+}
+
+/* Tablets */
+@media (max-width: 767px) {
+
+    .login-page {
+        min-height: 100vh;
+        min-height: 100dvh;
+        height: auto;
+        overflow-x: hidden;
+        overflow-y: auto;
+        padding: 24px 16px;
+    }
+
+    .login-page__grid {
+        width: 100%;
+        max-width: 100%;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 24px;
+    }
+
+    .login-hero {
+        width: 100%;
+        align-items: center;
+        text-align: center;
+        padding: 0;
+    }
+
+    .login-hero__logo {
+        right: auto;
+        top: auto;
+        object-position: center;
+    }
+
+    .login-hero__divider {
+        transform: none;
+    }
+
+    .login-hero__tagline {
+        width: 100%;
+        max-width: 550px;
+        right: auto;
+        top: auto;
+    }
+
+    .login-hero__features {
+        display: none;
+    }
+
+    .login-hero__feature {
+        transform: none;
+    }
+
+    .login-hero__effect-right,
+    .login-hero__mascot {
+        display: none;
+    }
+
+    .login-card {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+    }
+
+    .login-card-field,
+    .login-card__status,
+    .login-card-submit {
+        max-width: 100%;
+    }
+
+    .login-card-footer {
+        position: static;
+        transform: none;
+        width: 100%;
+    }
+}
+
+/* Celulares pequenos */
+@media (max-width: 380px) {
+
+    .login-page {
+        padding: 16px 10px;
+    }
+
+    .login-page__grid {
+        gap: 18px;
+    }
+
+    .login-hero__tagline {
+        font-size: 14px;
+    }
+}
+
+/* Telas com pouca altura */
+@media (max-height: 560px) and (min-width: 768px) {
+
+    .login-page {
+        align-items: flex-start;
+        overflow-y: auto;
+    }
+
+    .login-card {
+        min-height: auto;
+    }
+}

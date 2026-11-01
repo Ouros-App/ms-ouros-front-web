@@ -355,23 +355,6 @@
   }
 }
 
-
-/* =========================================
-   RESPONSIVIDADE DO LOGIN
-   Sem alterar as medidas originais
-========================================= */
-
-/* Evita que o card ultrapasse a tela */
-.login-card {
-  box-sizing: border-box;
-  width: min(720px, calc(100vw - 32px));
-  max-width: 100%;
-}
-
-/* =========================================
- NOTEBOOKS
-========================================= */
-
 @media (max-width: 1200px) and (min-width: 768px) {
 
   .login-card {
