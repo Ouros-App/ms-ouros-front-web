@@ -4,6 +4,15 @@ import type { MetasTabelaProps } from '@/types/metas.types';
 
 const colunas = ['Estado', 'Meta Estadual', 'Valor alvo', 'Status', 'Ações'];
 
+function formatarStatus(status?: string | null): string {
+    if (!status) return 'Não informado';
+    const s = status.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toUpperCase();
+    if (['CONCLUIDA', 'CONCLUIDO', 'COMPLETED', 'ACHIEVED', 'FINALIZADA'].includes(s)) return 'Concluída';
+    if (['EM ANDAMENTO', 'IN_PROGRESS'].includes(s)) return 'Em andamento';
+    if (['PENDENTE', 'PENDING'].includes(s)) return 'Pendente';
+    return status;
+}
+
 function MetasTabelaBase({ metas, onEditar, onExcluir }: MetasTabelaProps){
     return(
         <div className="metas-tabela__moldura">
@@ -33,7 +42,7 @@ function MetasTabelaBase({ metas, onEditar, onExcluir }: MetasTabelaProps){
                                 <td>{meta.estado}</td>
                                 <td>{meta.meta}</td>
                                 <td>{meta.type === "TASK_COMPLETION" ? "Conclusão por status" : meta.totalGranjas}</td>
-                                <td>{meta.status ?? "Não informado"}</td>
+                                <td>{formatarStatus(meta.status)}</td>
 
                                 <td>
                                     <div className="metas-tabela__acoes">
