@@ -1,4 +1,4 @@
-import { createContext, useCallback, useEffect, useReducer, useRef } from 'react';
+import { createContext, useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import type { PropsWithChildren } from 'react';
 import { authInitialState, authReducer } from '@/reducers/authReducer';
 import type { AuthState } from '@/reducers/authReducer';
@@ -45,8 +45,13 @@ function restaurarSessao(): AuthState {
 export function AuthProvider({ children }: PropsWithChildren) {
   const [state, dispatch] = useReducer(authReducer, authInitialState, restaurarSessao);
   const restoreStarted = useRef(false);
+  const sessionVersion = useRef(0);
+  const [restoreAttempt, setRestoreAttempt] = useState(0);
+  const [restoreError, setRestoreError] = useState('');
 
   const login = (user: User) => {
+    sessionVersion.current++;
+    setRestoreError('');
     limparTokens();
     const usuarioPersistido = persistirUsuario(user);
     if (user.token) {
@@ -81,6 +86,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
   );
 
   const logout = useCallback(() => {
+    sessionVersion.current++;
+    setRestoreError('');
     removerArmazenado(CHAVE_SESSAO);
     limparTokens();
     dispatch({ type: 'LOGOUT' });
@@ -93,9 +100,12 @@ export function AuthProvider({ children }: PropsWithChildren) {
     if (!state.isInitializing || !state.user || restoreStarted.current) return;
     restoreStarted.current = true;
     const cachedUser = state.user;
+    const version = sessionVersion.current;
 
     void executarRenovacaoToken()
       .then((token) => {
+        if (version !== sessionVersion.current) return;
+        setRestoreError('');
         if (token) {
           dispatch({ type: 'RESTORE_SUCCESS', payload: cachedUser });
         } else {
@@ -103,17 +113,18 @@ export function AuthProvider({ children }: PropsWithChildren) {
         }
       })
       .catch((error: unknown) => {
+        if (version !== sessionVersion.current) return;
         console.warn('Não foi possível restaurar a sessão:', error);
-        dispatch({ type: 'RESTORE_FAILURE' });
+        setRestoreError('Não foi possível reconectar à sua sessão. Verifique sua conexão e tente novamente.');
       });
-  }, [state.isInitializing, state.user]);
+  }, [state.isInitializing, state.user, restoreAttempt]);
 
   // Sincronização de eventos globais de renovação e expiração de sessão
   useEffect(() => {
     const handleTokenRefreshed = (
-      event: CustomEvent<{ accessToken: string }>,
+      event: CustomEvent<{ accessToken: string; refreshToken?: string }>,
     ) => {
-      updateUser({ token: event.detail.accessToken });
+      updateUser({ token: event.detail.accessToken, refreshToken: event.detail.refreshToken });
     };
 
     const handleSessionExpired = () => {
@@ -144,7 +155,16 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   return (
     <AuthContext.Provider value={{ ...state, login, updateUser, logout }}>
-      {children}
+      {restoreError && state.isInitializing ? (
+        <div role="alert">
+          <p>{restoreError}</p>
+          <button type="button" onClick={() => {
+            restoreStarted.current = false;
+            setRestoreError('');
+            setRestoreAttempt((attempt) => attempt + 1);
+          }}>Tentar reconectar</button>
+        </div>
+      ) : children}
     </AuthContext.Provider>
   );
 }

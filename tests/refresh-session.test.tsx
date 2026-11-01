@@ -1,5 +1,5 @@
 import { afterEach, expect, it, vi } from 'vitest';
-import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, renderHook, screen, waitFor } from '@testing-library/react';
 import { AuthProvider } from '@/context/AuthContext';
 import { useAuth } from '@/hooks/useAuth';
 import { executarRenovacaoToken, limparTokens, obterAccessToken, obterRefreshToken, salvarTokens } from '@/services/tokenService';
@@ -89,6 +89,7 @@ for (const nextSession of ['logout', 'login'] as const) {
 }
 
 it('perfil persistido não duplica tokens durante login, atualização e renovação', async () => {
+  vi.stubEnv('DEV', false);
   const { result } = renderHook(useAuth, { wrapper: AuthProvider });
   act(() => result.current.login(user));
   expect(lerArmazenado(CHAVE_SESSAO)).not.toHaveProperty('token');
@@ -107,5 +108,68 @@ it('remove duplicações legadas ao restaurar o perfil', async () => {
   renderHook(useAuth, { wrapper: AuthProvider });
   await waitFor(() => expect(obterAccessToken()).toBe('restored'));
   expect(lerArmazenado(CHAVE_SESSAO)).not.toHaveProperty('token');
+  expect(lerArmazenado(CHAVE_SESSAO)).not.toHaveProperty('refreshToken');
+});
+
+for (const failure of ['network', '503', '403']) {
+  it(`restauração ${failure} preserva perfil e permite reconectar sem novo login`, async () => {
+    vi.stubEnv('DEV', false);
+    salvarArmazenado(CHAVE_SESSAO, { id: '1', name: 'Ana', email: 'a@x.com', role: 'admin' });
+    const fetcher = vi.fn();
+    if (failure === 'network') fetcher.mockRejectedValueOnce(new TypeError('offline'));
+    else fetcher.mockResolvedValueOnce(new Response('{}', { status: Number(failure) }));
+    fetcher.mockResolvedValueOnce(new Response('{"access_token":"restored"}'));
+    vi.stubGlobal('fetch', fetcher);
+    const { result } = renderHook(useAuth, { wrapper: AuthProvider });
+    await screen.findByRole('button', { name: 'Tentar reconectar' });
+    expect(lerArmazenado(CHAVE_SESSAO)).toMatchObject({ id: '1', name: 'Ana' });
+    fireEvent.click(screen.getByRole('button', { name: 'Tentar reconectar' }));
+    await waitFor(() => expect(result.current.isAuthenticated).toBe(true));
+    expect(result.current.isInitializing).toBe(false);
+    expect(obterAccessToken()).toBe('restored');
+    expect(fetcher).toHaveBeenCalledTimes(2);
+  });
+}
+
+it('restauração com cookie expirado encerra a sessão em vez de permitir acesso', async () => {
+  vi.stubEnv('DEV', false);
+  salvarArmazenado(CHAVE_SESSAO, { id: '1', name: 'Ana' });
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 401 })));
+  const { result } = renderHook(useAuth, { wrapper: AuthProvider });
+  await waitFor(() => expect(result.current.isInitializing).toBe(false));
+  expect(result.current.isAuthenticated).toBe(false);
+  expect(result.current.user).toBeNull();
+  expect(lerArmazenado(CHAVE_SESSAO)).toBeNull();
+  expect(screen.queryByRole('button', { name: 'Tentar reconectar' })).toBeNull();
+});
+
+for (const replacement of ['login', 'logout']) {
+  it(`não aplica restauração antiga após ${replacement}`, async () => {
+    vi.stubEnv('DEV', false);
+    salvarArmazenado(CHAVE_SESSAO, { id: '1', name: 'Ana' });
+    let finish!: (response: Response) => void;
+    vi.stubGlobal('fetch', vi.fn((input: RequestInfo | URL) => String(input).includes('/logout')
+      ? Promise.resolve(new Response(null, { status: 204 }))
+      : new Promise<Response>((resolve) => { finish = resolve; })));
+    const { result } = renderHook(useAuth, { wrapper: AuthProvider });
+    await waitFor(() => expect(finish).toBeDefined());
+    act(() => {
+      if (replacement === 'login') result.current.login({ ...user, id: '2', token: 'new-login' });
+      else result.current.logout();
+    });
+    await act(async () => { finish(new Response('{"access_token":"stale"}')); });
+    expect(result.current.isAuthenticated).toBe(replacement === 'login');
+    expect(result.current.user?.id).toBe(replacement === 'login' ? '2' : undefined);
+    expect(obterAccessToken()).toBe(replacement === 'login' ? 'new-login' : null);
+  });
+}
+
+it('evento de renovação preserva o refresh simulado de desenvolvimento', async () => {
+  vi.stubEnv('DEV', true);
+  const { result } = renderHook(useAuth, { wrapper: AuthProvider });
+  act(() => result.current.login({ ...user, refreshToken: 'mock-refresh' }));
+  await act(async () => { await executarRenovacaoToken(); });
+  expect(obterRefreshToken()).toBeTruthy();
+  expect(obterRefreshToken()).not.toBe('mock-refresh');
   expect(lerArmazenado(CHAVE_SESSAO)).not.toHaveProperty('refreshToken');
 });
