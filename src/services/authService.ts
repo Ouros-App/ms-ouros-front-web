@@ -372,6 +372,7 @@ export async function renovarToken(
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
+      body: refreshToken ? JSON.stringify({ refresh_token: refreshToken }) : undefined,
       signal,
     });
 
