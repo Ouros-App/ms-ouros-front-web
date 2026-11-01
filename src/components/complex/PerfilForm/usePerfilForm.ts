@@ -9,37 +9,35 @@ function iniciais(perfil: Perfil): PerfilValores {
         nome: perfil.nome,
         email: perfil.email,
         telefone: perfil.telefone,
-        senha: '',
     };
 }
 
-export function usePerfilForm(perfil: Perfil){
+export function usePerfilForm(perfil: Perfil) {
     const [values, setValues] = useState<PerfilValores>(() => iniciais(perfil));
     const [errors, setErrors] = useState<PerfilErros>({});
+
     const change = (campo: keyof PerfilValores, valor: string) => {
-    const tratado = campo === 'telefone' ? mascaraTelefone(valor) : valor;
-    setValues((atual) => ({ ...atual, [campo]: tratado }));
-    setErrors((atual) => ({ ...atual, [campo]: undefined }));
-};
-
-const validar = (): PerfilDadosFormulario | null => {
-    const encontrados = validatePerfil(values);
-    setErrors(encontrados);
-    
-    const primeiro = (Object.keys(encontrados) as (keyof PerfilValores)[])[0];
-    if (primeiro){
-        document.getElementById(`perfil-${primeiro}`)?.focus();
-        return null;
-    }
-    
-    return{
-        nome: sanitizeText(values.nome.trim()),
-        email: values.email.trim().toLowerCase(),
-        telefone: mascaraTelefone(values.telefone),
-        novaSenha: values.senha,
+        const tratado = campo === 'telefone' ? mascaraTelefone(valor) : valor;
+        setValues((atual) => ({ ...atual, [campo]: tratado }));
+        setErrors((atual) => ({ ...atual, [campo]: undefined }));
     };
-};
 
-const limparSenha = () => setValues((atual) => ({ ...atual, senha: '' }));
-return { values, errors, change, validar, limparSenha };
+    const validar = (): PerfilDadosFormulario | null => {
+        const encontrados = validatePerfil(values);
+        setErrors(encontrados);
+
+        const primeiro = (Object.keys(encontrados) as (keyof PerfilValores)[])[0];
+        if (primeiro) {
+            document.getElementById(`perfil-${primeiro}`)?.focus();
+            return null;
+        }
+
+        return {
+            nome: sanitizeText(values.nome.trim()),
+            email: values.email.trim().toLowerCase(),
+            telefone: mascaraTelefone(values.telefone),
+        };
+    };
+
+    return { values, errors, change, validar };
 }

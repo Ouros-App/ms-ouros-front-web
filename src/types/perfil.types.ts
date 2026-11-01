@@ -1,4 +1,6 @@
-export interface Perfil{
+import type React from 'react';
+
+export interface Perfil {
     id: string;
     nome: string;
     email: string;
@@ -8,27 +10,27 @@ export interface Perfil{
     idEnterprise?: number | null;
 }
 
-export interface PerfilAtualizacao{
+export interface PerfilAtualizacao {
     nome: string;
     email: string;
     telefone: string;
-    novaSenha: string;
     avatarUrl: string | null;
+    novaSenha?: string;
 }
 
-export type PerfilDadosFormulario = Omit<PerfilAtualizacao, 'avatarUrl'>;
+export type PerfilDadosFormulario = Omit<PerfilAtualizacao, 'avatarUrl' | 'novaSenha'>;
 export type PerfilStatus = 'carregando' | 'pronto' | 'erro';
 
-export interface PerfilValores{
+export interface PerfilValores {
     nome: string;
     telefone: string;
-    senha: string;
     email: string;
+    senha?: string;
 }
 
 export type PerfilErros = Partial<Record<keyof PerfilValores, string>>;
 
-export interface CampoPerfilProps{
+export interface CampoPerfilProps {
     id: string;
     rotulo: string;
     value: string;
@@ -45,7 +47,7 @@ export interface CampoPerfilProps{
     acao?: React.ReactNode;
 }
 
-export interface PerfilFotoProps{
+export interface PerfilFotoProps {
     nome: string;
     foto: string | null;
     erro: string;
@@ -54,8 +56,9 @@ export interface PerfilFotoProps{
     onRemover: () => void;
 }
 
-export interface PerfilFormProps{
+export interface PerfilFormProps {
     perfil: Perfil;
     onSalvar: (dados: PerfilDadosFormulario) => Promise<void>;
     onSair: () => void;
+    onTrocarSenha?: () => void;
 }

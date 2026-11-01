@@ -42,7 +42,7 @@
 .perfil-form__corpo {
     display: flex;
     flex-direction: column;
-    gap: 50px;
+    gap: 40px;
     min-width: 0;
     width: 100%;
 }
@@ -61,23 +61,60 @@
     }
 }
 
-.perfil-form__olho{
-    display: inline-flex;
-    height: 36px;
-    width: 36px;
-    flex-shrink: 0;
+.perfil-form__senha-box {
+    display: flex;
     align-items: center;
-    justify-content: center;
-    margin-right: 8px;
-    border: 0;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border: 1px solid #e5e7eb;
     border-radius: 8px;
-    background: transparent;
-    color: #374151;
-    cursor: pointer;
+    background: #f9fafb;
+    gap: 16px;
 }
 
-.perfil-form__olho:hover{
-    background: #f1f5f9;
+.perfil-form__senha-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.perfil-form__senha-rotulo {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #4b5563;
+}
+
+.perfil-form__senha-mascara {
+    font-size: 1rem;
+    letter-spacing: 2px;
+    color: #111827;
+}
+
+.perfil-form__trocar-senha {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 18px;
+    border: 1px solid #14113f;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #14113f;
+    font-family: inherit;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.perfil-form__trocar-senha:hover:not(:disabled) {
+    background: #14113f;
+    color: #ffffff;
+}
+
+.perfil-form__trocar-senha:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 .perfil-form__falha{
