@@ -39,7 +39,8 @@ export const ItensPrincipais: SidebarItem[] = [
         caminho: '/simulacao',
         icone: (
             <svg {...props}>
-                <path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11Z" />
+                <rect x="4" y="3" width="16" height="18" rx="2" />
+                <path d="M8 7h8M8 12h2M14 12h2M8 16h2M14 16h2" />
             </svg>
         ),
     },
@@ -48,8 +49,7 @@ export const ItensPrincipais: SidebarItem[] = [
         caminho: '/registros',
         icone: (
             <svg {...props}>
-                <rect x="4" y="3" width="16" height="18" rx="2" />
-                <path d="M8 7h8M8 12h2M14 12h2M8 16h2M14 16h2" />
+                <path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11Z" />
             </svg>
         ),
     },

@@ -17,7 +17,11 @@ export function useMetaForm(meta: MetaEstadual){
     };
     
     const validar = (): MetaEdicao | null =>{
-        const encontrados = validateMeta(values)
+        const encontrados = validateMeta(values);
+        if (meta.type === 'TASK_COMPLETION') {
+            delete encontrados.totalGranjas;
+            delete encontrados.concluidos;
+        }
         setErrors(encontrados);
         
         const primeiro = (Object.keys(encontrados) as (keyof MetaValores)[])[0];
@@ -27,6 +31,7 @@ export function useMetaForm(meta: MetaEstadual){
         }
 
         return{
+            type: meta.type,
             meta: sanitizeText(values.meta.trim()),
             totalGranjas: Number(values.totalGranjas),
             concluidos: Number(values.concluidos),

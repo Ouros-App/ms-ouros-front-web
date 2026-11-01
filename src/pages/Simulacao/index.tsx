@@ -41,13 +41,14 @@ export default function SimulacaoPage(){
             </header>
             
             <main id="conteudo-principal" className="simulacao-page__conteudo" tabIndex={-1}>
-                <label>Granja dos indicadores
-                    <select aria-label="Granja dos indicadores" value={idFarm} onChange={(e) => setIdFarm(e.target.value)}>
+                <div className="simulacao-page__filtro">
+                    <label htmlFor="indicadores-granja" className="simulacao-page__filtro-rotulo">Granja dos indicadores</label>
+                    <select id="indicadores-granja" className="simulacao-page__filtro-select" value={idFarm} onChange={(e) => setIdFarm(e.target.value)}>
                         <option value="">Selecione a granja</option>
                         {granjas.map((g) => <option key={g.id} value={g.id}>{g.nome}</option>)}
                     </select>
-                </label>
-                {erroGranjas && <p role="alert">{erroGranjas}</p>}
+                {erroGranjas && <p className="simulacao-page__filtro-erro" role="alert">{erroGranjas}</p>}
+                </div>
                 <IndicadoresSimulacao
                 indicadores={indicadores.indicadores}
                 status={indicadores.status}

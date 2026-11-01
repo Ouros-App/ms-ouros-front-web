@@ -3,18 +3,28 @@ import type { MetaCreation, MetaEdicao, MetaEstadual, ResumoMetas } from '@/type
 import { springRequest } from './springClient';
 import { ServiceError } from './authService';
 
-export async function lancarMetaEstadual(titulo: string, options?: MetaCreation): Promise<void> {
-    if (!options?.idFarm || !(options.targetValue > 0)) throw new ServiceError('Informe a granja e o valor alvo.');
-    const hoje = new Date();
-    const fim = new Date(hoje.getTime() + 90 * 86400000);
-    await springRequest('/state-goals', { method: 'POST', body: {
-        title: titulo, type: 'WATER_CONSUMPTION', status: 'Em andamento', target_value: options.targetValue,
-        date_creation: hoje.toISOString().slice(0, 10), date_end: fim.toISOString().slice(0, 10), id_farm: options.idFarm,
+export interface StateGoalAudience { state: string; id_enterprise: number; participants_count: number; }
+export interface StateGoalCreated extends StateGoalAudience { id: number; }
+export async function obterEstadosComGranjas(idEnterprise?: number | null, signal?: AbortSignal): Promise<string[]> {
+    return springRequest('/state-goals/states', { query: { id_enterprise: idEnterprise }, signal });
+}
+export async function obterPublicoMeta(state: string, idEnterprise?: number | null, signal?: AbortSignal): Promise<StateGoalAudience> {
+    return springRequest('/state-goals/audience', { query: { state, id_enterprise: idEnterprise }, signal });
+}
+export function dataLocal(date: Date): string {
+    return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+}
+export async function lancarMetaEstadual(titulo: string, options?: MetaCreation): Promise<StateGoalCreated> {
+    if (!options?.state || !options.dateEnd) throw new ServiceError('Informe a UF e o prazo.');
+    return springRequest('/state-goals/by-state', { method: 'POST', body: {
+        state: options.state, id_enterprise: options.idEnterprise ?? undefined,
+        goal: { title: titulo,
+            date_creation: dataLocal(new Date()), date_end: options.dateEnd },
     } });
 }
 
 export async function atualizarMeta(id: string, dados: MetaEdicao): Promise<void> {
-    await springRequest(`/state-goals/${encodeURIComponent(id)}`, { method: 'PATCH', body: { title: dados.meta, target_value: dados.totalGranjas } });
+    await springRequest(`/state-goals/${encodeURIComponent(id)}`, { method: 'PATCH', body: { title: dados.meta, ...(dados.type === 'TASK_COMPLETION' ? {} : { target_value: dados.totalGranjas }) } });
 }
 
 export async function excluirMeta(id: string): Promise<void> {
@@ -44,8 +54,10 @@ export async function listarMetasPaginadas(query: PageQuery, signal?: AbortSigna
     const summary = { total, concluidas, percentual: total > 0 ? (concluidas / total) * 100 : 0 };
     return { ...data, summary, content: data.content.map((m) => ({
         id: String(m.id), estado: m.region ?? '', meta: m.title,
+        type: m.type,
+        status: m.status,
         totalGranjas: m.target_value ?? 0,
-        concluidos: ['CONCLUIDA', 'COMPLETED', 'COMPLETED_SUCCESSFULLY'].includes(m.status.toUpperCase()) ? (m.target_value ?? 0) : 0,
+        concluidos: ['CONCLUIDA', 'COMPLETED', 'COMPLETED_SUCCESSFULLY'].includes((m.status ?? '').toUpperCase()) ? (m.target_value ?? 0) : 0,
     })) };
 }
 

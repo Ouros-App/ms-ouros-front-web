@@ -1,5 +1,6 @@
-export interface MetaCreation { idFarm: number; targetValue: number; }
+export interface MetaCreation { state: string; dateEnd: string; idEnterprise?: number | null; }
 export interface MetaEstadual{
+    type?: string;
     status?: string;
     id: string;
     estado: string;
@@ -8,7 +9,7 @@ export interface MetaEstadual{
     concluidos: number;
 }
 
-export type MetaEdicao = Pick<MetaEstadual, 'meta' | 'totalGranjas' | 'concluidos'>;
+export type MetaEdicao = Pick<MetaEstadual, 'meta' | 'totalGranjas' | 'concluidos' | 'type'>;
 export type MetasStatus = 'carregando' | 'pronto' | 'erro';
 
 export interface ResumoMetas{

@@ -4,7 +4,7 @@ import { springRequest } from '@/services/springClient';
 import { criarRegistro, atualizarRegistro } from '@/services/registroService';
 import { criarSimulacao } from '@/services/simulacoesService';
 import { atualizarPerfil } from '@/services/perfilService';
-import { lancarMetaEstadual } from '@/services/metasService';
+import { atualizarMeta, lancarMetaEstadual } from '@/services/metasService';
 const request = vi.mocked(springRequest);
 const record = { idLote: 'AUTO', dataEmissao: '2026-01-01', hidrometro: 125, custo: 10, entraram: 100, sairam: 10, idFarm: 4 };
 beforeEach(() => vi.resetAllMocks());
@@ -40,10 +40,27 @@ it('não inventa granja nem valor alvo para criar uma meta', async () => {
   expect(request).not.toHaveBeenCalled();
 });
 
-it('cria a meta com o status reconhecido pelo cálculo de progresso do banco', async () => {
-  request.mockResolvedValueOnce({ id: 1 });
-  await lancarMetaEstadual('Economizar água', { idFarm: 4, targetValue: 12.5 });
-  expect(request).toHaveBeenCalledWith('/state-goals', expect.objectContaining({
-    body: expect.objectContaining({ status: 'Em andamento' }),
+it('cria uma única meta por UF sem enviar uma granja arbitrária', async () => {
+  request.mockResolvedValueOnce({ id: 1, state: 'SP', id_enterprise: 2, participants_count: 3 });
+  const result = await lancarMetaEstadual('Economizar água', { state: 'SP', dateEnd: '2027-01-01' });
+  expect(result.participants_count).toBe(3);
+  expect(request).toHaveBeenCalledWith('/state-goals/by-state', expect.objectContaining({
+    body: expect.objectContaining({ state: 'SP', goal: expect.objectContaining({ title: 'Economizar água' }) }),
   }));
+  expect(request).toHaveBeenCalledTimes(1);
+});
+
+it('não envia alvo numérico nem tipo de consumo ao lançar uma meta descritiva', async () => {
+  request.mockResolvedValueOnce({ id: 1, participants_count: 2 });
+  await lancarMetaEstadual('Realizar manutenção', { state: 'SP', dateEnd: '2099-01-01' });
+  const init = request.mock.calls[0][1];
+  expect(init?.body).toMatchObject({ goal: { title: 'Realizar manutenção' } });
+  expect((init?.body as { goal: unknown }).goal).not.toHaveProperty('target_value');
+  expect((init?.body as { goal: unknown }).goal).not.toHaveProperty('type');
+});
+
+it('não altera o alvo interno ao editar o título de uma tarefa', async () => {
+  request.mockResolvedValueOnce({});
+  await atualizarMeta('1', { type: 'TASK_COMPLETION', meta: 'Revisar equipamentos', totalGranjas: 1, concluidos: 0 });
+  expect(request).toHaveBeenCalledWith('/state-goals/1', { method: 'PATCH', body: { title: 'Revisar equipamentos' } });
 });

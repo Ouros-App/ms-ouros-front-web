@@ -83,12 +83,13 @@ export function SimulacaoModal({ simulacao, onFechar, onSalvar }: SimulacaoModal
     <Dialogo titulo={simulacao ? 'Editar simulação' : 'Nova simulação'} onFechar={onFechar}>
         <form className="simulacao-form" onSubmit={enviar} noValidate>
             <div className="simulacao-form__grade">
-                <label>Granja
-                    <select aria-label="Granja" value={idFarm} onChange={(e) => setIdFarm(e.target.value)} disabled={enviando || Boolean(simulacao)} required>
+                <div className="simulacao-form__campo simulacao-form__campo--granja">
+                    <label htmlFor="simulacao-granja" className="simulacao-form__rotulo">Granja</label>
+                    <select id="simulacao-granja" className="simulacao-form__input simulacao-form__select" value={idFarm} onChange={(e) => setIdFarm(e.target.value)} disabled={enviando || Boolean(simulacao)} required>
                         <option value="">Selecione a granja</option>
                         {granjas.map((g) => <option key={g.id} value={g.id}>{g.nome}</option>)}
                     </select>
-                </label>
+                </div>
                 {campos.map((campo) => {
                     const id = `simulacao-${campo.nome}`;
                     const erro = errors[campo.nome];

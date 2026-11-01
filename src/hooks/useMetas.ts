@@ -10,9 +10,9 @@ export function useMetas() {
         listarMetasPaginadas({ page, size, search: busca }, signal), [busca]);
     const list = usePagedList<MetasPageResponse>(load);
     const lancar = async (titulo: string, options?: MetaCreation) => {
-        await lancarMetaEstadual(titulo, options);
+        const result = await lancarMetaEstadual(titulo, options);
         list.recarregar();
-        return 1;
+        return result.participants_count;
     };
     const salvar = async (id: string, dados: MetaEdicao) => { await atualizarMeta(id, dados); list.recarregar(); };
     const excluir = async (id: string) => { await excluirMeta(id); list.recarregar(); };

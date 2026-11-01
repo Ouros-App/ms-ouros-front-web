@@ -59,12 +59,13 @@ export function RegistroModal({ registro, onFechar, onSalvar }: RegistroModalPro
     <Dialogo titulo={registro ? 'Editar registro' : 'Novo registro'} onFechar={onFechar}>
         <form className="registro-form" onSubmit={enviar} noValidate>
             <div className="registro-form__grade">
-                <label>Granja
-                    <select aria-label="Granja" value={idFarm} onChange={(e) => setIdFarm(e.target.value)} disabled={enviando || Boolean(registro)} required>
+                <div className="registro-form__campo registro-form__campo--granja">
+                    <label htmlFor="registro-granja" className="registro-form__rotulo">Granja</label>
+                    <select id="registro-granja" className="registro-form__input registro-form__select" value={idFarm} onChange={(e) => setIdFarm(e.target.value)} disabled={enviando || Boolean(registro)} required>
                         <option value="">Selecione a granja</option>
                         {granjas.map((g) => <option key={g.id} value={g.id}>{g.nome}</option>)}
                     </select>
-                </label>
+                </div>
                 {campos.map((campo) => {
                     const id = `registro-${campo.nome}`;
                     const erro = errors[campo.nome];
@@ -108,7 +109,7 @@ export function RegistroModal({ registro, onFechar, onSalvar }: RegistroModalPro
                 </div>
             </div>
 
-            <p>A leitura inicial é registrada na granja. Na edição, o hidrômetro mostra o consumo acumulado da granja em m³.</p>
+            <p className="registro-form__ajuda">A leitura inicial é registrada na granja. Na edição, o hidrômetro mostra o consumo acumulado da granja em m³.</p>
             {falha && (
                 <p className="registro-form__falha" role="alert">
                     {falha}
