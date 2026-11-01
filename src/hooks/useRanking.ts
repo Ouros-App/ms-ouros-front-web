@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
-import { listarRankingPaginado, atualizarParticipante, excluirParticipante } from '@/services/rankingService';
-import type { ParticipanteEdicao, CampoOrdenacaoRanking } from '@/types/ranking.types';
+import { listarRankingPaginado } from '@/services/rankingService';
+import type { CampoOrdenacaoRanking } from '@/types/ranking.types';
 import { opcoesOrdenacaoRanking } from '@/utils/ranking';
 import { lerArmazenado, salvarArmazenado } from '@/utils/storage';
 import { usePagedList } from './usePagedList';
@@ -22,8 +22,6 @@ export function useRanking(empresaSelecionada?: number | null) {
         setOrdenacaoEstado(campo);
         salvarArmazenado(CHAVE, campo);
     }, []);
-    const salvar = async (id: string, dados: ParticipanteEdicao) => { await atualizarParticipante(id, dados); list.recarregar(); };
-    const excluir = async (id: string) => { await excluirParticipante(id); list.recarregar(); };
     return { participantes: list.items, status: list.status, mensagemErro: list.mensagemErro,
-        busca, ordenacao, setBusca, setOrdenacao, salvar, excluir, recarregar: list.recarregar, pagination: list.pagination };
+        busca, ordenacao, setBusca, setOrdenacao, recarregar: list.recarregar, pagination: list.pagination };
 }

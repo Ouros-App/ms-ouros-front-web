@@ -1,38 +1,11 @@
 import { Pagination } from '@/components/common/Pagination';
-import { useCallback, useState } from 'react';
-import type { CampoOrdenacaoRanking, ParticipanteEdicao, ParticipanteRanking, RankingCardProps } from '@/types/ranking.types';
+import type { CampoOrdenacaoRanking, RankingCardProps } from '@/types/ranking.types';
 import { opcoesOrdenacaoRanking } from '@/utils/ranking';
 import { sanitizeBusca } from '@/utils/sanitizadores';
-import { ConfirmarExclusao } from './ConfirmarExclusao';
-import { RankingModal } from './RankingModal';
 import { RankingTabela } from './RankingTabela';
 import './RankingCard.css';
 
-type DialogoAberto = | {tipo: 'editar'; participante: ParticipanteRanking} | {tipo: 'excluir'; participante: ParticipanteRanking} | null;
-
-export function RankingCard({ participantes, status, mensagemErro, busca, ordenacao, onBuscar, onOrdenar, onSalvar, onExcluir, onRecarregar, pagination }: RankingCardProps){
-    const [dialogo, setDialogo] = useState<DialogoAberto>(null);
-    const [aviso, setAviso] = useState('');
-    const fechar = useCallback(() => setDialogo(null), []);
-    const abrirEdicao = useCallback((participante: ParticipanteRanking) => setDialogo({ tipo: 'editar', participante }), []);
-    const abrirExclusao = useCallback((participante: ParticipanteRanking) => setDialogo({ tipo: 'excluir', participante }), []);
-    
-    const salvarComAviso = useCallback(
-        async (id: string, dados: ParticipanteEdicao) =>{
-            await onSalvar(id, dados);
-            setAviso(`Participante ${dados.nome} atualizado.`);
-        },
-        [onSalvar],
-    );
-
-    const excluirComAviso = useCallback(
-        async (id: string) => {
-            await onExcluir(id);
-            setAviso('Participante excluído.');
-        },
-        [onExcluir],
-    );
-    
+export function RankingCard({ participantes, status, mensagemErro, busca, ordenacao, onBuscar, onOrdenar, onRecarregar, pagination }: RankingCardProps){
     return(
         <section className="ranking-card" aria-label="Ranking de participantes">
             <div className="ranking-card__ferramentas">
@@ -74,11 +47,7 @@ export function RankingCard({ participantes, status, mensagemErro, busca, ordena
                 </div>
             </div>
 
-            <p className="ranking-card__oculto" role="status" aria-live="polite">
-                {aviso}
-            </p>
-
-            {status === 'carregando' && (
+{status === 'carregando' && (
                 <p className="ranking-card__estado" role="status">
                     Carregando ranking...
                 </p>
@@ -94,15 +63,7 @@ export function RankingCard({ participantes, status, mensagemErro, busca, ordena
             )}
 
             {status === 'pronto' && (
-                <RankingTabela participantes={participantes} onEditar={abrirEdicao} onExcluir={abrirExclusao} />
-            )}
-
-            {dialogo?.tipo === 'editar' && (
-                <RankingModal participante={dialogo.participante} onFechar={fechar} onSalvar={salvarComAviso} />
-            )}
-
-            {dialogo?.tipo === 'excluir' && (
-                <ConfirmarExclusao participante={dialogo.participante} onFechar={fechar} onExcluir={excluirComAviso} />
+                <RankingTabela participantes={participantes} />
             )}
         {pagination && <Pagination {...pagination} />}
         </section>

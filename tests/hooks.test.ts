@@ -4,8 +4,8 @@ import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
 import { useVerificationForm } from '@/components/complex/VerificationCard/useVerificationForm';
 import { useOtpCountdown } from '@/hooks/useOtpCountdown';
 import { useMetas } from '@/hooks/useMetas';
-vi.mock('@/services/metas.Service', () => ({ listarMetasPaginadas: vi.fn(), lancarMetaEstadual: vi.fn(), atualizarMeta: vi.fn(), excluirMeta: vi.fn() }));
-import { listarMetasPaginadas } from '@/services/metas.Service';
+vi.mock('@/services/metasService', () => ({ listarMetasPaginadas: vi.fn(), lancarMetaEstadual: vi.fn(), atualizarMeta: vi.fn(), excluirMeta: vi.fn() }));
+import { listarMetasPaginadas, lancarMetaEstadual } from '@/services/metasService';
 
 afterEach(() => { cleanup(); vi.useRealTimers(); vi.resetAllMocks(); });
 describe('código OTP', () => {
@@ -75,11 +75,13 @@ describe('gestão de metas paginadas', () => {
     const { result } = renderHook(useMetas);
     await waitFor(() => expect(result.current.status).toBe('pronto'));
     expect(result.current.resumo).toEqual(summary);
+    await act(async () => { expect(await result.current.lancar('Água')).toBe(1); });
+    expect(lancarMetaEstadual).toHaveBeenCalledWith('Água');
     act(() => result.current.pagination.onPageChange(1));
     await waitFor(() => expect(result.current.pagination.page).toBe(1));
     expect(result.current.resumo).toEqual(summary);
     await act(async () => { await result.current.salvar('1', { meta: 'Água', totalGranjas: 10, concluidos: 5 }); });
-    await waitFor(() => expect(listarMetasPaginadas).toHaveBeenCalledTimes(3));
+    await waitFor(() => expect(listarMetasPaginadas).toHaveBeenCalledTimes(4));
     act(() => result.current.setBusca('SP'));
     await waitFor(() => expect(listarMetasPaginadas).toHaveBeenLastCalledWith({ page: 0, size: 10, search: 'SP' }, expect.any(AbortSignal)));
   });

@@ -16,7 +16,6 @@ interface CampoConfig{
 const campos: CampoConfig[] =[
     { nome: 'meta', rotulo: 'Meta estadual', tipo: 'text', completo: true },
     { nome: 'totalGranjas', rotulo: 'Total de granjas', tipo: 'number' },
-    { nome: 'concluidos', rotulo: 'Concluídos', tipo: 'number' },
 ];
 
 export function MetaModal({ meta, onFechar, onSalvar }: MetaModalProps){

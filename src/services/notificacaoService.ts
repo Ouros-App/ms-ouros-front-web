@@ -66,3 +66,7 @@ export async function marcarComoLida(id: number): Promise<Notificacao> {
     );
     return paraNotificacao(dto);
 }
+
+export async function marcarTodasComoLidas(): Promise<void> {
+    await springRequest<void>('/notifications/read-all', { method: 'PATCH' });
+}

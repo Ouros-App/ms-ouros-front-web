@@ -5,7 +5,7 @@ import { springRequest } from '@/services/springClient';
 import { fetchComAuth } from '@/services/apiClient';
 import { listarRegistrosPaginados } from '@/services/registroService';
 import { listarSimulacoesPaginadas } from '@/services/simulacoesService';
-import { listarMetasPaginadas } from '@/services/metas.Service';
+import { listarMetasPaginadas } from '@/services/metasService';
 import { listarRankingPaginado } from '@/services/rankingService';
 import { getCorporateFarmsPage } from '@/services/telemetryDashboardService';
 import { getAdminAiSessionsPage } from '@/services/adminAiMetricsService';
