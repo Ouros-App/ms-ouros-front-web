@@ -28,12 +28,12 @@ function montarUrl(path: string, query?: Query): string {
 }
 
 async function mensagemDeErro(res: Response, fallback: string): Promise<string> {
-  if (res.status === 401) return 'Sessão expirada. Faça login novamente.';
-  if (res.status === 403) return 'Você não tem permissão para realizar esta ação.';
-  if (res.status === 503 || res.status === 502) return 'Serviço indisponível no momento. Tente novamente.';
   const corpo = (await res.json().catch(() => null)) as SpringErrorBody | null;
-  const detalhe = corpo?.errors?.[0]?.defaultMessage ?? corpo?.errors?.[0]?.message;
-  return detalhe ?? corpo?.detail ?? corpo?.message ?? fallback;
+  const detalhe = corpo?.errors?.[0]?.defaultMessage ?? corpo?.errors?.[0]?.message ?? corpo?.detail ?? corpo?.message;
+  if (res.status === 401) return detalhe ?? 'Sessão expirada. Faça login novamente.';
+  if (res.status === 403) return detalhe ?? 'Você não tem permissão para realizar esta ação.';
+  if (res.status === 503 || res.status === 502) return detalhe ?? 'Serviço indisponível no momento. Tente novamente.';
+  return detalhe ?? fallback;
 }
 
 /**

@@ -14,7 +14,7 @@ export interface PerfilAtualizacao {
     nome: string;
     email: string;
     telefone: string;
-    avatarUrl: string | null;
+    avatarUrl?: string | null;
     novaSenha?: string;
 }
 

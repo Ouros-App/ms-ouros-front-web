@@ -55,34 +55,67 @@ export async function obterPerfil(signal?: AbortSignal): Promise<Perfil | null> 
     }
 }
 
+function validarTelefone(telefone?: string): string {
+    const digitos = apenasDigitos(telefone ?? "");
+    if (digitos.length > 0 && (digitos.length < 10 || digitos.length > 13)) {
+        throw new ServiceError("Telefone inválido.");
+    }
+    return digitos;
+}
+
+function resolverPhotoUrlPatch(avatarUrl?: string | null): string | undefined {
+    if (avatarUrl === null) return "";
+    if (avatarUrl && URL_HTTP.test(avatarUrl)) return avatarUrl;
+    return undefined;
+}
+
+function montarPayloadPerfil(dados: PerfilAtualizacao): CompanyEmployeePatch {
+    if (dados.novaSenha) {
+        throw new ServiceError("Use a recuperação de senha para alterar a senha de acesso.");
+    }
+
+    const digitos = validarTelefone(dados.telefone);
+    const corpo: CompanyEmployeePatch = {};
+
+    const nome = dados.nome?.trim();
+    if (nome) {
+        corpo.name = nome;
+    }
+
+    if (digitos.length >= 10 && digitos.length <= 13) {
+        corpo.telephone = digitos;
+    }
+
+    if (dados.avatarUrl !== undefined) {
+        const photoUrl = resolverPhotoUrlPatch(dados.avatarUrl);
+        if (photoUrl !== undefined) {
+            corpo.photo_url = photoUrl;
+        }
+    }
+
+    return corpo;
+}
+
+function mesclarPerfilComAvatar(perfil: Perfil, avatarUrl?: string | null, persistivel = false): Perfil {
+    if (persistivel) return perfil;
+    if (avatarUrl === null) return { ...perfil, avatarUrl: null };
+    return { ...perfil, avatarUrl: avatarUrl ?? perfil.avatarUrl };
+}
+
 export async function atualizarPerfil(_id: string, dados: PerfilAtualizacao): Promise<Perfil> {
     try {
-        const digitos = apenasDigitos(dados.telefone);
-        if (digitos.length > 0 && (digitos.length < 10 || digitos.length > 13)) {
-            throw new ServiceError('Telefone inválido.');
-        }
-
-        const corpo: CompanyEmployeePatch = { name: dados.nome, telephone: digitos };
-        if (dados.novaSenha) throw new ServiceError('Use a recuperação de senha para alterar a senha de acesso.');
-        // photo_url aceita no máximo 500 caracteres: data-URLs (base64) não são enviadas ao backend.
-        const fotoPersistivel = dados.avatarUrl !== null && URL_HTTP.test(dados.avatarUrl);
-        if (fotoPersistivel && dados.avatarUrl) {
-            corpo.photo_url = dados.avatarUrl;
-        } else if (dados.avatarUrl === null) {
-            corpo.photo_url = '';
-        }
+        const corpo = montarPayloadPerfil(dados);
+        const fotoPersistivel = Boolean(dados.avatarUrl && URL_HTTP.test(dados.avatarUrl));
 
         const dto = await springRequest<CompanyEmployeeResponse>(
-            '/company-employees/me',
-            { method: 'PATCH', body: corpo },
-            'Não foi possível salvar o perfil.',
+            "/company-employees/me",
+            { method: "PATCH", body: corpo },
+            "Não foi possível salvar o perfil.",
         );
         const perfil = paraPerfil(dto);
         // Foto local (data-URL) vale apenas durante a sessão enquanto o backend não suporta upload.
-        return fotoPersistivel
-            ? perfil
-            : { ...perfil, avatarUrl: dados.avatarUrl === null ? null : (dados.avatarUrl ?? perfil.avatarUrl) };
+        return mesclarPerfilComAvatar(perfil, dados.avatarUrl, fotoPersistivel);
     } catch (error) {
-        throw falhar(error, 'Não foi possível salvar o perfil.');
+        throw falhar(error, "Não foi possível salvar o perfil.");
     }
 }

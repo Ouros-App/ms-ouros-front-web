@@ -35,6 +35,18 @@ it('atualiza o perfil autenticado sem usar o ID de uma tabela de outro perfil', 
   await atualizarPerfil('1', { nome: 'Ana', email: 'a@example.com', telefone: '', avatarUrl: null });
   expect(request).toHaveBeenCalledWith('/company-employees/me', expect.objectContaining({ method: 'PATCH' }), expect.any(String));
 });
+it('não envia photo_url no payload quando a foto não foi alterada', async () => {
+  request.mockResolvedValueOnce({ id: 1, name: 'Lucas Cayre', email: 'lucas@empresa.com' });
+  await atualizarPerfil('1', { nome: 'Lucas Cayre', email: 'lucas@empresa.com', telefone: '11999997888' });
+  expect(request).toHaveBeenCalledWith(
+    '/company-employees/me',
+    expect.objectContaining({
+      method: 'PATCH',
+      body: { name: 'Lucas Cayre', telephone: '11999997888' },
+    }),
+    expect.any(String),
+  );
+});
 it('não inventa granja nem valor alvo para criar uma meta', async () => {
   await expect(lancarMetaEstadual('Economizar água')).rejects.toThrow('Informe');
   expect(request).not.toHaveBeenCalled();
