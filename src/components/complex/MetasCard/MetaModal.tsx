@@ -78,6 +78,24 @@ export function MetaModal({ meta, onFechar, onSalvar }: MetaModalProps){
                             </div>
                         );
                     })}
+
+                    <div className="metas-form__campo metas-form__campo--completo">
+                        <label htmlFor="meta-status" className="metas-form__rotulo">
+                            Status da meta
+                        </label>
+                        <select
+                            id="meta-status"
+                            name="status"
+                            className="metas-form__input metas-form__select"
+                            value={values.status}
+                            onChange={(evento) => change('status', evento.target.value)}
+                            disabled={enviando}
+                        >
+                            <option value="PENDING">Pendente</option>
+                            <option value="IN_PROGRESS">Em andamento</option>
+                            <option value="COMPLETED">Concluída</option>
+                        </select>
+                    </div>
                 </div>
                 
                 {falha &&(
