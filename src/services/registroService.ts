@@ -97,31 +97,39 @@ export async function obterRegistro(id: string, signal?: AbortSignal, filtro?: F
  * Cria o lote inicial da empresa integradora.
  * A leitura de hidrômetro inicial é opcional; a fazenda alimenta posteriormente no ciclo.
  */
-export async function criarRegistro(dados: RegistroNovo, _filtro?: FiltroRegistros): Promise<Registro>{
-    try{
+export async function criarRegistro(dados: RegistroNovo, _filtro?: FiltroRegistros): Promise<Registro> {
+    try {
         const idFarm = dados.idFarm;
-        if (!idFarm) throw new ServiceError('Selecione a granja do lote.');
+        if (!idFarm) throw new ServiceError("Selecione a granja do lote.");
+
+        const body: Record<string, unknown> = {
+            received_chickens: dados.entraram,
+            delivered_chickens: dados.sairam ?? 0,
+            delivery_date: dados.dataEmissao,
+            cost: dados.custo,
+            id_farm: idFarm,
+        };
+
+        if (dados.hidrometro && dados.hidrometro > 0) {
+            body.hydrometer_reading = dados.hidrometro;
+        }
+
+        if (_filtro?.idEnterprise && _filtro.idEnterprise > 0) {
+            body.id_enterprise = _filtro.idEnterprise;
+        }
 
         const lote = await springRequest<LotResponse>(
             '/lots/aggregated',
             {
                 method: 'POST',
-                body: {
-                    received_chickens: dados.entraram,
-                    delivered_chickens: dados.sairam ?? 0,
-                    delivery_date: dados.dataEmissao,
-                    cost: dados.custo,
-                    hydrometer_reading: dados.hidrometro && dados.hidrometro > 0 ? dados.hidrometro : undefined,
-                    id_farm: idFarm,
-                    id_enterprise: _filtro?.idEnterprise ?? undefined,
-                },
+                body,
             },
-            'Não foi possível criar o registro.',
+            "Não foi possível criar o registro.",
         );
         return { ...dados, id: String(lote.id), idLote: `L-${lote.id}`, idFarm };
     }
     catch (error) {
-        throw falhar(error, 'Não foi possível criar o registro.');
+        throw falhar(error, "Não foi possível criar o registro.");
     }
 }
 

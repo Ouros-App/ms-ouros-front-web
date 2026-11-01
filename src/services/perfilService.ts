@@ -59,23 +59,29 @@ export async function atualizarPerfil(_id: string, dados: PerfilAtualizacao): Pr
     try {
         const digitos = apenasDigitos(dados.telefone);
         if (digitos.length > 0 && (digitos.length < 10 || digitos.length > 13)) {
-            throw new ServiceError('Telefone inválido.');
+            throw new ServiceError("Telefone inválido.");
         }
 
-        const corpo: CompanyEmployeePatch = { name: dados.nome, telephone: digitos };
-        if (dados.novaSenha) throw new ServiceError('Use a recuperação de senha para alterar a senha de acesso.');
+        const corpo: CompanyEmployeePatch = {};
+        if (dados.nome && dados.nome.trim()) {
+            corpo.name = dados.nome.trim();
+        }
+        if (digitos.length >= 10 && digitos.length <= 13) {
+            corpo.telephone = digitos;
+        }
+        if (dados.novaSenha) throw new ServiceError("Use a recuperação de senha para alterar a senha de acesso.");
         // photo_url aceita no máximo 500 caracteres: data-URLs (base64) não são enviadas ao backend.
         const fotoPersistivel = dados.avatarUrl !== null && URL_HTTP.test(dados.avatarUrl);
         if (fotoPersistivel && dados.avatarUrl) {
             corpo.photo_url = dados.avatarUrl;
         } else if (dados.avatarUrl === null) {
-            corpo.photo_url = '';
+            corpo.photo_url = "";
         }
 
         const dto = await springRequest<CompanyEmployeeResponse>(
-            '/company-employees/me',
-            { method: 'PATCH', body: corpo },
-            'Não foi possível salvar o perfil.',
+            "/company-employees/me",
+            { method: "PATCH", body: corpo },
+            "Não foi possível salvar o perfil.",
         );
         const perfil = paraPerfil(dto);
         // Foto local (data-URL) vale apenas durante a sessão enquanto o backend não suporta upload.
@@ -83,6 +89,6 @@ export async function atualizarPerfil(_id: string, dados: PerfilAtualizacao): Pr
             ? perfil
             : { ...perfil, avatarUrl: dados.avatarUrl === null ? null : (dados.avatarUrl ?? perfil.avatarUrl) };
     } catch (error) {
-        throw falhar(error, 'Não foi possível salvar o perfil.');
+        throw falhar(error, "Não foi possível salvar o perfil.");
     }
 }
