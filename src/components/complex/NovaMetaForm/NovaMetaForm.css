@@ -102,3 +102,5 @@
     border-color: #6561bd;
 }
 .nova-meta__campo:disabled{ cursor: not-allowed; opacity: 0.65; }
+
+.nova-meta__botao--lancar { width: auto; padding: 0 16px; font: inherit; }

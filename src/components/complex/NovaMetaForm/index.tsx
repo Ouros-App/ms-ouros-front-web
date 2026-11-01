@@ -1,112 +1,105 @@
-import { listarGranjas, type Granja } from '@/services/farmService';
-import {useEffect, useState} from 'react';
-import type { ChangeEvent, FormEvent } from 'react';
+import { useContext, useEffect, useState } from 'react';
+import type { FormEvent } from 'react';
+import { AuthContext } from '@/context/AuthContext';
+import { useAdminEnterprise } from '@/context/AdminEnterpriseContext';
+import { obterPublicoMeta, dataLocal, type StateGoalAudience } from '@/services/metasService';
 import type { NovaMetaFormProps } from '@/types/metas.types';
+import { estadosBrasil } from '@/utils/metas';
 import { isAbortError } from '@/utils/delay';
 import { validateTituloMeta, LIMITES_META } from '@/utils/metasValidators';
 import { sanitizeText } from '@/utils/sanitizadores';
-import './NovaMetaForm.css'
+import './NovaMetaForm.css';
 
-export function NovaMetaForm({onLancar}: NovaMetaFormProps){
-    const [granjas, setGranjas] = useState<Granja[]>([]);
-    const [idFarm, setIdFarm] = useState('');
+export function NovaMetaForm({ onLancar }: NovaMetaFormProps) {
+    const session = useContext(AuthContext);
+    const { empresaSelecionada } = useAdminEnterprise();
+    const admin = session?.user?.role === 'admin' || session?.user?.accountType === 'admin';
+    const enterpriseId = admin ? empresaSelecionada : null;
+    const [state, setState] = useState('');
     const [target, setTarget] = useState('');
+    const [title, setTitle] = useState('');
+    const [deadline, setDeadline] = useState(() => dataLocal(new Date(Date.now() + 90 * 86400000)));
+    const [audience, setAudience] = useState<(StateGoalAudience & { scope: number | null }) | null>(null);
+    const [audienceError, setAudienceError] = useState('');
+    const [attempt, setAttempt] = useState(0);
+    const [error, setError] = useState('');
+    const [message, setMessage] = useState('');
+    const [sending, setSending] = useState(false);
+    const ready = Boolean(audience && audience.state === state && audience.scope === enterpriseId);
+    const count = ready ? audience!.participants_count : 0;
+
     useEffect(() => {
+        setAudience(null);
+        setAudienceError('');
+        setMessage('');
+        if (!state || (admin && !enterpriseId)) return;
         const controller = new AbortController();
-        listarGranjas(controller.signal).then(setGranjas).catch((error: unknown) => {
-            if (!controller.signal.aborted) setErro(error instanceof Error ? error.message : 'Falha ao carregar granjas.');
+        obterPublicoMeta(state, enterpriseId, controller.signal).then((result) => {
+            if (!controller.signal.aborted) setAudience({ ...result, scope: enterpriseId });
+        }).catch((failure: unknown) => {
+            if (!controller.signal.aborted && !isAbortError(failure))
+                setAudienceError(failure instanceof Error ? failure.message : 'Não foi possível consultar os participantes.');
         });
         return () => controller.abort();
-    }, []);
-    const [titulo, setTitulo] = useState('');
-    const [erro, setErro] = useState('');
-    const [aviso, setAviso] = useState('');
-    const [enviando, setEnviando] = useState(false);
+    }, [state, enterpriseId, admin, attempt]);
 
-    const alterar = (evento: ChangeEvent<HTMLInputElement>) =>{
-        setTitulo(evento.target.value);
-        setErro('');
-        setAviso('');
-    };
-
-    const enviar = async(evento: FormEvent<HTMLFormElement>) =>{
-        evento.preventDefault();
-
-        if (!idFarm || !(Number(target) > 0)) { setErro('Informe a granja e o valor alvo.'); return; }
-        const mensagem = validateTituloMeta(titulo);
-        if (mensagem){
-            setErro(mensagem);
-            document.getElementById('meta-nova')?.focus();
-            return;
+    const submit = async (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        const titleError = validateTituloMeta(title);
+        if (titleError) { setError(titleError); return; }
+        if (!state || !Number.isFinite(Number(target)) || !(Number(target) > 0) || !deadline || deadline < dataLocal(new Date())) {
+            setError('Informe a UF, um valor alvo positivo e um prazo a partir de hoje.'); return;
         }
-
-            setEnviando(true);
-            setErro('');
-            setAviso('');
-
-            try{
-                await onLancar(sanitizeText(titulo.trim()), { idFarm: Number(idFarm), targetValue: Number(target) });
-                setTitulo('');
-                setAviso('Meta de consumo de água criada para a granja selecionada.');
-            }
-            catch(error){
-                if (isAbortError(error)) return;
-                setErro(error instanceof Error ? error.message : 'Não foi possível lançar a meta.');
-            }
-            finally{
-                setEnviando(false);
-            }
+        if (!ready || count === 0) { setError('Consulte uma UF com granjas participantes antes de lançar.'); return; }
+        setSending(true); setError(''); setMessage('');
+        try {
+            const actualCount = await onLancar(sanitizeText(title.trim()), {
+                state, targetValue: Number(target), dateEnd: deadline, idEnterprise: enterpriseId,
+            });
+            setTitle('');
+            setMessage(`Meta criada para ${actualCount} granja(s) de ${state}. Cada granja terá seu próprio andamento.`);
+        } catch (failure) {
+            if (!isAbortError(failure)) setError(failure instanceof Error ? failure.message : 'Não foi possível lançar a meta.');
+        } finally { setSending(false); }
     };
 
-    return(
-        <form className='nova-meta' onSubmit={enviar} noValidate>
-            <label htmlFor="meta-nova" className='nova-meta__titulo'>
-                Adicionar meta estadual:
-            </label>
-
-            <div className="nova-meta__grupo">
-            <label className="nova-meta__rotulo" htmlFor="meta-granja">Granja</label>
-                <select id="meta-granja" className="nova-meta__campo nova-meta__select" value={idFarm} onChange={(e) => setIdFarm(e.target.value)} disabled={enviando}>
-                    <option value="">Selecione a granja</option>
-                    {granjas.map((g) => <option key={g.id} value={g.id}>{g.nome}</option>)}
-                </select>
-            </div>
-            <div className="nova-meta__grupo">
-            <label className="nova-meta__rotulo" htmlFor="meta-alvo">Valor alvo de consumo de água (m³)</label>
-                <input id="meta-alvo" className="nova-meta__campo" aria-label="Valor alvo" type="number" min="0" step="any" value={target} onChange={(e) => setTarget(e.target.value)} disabled={enviando} />
-            </div>
-            <div className='nova-meta__linha'>
-                <input
-                id="meta-nova"
-                type="text"
-                className={`nova-meta__campo${erro ? ' nova-meta__campo--erro' : ''}`}
-                placeholder="Não gastar mais de 10L/ave."
-                value={titulo}
-                onChange={alterar}
-                maxLength={LIMITES_META.tituloMax}
-                aria-invalid={erro ? true : undefined}
-                aria-describedby={erro ? 'meta-nova-erro' : undefined}
-                disabled={enviando}
-                />
-
-                <button type='submit' className='nova-meta__botao' aria-label='Criar meta para a granja' title='Criar meta' disabled={enviando}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
-                        <path d="m5 12 5 5 9-11" />
-                    </svg>
-                </button>
-            </div>
-
-            {erro &&(
-                <p id='meta-nova-erro' className='nova-meta__erro' role='alert'>
-                    {erro}
-                </p>
-            )}
-
-            <p className='nova-meta__aviso' role='status' aria-live="polite">
-                {enviando ? 'Lançando meta...' : aviso}
-            </p>
-        </form>
-    );
+    return <form className="nova-meta" onSubmit={submit} noValidate>
+        <span className="nova-meta__titulo">Adicionar meta estadual</span>
+        {admin && !enterpriseId && <p role="status">Selecione uma integradora no contexto de empresa para lançar a meta.</p>}
+        <div className="nova-meta__grupo">
+            <label className="nova-meta__rotulo" htmlFor="meta-uf">Estado</label>
+            <select id="meta-uf" className="nova-meta__campo nova-meta__select" value={state}
+                onChange={(e) => { setState(e.target.value); setError(''); }} disabled={sending || (admin && !enterpriseId)}>
+                <option value="">Selecione a UF</option>
+                {estadosBrasil.map((uf) => <option key={uf.uf} value={uf.uf}>{uf.nome} ({uf.uf})</option>)}
+            </select>
+        </div>
+        <div className="nova-meta__grupo">
+            <label className="nova-meta__rotulo" htmlFor="meta-target">Valor alvo de consumo de água (m³)</label>
+            <input id="meta-target" className="nova-meta__campo" type="number" min="0" step="0.0001"
+                value={target} onChange={(e) => setTarget(e.target.value)} disabled={sending} />
+        </div>
+        <div className="nova-meta__grupo">
+            <label className="nova-meta__rotulo" htmlFor="meta-prazo">Prazo</label>
+            <input id="meta-prazo" className="nova-meta__campo" type="date" min={dataLocal(new Date())}
+                value={deadline} onChange={(e) => setDeadline(e.target.value)} disabled={sending} />
+        </div>
+        <div className="nova-meta__grupo">
+            <label className="nova-meta__rotulo" htmlFor="meta-nova">Título da meta</label>
+            <input id="meta-nova" className="nova-meta__campo" value={title} onChange={(e) => setTitle(e.target.value)}
+                maxLength={LIMITES_META.tituloMax} placeholder="Reduzir o consumo de água" disabled={sending} />
+        </div>
+        <div className="nova-meta__aviso" role="status" aria-live="polite">
+            {state && !ready && !audienceError && !(admin && !enterpriseId) && 'Consultando granjas participantes...'}
+            {ready && (count ? `${count} granja(s) de ${state} receberão a meta na empresa selecionada.` : 'Nenhuma granja elegível nesta UF e empresa.')}
+        </div>
+        {audienceError && <div role="alert"><p>{audienceError}</p>
+            <button type="button" onClick={() => setAttempt((n) => n + 1)}>Consultar novamente</button></div>}
+        <p className="nova-meta__aviso">Serão incluídas as granjas elegíveis no momento do lançamento. Novas granjas não entram automaticamente.</p>
+        <button type="submit" className="nova-meta__botao nova-meta__botao--lancar" disabled={sending || !ready || count === 0}>
+            {sending ? 'Lançando...' : 'Lançar meta estadual'}
+        </button>
+        {error && <p className="nova-meta__erro" role="alert">{error}</p>}
+        {message && <p className="nova-meta__aviso" role="status">{message}</p>}
+    </form>;
 }
-
-

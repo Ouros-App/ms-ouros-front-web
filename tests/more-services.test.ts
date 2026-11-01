@@ -11,8 +11,8 @@ afterEach(() => { vi.unstubAllGlobals(); limparTokens(); localStorage.clear(); }
 it('metas persistem na API e calculam resumo pelos status reais', async () => {
  const fetcher = vi.fn(async (_url: unknown, _init?: RequestInit) => new Response(JSON.stringify({content: [], totalElements: 2, totalPages: 1, page: 0, size: 10, statusCounts: { COMPLETED: 1, Pendente: 1 }})));
  vi.stubGlobal('fetch', fetcher);
- await metas.lancarMetaEstadual('Teste de consumo', { idFarm: 4, targetValue: 12.5 });
- expect(JSON.parse((fetcher.mock.calls[0][1]?.body as string)).target_value).toBe(12.5);
+ await metas.lancarMetaEstadual('Teste de consumo', { state: 'SP', targetValue: 12.5, dateEnd: '2027-01-01' });
+ expect(JSON.parse((fetcher.mock.calls[0][1]?.body as string)).goal.target_value).toBe(12.5);
  await metas.atualizarMeta('1', { meta: 'Atualizada', concluidos: 0, totalGranjas: 12.5 });
  await metas.excluirMeta('1');
  expect((await metas.obterResumoMetas()).percentual).toBe(50);

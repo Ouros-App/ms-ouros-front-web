@@ -40,10 +40,12 @@ it('não inventa granja nem valor alvo para criar uma meta', async () => {
   expect(request).not.toHaveBeenCalled();
 });
 
-it('cria a meta com o status reconhecido pelo cálculo de progresso do banco', async () => {
-  request.mockResolvedValueOnce({ id: 1 });
-  await lancarMetaEstadual('Economizar água', { idFarm: 4, targetValue: 12.5 });
-  expect(request).toHaveBeenCalledWith('/state-goals', expect.objectContaining({
-    body: expect.objectContaining({ status: 'Em andamento' }),
+it('cria uma única meta por UF sem enviar uma granja arbitrária', async () => {
+  request.mockResolvedValueOnce({ id: 1, state: 'SP', id_enterprise: 2, participants_count: 3 });
+  const result = await lancarMetaEstadual('Economizar água', { state: 'SP', targetValue: 12.5, dateEnd: '2027-01-01' });
+  expect(result.participants_count).toBe(3);
+  expect(request).toHaveBeenCalledWith('/state-goals/by-state', expect.objectContaining({
+    body: expect.objectContaining({ state: 'SP', goal: expect.objectContaining({ target_value: 12.5 }) }),
   }));
+  expect(request).toHaveBeenCalledTimes(1);
 });

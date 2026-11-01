@@ -1,3 +1,4 @@
+import { SeletorEmpresaAdm } from '@/components/complex/SeletorEmpresaAdm';
 import { MetasCard } from '@/components/complex/MetasCard';
 import { MetasResumo } from '@/components/complex/MetasResumo';
 import { PerfilUsuario } from '@/components/complex/PerfilUsuario';
@@ -25,6 +26,7 @@ export default function MetasPage(){
                     <h1 className="metas-page__titulo">Metas</h1>
 
                     <div className="metas-page__acoes-topo">
+                        <SeletorEmpresaAdm />
                         <PerfilUsuario />
                     </div>
                 </header>

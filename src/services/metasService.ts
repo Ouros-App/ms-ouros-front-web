@@ -3,13 +3,20 @@ import type { MetaCreation, MetaEdicao, MetaEstadual, ResumoMetas } from '@/type
 import { springRequest } from './springClient';
 import { ServiceError } from './authService';
 
-export async function lancarMetaEstadual(titulo: string, options?: MetaCreation): Promise<void> {
-    if (!options?.idFarm || !(options.targetValue > 0)) throw new ServiceError('Informe a granja e o valor alvo.');
-    const hoje = new Date();
-    const fim = new Date(hoje.getTime() + 90 * 86400000);
-    await springRequest('/state-goals', { method: 'POST', body: {
-        title: titulo, type: 'WATER_CONSUMPTION', status: 'Em andamento', target_value: options.targetValue,
-        date_creation: hoje.toISOString().slice(0, 10), date_end: fim.toISOString().slice(0, 10), id_farm: options.idFarm,
+export interface StateGoalAudience { state: string; id_enterprise: number; participants_count: number; }
+export interface StateGoalCreated extends StateGoalAudience { id: number; }
+export async function obterPublicoMeta(state: string, idEnterprise?: number | null, signal?: AbortSignal): Promise<StateGoalAudience> {
+    return springRequest('/state-goals/audience', { query: { state, id_enterprise: idEnterprise }, signal });
+}
+export function dataLocal(date: Date): string {
+    return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+}
+export async function lancarMetaEstadual(titulo: string, options?: MetaCreation): Promise<StateGoalCreated> {
+    if (!options?.state || !(options.targetValue > 0) || !options.dateEnd) throw new ServiceError('Informe a UF, o valor alvo e o prazo.');
+    return springRequest('/state-goals/by-state', { method: 'POST', body: {
+        state: options.state, id_enterprise: options.idEnterprise ?? undefined,
+        goal: { title: titulo, type: 'WATER_CONSUMPTION', target_value: options.targetValue,
+            date_creation: dataLocal(new Date()), date_end: options.dateEnd },
     } });
 }
 

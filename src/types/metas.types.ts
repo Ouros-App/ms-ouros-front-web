@@ -1,4 +1,4 @@
-export interface MetaCreation { idFarm: number; targetValue: number; }
+export interface MetaCreation { state: string; targetValue: number; dateEnd: string; idEnterprise?: number | null; }
 export interface MetaEstadual{
     status?: string;
     id: string;
