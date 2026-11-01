@@ -28,6 +28,16 @@ export default defineConfig(({ mode, command, isPreview }) => {
           changeOrigin: true,
           secure: false,
           configure: (proxy) => {
+            proxy.on('proxyRes', (proxyRes) => {
+              const setCookie = proxyRes.headers['set-cookie'];
+              if (Array.isArray(setCookie)) {
+                proxyRes.headers['set-cookie'] = setCookie.map((cookie) =>
+                  cookie
+                    .replace(/;\s*Secure/gi, '')
+                    .replace(/SameSite=None/gi, 'SameSite=Lax'),
+                );
+              }
+            });
             proxy.on('error', (err, _req, res) => {
               if (res && 'writeHead' in res && !res.headersSent) {
                 res.writeHead(503, { 'Content-Type': 'application/json' });
