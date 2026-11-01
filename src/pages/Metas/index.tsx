@@ -1,5 +1,5 @@
 import { MetasCard } from '@/components/complex/MetasCard';
-import { MetasResumo } from '@/components/complex/MetasReumo';
+import { MetasResumo } from '@/components/complex/MetasResumo';
 import { PerfilUsuario } from '@/components/complex/PerfilUsuario';
 import { Sidebar } from '@/components/complex/Sidebar';
 import { useMetas } from '@/hooks/useMetas';

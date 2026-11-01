@@ -11,7 +11,7 @@ function formatarData(iso: string): string {
 
 export function PerfilUsuario(){
     const {user} = useAuth();
-    const {naoLidas, notificacoes, status, mensagemErro, carregarLista, marcarLida} = useNotificacoes();
+    const {naoLidas, notificacoes, status, mensagemErro, carregarLista, marcarLida, marcarTodas} = useNotificacoes();
     const [aberto, setAberto] = useState(false);
     const raizRef = useRef<HTMLDivElement>(null);
     const nome = user?.name ?? 'Usuário';
@@ -54,6 +54,8 @@ export function PerfilUsuario(){
             {aberto && (
                 <div id="painel-notificacoes" className="perfil-usuario__painel" role="region" aria-label="Notificações">
                     <h2 className="perfil-usuario__painel-titulo">Notificações</h2>
+                    {status === 'pronto' && notificacoes.some((n) => !n.lida) && <button type="button" className="perfil-usuario__painel-acao" onClick={() => void marcarTodas()}>Marcar todas como lidas</button>}
+                    {status === 'pronto' && mensagemErro && <p role="alert" className="perfil-usuario__painel-info perfil-usuario__painel-info--erro">{mensagemErro}</p>}
                     {status === 'carregando' && <p role="status" className="perfil-usuario__painel-info">Carregando...</p>}
                     {status === 'erro' && (
                         <p role="alert" className="perfil-usuario__painel-info perfil-usuario__painel-info--erro">

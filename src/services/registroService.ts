@@ -65,19 +65,36 @@ export async function listarRegistro(signal?: AbortSignal, filtro?: FiltroRegist
     }
 }
 
-export async function obterRegistro(id:string, signal?: AbortSignal, filtro?: FiltroRegistros): Promise<Registro | null>{
-    try{
+export async function obterRegistro(id: string, signal?: AbortSignal, filtro?: FiltroRegistros): Promise<Registro | null> {
+    try {
+        try {
+            const resumo = await springRequest<ProductionSummary | ProductionSummary[]>(
+                `/lots/production-summaries/${encodeURIComponent(id)}`,
+                { signal },
+                'Não foi possível carregar o registro.',
+            );
+            if (resumo) {
+                if (Array.isArray(resumo)) {
+                    const encontrado = resumo.find((r) => String(r.id) === id);
+                    if (encontrado) return paraRegistro(encontrado);
+                } else if (resumo.id !== undefined && String(resumo.id) === id) {
+                    return paraRegistro(resumo);
+                }
+            }
+        } catch {
+            // Segue para fallback com busca na lista consolidada
+        }
+
         const todos = await buscarResumos(filtro, signal);
         return todos.find((r) => r.id === id) ?? null;
     }
-    catch(error){
-        throw falhar(error, 'Não foi possível carregar o registro.')
+    catch (error) {
+        throw falhar(error, 'Não foi possível carregar o registro.');
     }
 }
 
 /**
- * O backend persiste: aves recebidas (entraram), entregues (sairam), data de entrega, custo e granja.
- * O código do lote é gerado pelo servidor e o hidrômetro vem de leituras próprias (não editável via /lots).
+ * Cria o lote pelo endpoint agregado e envia a leitura inicial do hidrômetro na mesma operação.
  */
 export async function criarRegistro(dados: RegistroNovo, _filtro?: FiltroRegistros): Promise<Registro>{
     try{
@@ -102,7 +119,7 @@ export async function criarRegistro(dados: RegistroNovo, _filtro?: FiltroRegistr
         );
         return { ...dados, id: String(lote.id), idLote: `L-${lote.id}`, idFarm };
     }
-    catch(error){
+    catch (error) {
         throw falhar(error, 'Não foi possível criar o registro.');
     }
 }

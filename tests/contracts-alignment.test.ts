@@ -4,7 +4,7 @@ import { springRequest } from '@/services/springClient';
 import { criarRegistro, atualizarRegistro } from '@/services/registroService';
 import { criarSimulacao } from '@/services/simulacoesService';
 import { atualizarPerfil } from '@/services/perfilService';
-import { lancarMetaEstadual } from '@/services/metas.Service';
+import { lancarMetaEstadual } from '@/services/metasService';
 const request = vi.mocked(springRequest);
 const record = { idLote: 'AUTO', dataEmissao: '2026-01-01', hidrometro: 125, custo: 10, entraram: 100, sairam: 10, idFarm: 4 };
 beforeEach(() => vi.resetAllMocks());

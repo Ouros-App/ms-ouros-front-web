@@ -1,6 +1,6 @@
 import { afterEach, expect, it, vi } from 'vitest';
 vi.mock('@/utils/delay', () => ({ wait: async () => {}, isAbortError: (e: Error) => e?.name === 'AbortError' }));
-import * as metas from '@/services/metas.Service';
+import * as metas from '@/services/metasService';
 import * as ranking from '@/services/rankingService';
 import * as reset from '@/services/passwordResetService';
 import * as perfil from '@/services/perfilService';
@@ -17,11 +17,7 @@ it('metas persistem na API e calculam resumo pelos status reais', async () => {
  await metas.excluirMeta('1');
  expect((await metas.obterResumoMetas()).percentual).toBe(50);
 });
-it('ranking mantém edição local, aceita participantes da API e calcula previsão remota', async () => {
- const list = await ranking.listarParticipantes(); expect(list.length).toBeGreaterThan(0);
- expect((await ranking.atualizarParticipante(list[0].id, { nome: 'Ana', pontuacao: 10 })).nome).toBe('Ana');
- expect(await ranking.atualizarParticipante('ausente', { nome: 'A', pontuacao: 1 })).toMatchObject({ id: 'ausente', nome: 'A', pontuacao: 1 });
- await ranking.excluirParticipante(list[0].id); expect((await ranking.listarParticipantes()).some(p => p.id === list[0].id)).toBe(false);
+it('ranking consulta posição e calcula previsão remota', async () => {
  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ rank_position: 1, score: 8 }))));
  expect((await ranking.obterRankingGranja(1)).posicao).toBe(1);
  expect(ranking.paraPrevisao({ current_position: 3, simulated_position: 2, positions_gained: 1, simulated_league: 'ouro', total_farms: 5 })?.posicoesGanhas).toBe(1);

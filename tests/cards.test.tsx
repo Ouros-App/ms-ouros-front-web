@@ -54,3 +54,16 @@ for (const spec of cases) {
   });
  });
 }
+
+it('ranking é somente leitura e mantém pesquisa e recuperação', () => {
+ const props = common();
+ const participantes = [{ id: '1', nome: 'Ana', pontuacao: 8, atualizadoEm: '2026-01-01', posicao: 1, liga: 'ouro' as const }];
+ const view = render(<MemoryRouter><RankingCard {...props} participantes={participantes} /></MemoryRouter>);
+ expect(screen.getByText('Ana')).toBeTruthy();
+ expect(screen.queryByRole('button', { name: /Editar Ana|Excluir Ana/ })).toBeNull();
+ fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'Ana' } });
+ expect(props.onBuscar).toHaveBeenCalledWith('Ana');
+ view.rerender(<MemoryRouter><RankingCard {...props} status="erro" participantes={participantes} /></MemoryRouter>);
+ fireEvent.click(screen.getByRole('button', { name: /Tentar novamente/i }));
+ expect(props.onRecarregar).toHaveBeenCalled();
+});

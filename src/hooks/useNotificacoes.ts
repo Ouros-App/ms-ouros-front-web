@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { contarNaoLidas, listarNotificacoes, marcarComoLida } from "@/services/notificacaoService";
+import { contarNaoLidas, listarNotificacoes, marcarComoLida, marcarTodasComoLidas } from "@/services/notificacaoService";
 import type { Notificacao, NotificacoesStatus } from "@/types/notificacoes.types";
 import { isAbortError } from "@/utils/delay";
 
@@ -52,5 +52,16 @@ export function useNotificacoes(){
         }
     }, [notificacoes]);
 
-    return {naoLidas, notificacoes, status, mensagemErro, carregarLista, marcarLida};
+    const marcarTodas = useCallback(async () => {
+        try {
+            await marcarTodasComoLidas();
+            setNotificacoes((lista) => lista.map((n) => ({ ...n, lida: true })));
+            setNaoLidas(0);
+            setMensagemErro('');
+        } catch (error) {
+            setMensagemErro(error instanceof Error ? error.message : 'Não foi possível marcar as notificações como lidas.');
+        }
+    }, []);
+
+    return {marcarTodas, naoLidas, notificacoes, status, mensagemErro, carregarLista, marcarLida};
 }
