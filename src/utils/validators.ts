@@ -40,7 +40,7 @@ export const LIMITES_REGISTRO = {
     idLoteMax: 20,
 } as const;
 
-export function validateRegistro(values: RegistroValores): RegistroErrors{
+export function validateRegistro(values: RegistroValores, isEdicao = true): RegistroErrors{
     const errors: RegistroErrors = {};
     const idLote = values.idLote.trim();
     if(!isRequired(idLote)){
@@ -58,13 +58,15 @@ export function validateRegistro(values: RegistroValores): RegistroErrors{
     }
 
     const entraram = Number(values.entraram);
-        if (!isRequired(values.entraram) || !Number.isInteger(entraram) || entraram < 0){
-        errors.entraram = 'Informe um número inteiro de galinhas (0 ou mais).';
+    if (!isRequired(values.entraram) || !Number.isInteger(entraram) || entraram <= 0){
+        errors.entraram = 'Informe a quantidade de aves alojadas (maior que zero).';
     }
 
-    const sairam = Number(values.sairam);
-    if (!isRequired(values.sairam) || !Number.isInteger(sairam) || sairam < 0){
-        errors.sairam = 'Informa um número inteiro de galinhas (0 ou mais).';
+    if (isEdicao) {
+        const sairam = Number(values.sairam);
+        if (!isRequired(values.sairam) || !Number.isInteger(sairam) || sairam < 0){
+            errors.sairam = 'Informe um número inteiro de galinhas (0 ou mais).';
+        }
     }
     return errors;
 }

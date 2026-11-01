@@ -20,7 +20,7 @@ export function RegistroCard({registros, status, mensagemErro, busca, ordenacao,
     const salvarComAviso = useCallback(
         async (dados: RegistroNovo, id?: string) => {
             await onSalvar(dados, id);
-            setAviso(id ? `Registro do lote ${dados.idLote} atualizado.` : `Registro do lote ${dados.idLote} criado.` );
+            setAviso(id ? `Registro do lote ${dados.idLote} atualizado.` : `Lote ${dados.idLote} cadastrado.` );
         },
         [onSalvar],
     );
@@ -52,8 +52,8 @@ export function RegistroCard({registros, status, mensagemErro, busca, ordenacao,
                     />
                 </div>
 
-                <button type="button" className="registros-botao" onClick={() => setDialogo({tipo: 'form', registro: null})}>
-                    <span aria-hidden="true" className="registros-botao__ione">+</span> Novo Registro
+                <button type="button" className="registros-botao" onClick={() => setDialogo({tipo: 'form', registro: null})} aria-label="Cadastrar novo lote">
+                    <span aria-hidden="true" className="registros-botao__ione">+</span> Novo Lote
                 </button>
 
                 <div>

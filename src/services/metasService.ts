@@ -23,8 +23,21 @@ export async function lancarMetaEstadual(titulo: string, options?: MetaCreation)
     } });
 }
 
+export function isMetaConcluida(status?: string | null): boolean {
+    if (!status) return false;
+    const normalizado = status.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toUpperCase();
+    return ['CONCLUIDA', 'CONCLUIDO', 'COMPLETED', 'COMPLETED_SUCCESSFULLY', 'ACHIEVED', 'FINALIZADA', 'FINALIZADO'].includes(normalizado);
+}
+
 export async function atualizarMeta(id: string, dados: MetaEdicao): Promise<void> {
-    await springRequest(`/state-goals/${encodeURIComponent(id)}`, { method: 'PATCH', body: { title: dados.meta, ...(dados.type === 'TASK_COMPLETION' ? {} : { target_value: dados.totalGranjas }) } });
+    await springRequest(`/state-goals/${encodeURIComponent(id)}`, {
+        method: 'PATCH',
+        body: {
+            title: dados.meta,
+            ...(dados.status ? { status: dados.status } : {}),
+            ...(dados.type === 'TASK_COMPLETION' ? {} : { target_value: dados.totalGranjas }),
+        },
+    });
 }
 
 export async function excluirMeta(id: string): Promise<void> {
@@ -48,7 +61,7 @@ export async function listarMetasPaginadas(query: PageQuery, signal?: AbortSigna
         throw new ServiceError('Resumo global de metas indisponível.');
     }
     const concluidas = Object.entries(data.statusCounts)
-        .filter(([status]) => ['CONCLUIDA', 'COMPLETED', 'COMPLETED_SUCCESSFULLY'].includes(status.toUpperCase()))
+        .filter(([status]) => isMetaConcluida(status))
         .reduce((total, [, count]) => total + count, 0);
     const total = Object.values(data.statusCounts).reduce((sum, count) => sum + count, 0);
     const summary = { total, concluidas, percentual: total > 0 ? (concluidas / total) * 100 : 0 };
@@ -57,7 +70,7 @@ export async function listarMetasPaginadas(query: PageQuery, signal?: AbortSigna
         type: m.type,
         status: m.status,
         totalGranjas: m.target_value ?? 0,
-        concluidos: ['CONCLUIDA', 'COMPLETED', 'COMPLETED_SUCCESSFULLY'].includes((m.status ?? '').toUpperCase()) ? (m.target_value ?? 0) : 0,
+        concluidos: isMetaConcluida(m.status) ? (m.target_value ?? 1) : 0,
     })) };
 }
 

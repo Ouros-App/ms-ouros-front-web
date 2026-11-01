@@ -5,7 +5,7 @@ import { springRequest } from '@/services/springClient';
 import { fetchComAuth } from '@/services/apiClient';
 import { listarRegistrosPaginados } from '@/services/registroService';
 import { listarSimulacoesPaginadas } from '@/services/simulacoesService';
-import { listarMetasPaginadas } from '@/services/metasService';
+import { listarMetasPaginadas, isMetaConcluida, atualizarMeta } from '@/services/metasService';
 import { listarRankingPaginado } from '@/services/rankingService';
 import { getCorporateFarmsPage } from '@/services/telemetryDashboardService';
 import { getAdminAiSessionsPage } from '@/services/adminAiMetricsService';
@@ -53,3 +53,21 @@ for (const type of ['farms', 'sessions'] as const) {
   expect(result).toEqual({ content: [], ...envelope });
  });
 }
+
+
+it('isMetaConcluida reconhece status multilingue e atualizarMeta envia status', async () => {
+ expect(isMetaConcluida('COMPLETED')).toBe(true);
+ expect(isMetaConcluida('Concluída')).toBe(true);
+ expect(isMetaConcluida('CONCLUIDA')).toBe(true);
+ expect(isMetaConcluida('ACHIEVED')).toBe(true);
+ expect(isMetaConcluida('PENDING')).toBe(false);
+ expect(isMetaConcluida('Pendente')).toBe(false);
+ expect(isMetaConcluida(null)).toBe(false);
+
+ vi.mocked(springRequest).mockResolvedValueOnce({});
+ await atualizarMeta('42', { meta: 'Reduzir perdas', concluidos: 1, totalGranjas: 1, type: 'TASK_COMPLETION', status: 'COMPLETED' });
+ expect(springRequest).toHaveBeenCalledWith('/state-goals/42', {
+  method: 'PATCH',
+  body: { title: 'Reduzir perdas', status: 'COMPLETED' },
+ });
+});

@@ -9,7 +9,7 @@ export interface MetaEstadual{
     concluidos: number;
 }
 
-export type MetaEdicao = Pick<MetaEstadual, 'meta' | 'totalGranjas' | 'concluidos' | 'type'>;
+export type MetaEdicao = Pick<MetaEstadual, 'meta' | 'totalGranjas' | 'concluidos' | 'type'> & { status?: string };
 export type MetasStatus = 'carregando' | 'pronto' | 'erro';
 
 export interface ResumoMetas{
@@ -22,6 +22,7 @@ export interface MetaValores{
     meta: string;
     totalGranjas: string;
     concluidos: string;
+    status: string;
 }
 
 export type MetaErros = Partial<Record<keyof MetaValores, string>>;

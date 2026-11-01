@@ -1,4 +1,5 @@
 import type { MetaEstadual, ResumoMetas } from "@/types/metas.types";
+import { isMetaConcluida } from "@/services/metasService";
 
 export const estadosBrasil: {uf: string, nome: string, granjas: number}[] =[
     { uf: 'AC', nome: 'Acre', granjas: 12 },
@@ -31,12 +32,13 @@ export const estadosBrasil: {uf: string, nome: string, granjas: number}[] =[
 ];
 
 export function calcularProgresso(meta: MetaEstadual): number{
+    if (isMetaConcluida(meta.status)) return 100;
     if(meta.totalGranjas <= 0) return 0;
     return Math.round((meta.concluidos / meta.totalGranjas) * 100);
 }
 
 export function metCompleta(meta: MetaEstadual): boolean{
-    return meta.totalGranjas > 0 && meta.concluidos >= meta.totalGranjas;
+    return isMetaConcluida(meta.status) || (meta.totalGranjas > 0 && meta.concluidos >= meta.totalGranjas);
 }
 
 export function resumirMetas(metas: MetaEstadual[]): ResumoMetas{
