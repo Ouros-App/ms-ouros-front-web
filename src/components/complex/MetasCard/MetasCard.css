@@ -125,8 +125,17 @@
     border-radius: 12px;
 }
 
-.metas-tabela__rolagem{
+.metas-tabela__rolagem {
+    width: 100%;
+    max-height: 420px;
     overflow-x: auto;
+    overflow-y: auto;
+}
+
+.metas-tabela thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
 }
 
 .metas-tabela{
