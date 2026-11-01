@@ -94,7 +94,8 @@ export async function obterRegistro(id: string, signal?: AbortSignal, filtro?: F
 }
 
 /**
- * Cria o lote pelo endpoint agregado e envia a leitura inicial do hidrômetro na mesma operação.
+ * Cria o lote inicial da empresa integradora.
+ * A leitura de hidrômetro inicial é opcional; a fazenda alimenta posteriormente no ciclo.
  */
 export async function criarRegistro(dados: RegistroNovo, _filtro?: FiltroRegistros): Promise<Registro>{
     try{
@@ -107,10 +108,10 @@ export async function criarRegistro(dados: RegistroNovo, _filtro?: FiltroRegistr
                 method: 'POST',
                 body: {
                     received_chickens: dados.entraram,
-                    delivered_chickens: dados.sairam,
+                    delivered_chickens: dados.sairam ?? 0,
                     delivery_date: dados.dataEmissao,
                     cost: dados.custo,
-                    hydrometer_reading: dados.hidrometro,
+                    hydrometer_reading: dados.hidrometro && dados.hidrometro > 0 ? dados.hidrometro : undefined,
                     id_farm: idFarm,
                     id_enterprise: _filtro?.idEnterprise ?? undefined,
                 },
