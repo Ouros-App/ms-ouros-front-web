@@ -352,6 +352,55 @@ async function executarMockRefresh(
   };
 }
 
+function isMockRefreshToken(token?: string): boolean {
+  if (!import.meta.env.DEV || !token) return false;
+  return token.includes('mockSignature') || token.startsWith('mock-');
+}
+
+interface AuthErrorPayload {
+  detail?: string;
+  offline?: boolean;
+}
+
+async function tratarFalhaRenovacao(
+  res: Response,
+  refreshToken?: string,
+  signal?: AbortSignal,
+): Promise<KeycloakTokenResponse> {
+  if (res.status === 401 || res.status === 400) {
+    throw new SessaoExpiradaError(res.status);
+  }
+
+  const errorData = (await res.json().catch(() => null)) as AuthErrorPayload | null;
+  const isOffline = res.status === 502 || Boolean(errorData?.offline);
+
+  if (isOffline && import.meta.env.DEV && refreshToken) {
+    console.warn('[Auth] Backend offline durante renovação. Utilizando refresh mock.');
+    return executarMockRefresh(refreshToken, signal);
+  }
+
+  throw new ServiceError(
+    errorData?.detail || 'Não foi possível renovar a sessão. Tente novamente.',
+    res.status,
+  );
+}
+
+function tratarExcecaoRenovacao(
+  error: unknown,
+  refreshToken?: string,
+  signal?: AbortSignal,
+): Promise<KeycloakTokenResponse> {
+  if (isAbortError(error)) throw error;
+  if (error instanceof ServiceError) throw error;
+
+  if (import.meta.env.DEV && refreshToken) {
+    console.warn('[Auth] Conexão falhou durante renovação de token. Utilizando refresh mock.');
+    return executarMockRefresh(refreshToken, signal);
+  }
+
+  throw toServiceError(error, 'Não foi possível renovar a sessão.');
+}
+
 /**
  * Renovação de Sessão via refresh_token
  * POST /v1/auth/token/refresh
@@ -360,9 +409,7 @@ export async function renovarToken(
   refreshToken?: string,
   signal?: AbortSignal,
 ): Promise<KeycloakTokenResponse> {
-  // Se for token simulado em desenvolvimento
-  const isDev = import.meta.env.DEV;
-  if (isDev && refreshToken && (refreshToken.includes('mockSignature') || refreshToken.startsWith('mock-'))) {
+  if (isMockRefreshToken(refreshToken) && refreshToken) {
     return executarMockRefresh(refreshToken, signal);
   }
 
@@ -377,34 +424,12 @@ export async function renovarToken(
     });
 
     if (!res.ok) {
-      if (res.status === 401 || res.status === 400) {
-        throw new SessaoExpiradaError(res.status);
-      }
-
-      const errorData = (await res.json().catch(() => null)) as { detail?: string; offline?: boolean } | null;
-
-      if (
-        (res.status === 502 || errorData?.offline) &&
-        import.meta.env.DEV
-      ) {
-        console.warn('[Auth] Backend offline durante renovação. Utilizando refresh mock.');
-        if (refreshToken) return executarMockRefresh(refreshToken, signal);
-      }
-
-      throw new ServiceError(errorData?.detail || 'Não foi possível renovar a sessão. Tente novamente.', res.status);
+      return await tratarFalhaRenovacao(res, refreshToken, signal);
     }
 
     return (await res.json()) as KeycloakTokenResponse;
   } catch (error) {
-    if (isAbortError(error)) throw error;
-    if (error instanceof ServiceError) throw error;
-
-    if (import.meta.env.DEV) {
-      console.warn('[Auth] Conexão falhou durante renovação de token. Utilizando refresh mock.');
-      if (refreshToken) return executarMockRefresh(refreshToken, signal);
-    }
-
-    throw toServiceError(error, 'Não foi possível renovar a sessão.');
+    return await tratarExcecaoRenovacao(error, refreshToken, signal);
   }
 }
 
