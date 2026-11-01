@@ -40,6 +40,22 @@ it('modo de desenvolvimento suporta desafio simulado e renovação', async () =>
  expect(mascaraEmail('invalido')).toBe('invalido');
  expect(() => atualizarUsuarioCadastrado('inexistente', { name: 'A' })).toThrow();
 });
+it('renovação com falha 502/offline em desenvolvimento faz fallback mock e propaga erros reais', async () => {
+ vi.stubEnv('DEV', true);
+ const fetcher = vi.fn()
+   .mockResolvedValueOnce(new Response(JSON.stringify({ offline: true }), { status: 502 }))
+   .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+   .mockResolvedValueOnce(new Response(JSON.stringify({ detail: 'Token inválido' }), { status: 400 }));
+ vi.stubGlobal('fetch', fetcher);
+
+ const r1 = await renovarToken('token-offline');
+ expect(r1.access_token).toBeTruthy();
+
+ const r2 = await renovarToken('token-network');
+ expect(r2.access_token).toBeTruthy();
+
+ await expect(renovarToken('token-expirado')).rejects.toThrow();
+});
 it('JWT e persistência de tokens respeitam expiração e papéis', async () => {
  const token = `a.${btoa(JSON.stringify({ sub: 'u1', email: 'a@x.com', database_id: '5', roles: ['admin'], exp: Math.floor(Date.now()/1000)+3600 }))}.b`;
  expect(parseJwt(token)?.sub).toBe('u1');

@@ -54,6 +54,53 @@ for (const spec of cases) {
  });
 }
 
+it('permite abrir modal de novo lote, valida campos e envia cadastro', async () => {
+ const props = common();
+ const view = render(<MemoryRouter><RegistroCard {...props} registros={[]} /></MemoryRouter>);
+
+ fireEvent.click(screen.getByRole('button', { name: /Cadastrar novo lote/i }));
+ expect(screen.getByRole('heading', { name: 'Cadastrar novo lote' })).toBeTruthy();
+
+ expect(screen.queryByLabelText(/Hidrômetro/i)).toBeNull();
+ expect(screen.queryByLabelText(/Galinhas que saíram/i)).toBeNull();
+
+ // Preenche campos do lote sem selecionar a granja para testar erro de granja
+ fireEvent.change(screen.getByLabelText(/Data de alojamento/i), { target: { value: '2026-11-01' } });
+ fireEvent.change(screen.getByLabelText(/Galinhas que entraram/i), { target: { value: '5000' } });
+ fireEvent.change(screen.getByLabelText(/Custo inicial/i), { target: { value: '1500' } });
+
+ fireEvent.submit(view.container.querySelector('form')!);
+ expect(await screen.findByText('Selecione a granja.')).toBeTruthy();
+
+ // Agora seleciona a granja
+ fireEvent.change(screen.getByLabelText(/Granja/i), { target: { value: '4' } });
+
+ expect(screen.getByText('5.000')).toBeTruthy();
+
+ fireEvent.submit(view.container.querySelector('form')!);
+ await waitFor(() => expect(props.onSalvar).toHaveBeenCalledWith(
+  expect.objectContaining({
+   idFarm: 4,
+   dataEmissao: '2026-11-01',
+   entraram: 5000,
+   custo: 1500,
+   hidrometro: 0,
+   sairam: 0,
+  }),
+  undefined,
+ ));
+ await waitFor(() => expect(view.container.querySelector('dialog')).toBeNull());
+});
+
+it('permite cancelar abertura de novo lote', async () => {
+ const props = common();
+ const view = render(<MemoryRouter><RegistroCard {...props} registros={[]} /></MemoryRouter>);
+ fireEvent.click(screen.getByRole('button', { name: /Cadastrar novo lote/i }));
+ expect(view.container.querySelector('dialog')).toBeTruthy();
+ fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
+ await waitFor(() => expect(view.container.querySelector('dialog')).toBeNull());
+});
+
 it('ranking é somente leitura e mantém pesquisa e recuperação', () => {
  const props = common();
  const participantes = [{ id: '1', nome: 'Ana', pontuacao: 8, atualizadoEm: '2026-01-01', posicao: 1, liga: 'ouro' as const }];

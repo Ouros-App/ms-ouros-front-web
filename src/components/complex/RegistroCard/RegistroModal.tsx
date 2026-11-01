@@ -23,6 +23,16 @@ const campos: CampoConfig[] = [
     { nome: 'sairam', rotulo: 'Galinhas que saíram', tipo: 'number', passo: '1', somenteEdicao: true },
 ];
 
+function obterRotuloBotao(enviando: boolean, isEdicao: boolean): string {
+    if (enviando) {
+        return 'Salvando...';
+    }
+    if (isEdicao) {
+        return 'Salvar';
+    }
+    return 'Cadastrar Lote';
+}
+
 export function RegistroModal({ registro, onFechar, onSalvar }: RegistroModalProps) {
     const isEdicao = Boolean(registro);
     const { values, errors, change, validar, atuais } = useRegistroForm(registro);
@@ -130,7 +140,7 @@ export function RegistroModal({ registro, onFechar, onSalvar }: RegistroModalPro
                 </button>
                 
                 <button type="submit" className="registros-botao" disabled={enviando}>
-                    {enviando ? 'Salvando...' : (isEdicao ? 'Salvar' : 'Cadastrar Lote')}
+                    {obterRotuloBotao(enviando, isEdicao)}
                 </button>
             </div>
         </form>
