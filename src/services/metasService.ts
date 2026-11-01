@@ -49,6 +49,10 @@ export async function listarMetasPaginadas(query: PageQuery, signal?: AbortSigna
     })) };
 }
 
+export async function obterResumoMetas(signal?: AbortSignal): Promise<ResumoMetas> {
+    return (await listarMetasPaginadas({ page: 0, size: 1 }, signal)).summary;
+}
+
 function mapearSortMeta(sort?: string): string {
     const campos: Record<string, string> = {
         id: 'id', title: 'title', type: 'type', status: 'status', target_value: 'target_value',

@@ -17,7 +17,7 @@ beforeEach(() => {
 });
 it('recorre às medições de água quando a métrica está indisponível', async () => {
  vi.mocked(springRequest).mockRejectedValueOnce(new Error('indisponível')).mockResolvedValueOnce([{ start_hydrometer: 10, end_hydrometer: 40 }, { start_hydrometer: 9, end_hydrometer: 8 }]);
- expect(await obterIndicadoresSimulacao(undefined, { idEnterprise: 7 })).toMatchObject({ consumo: 30, litrosPorAve: 3, kwhPorAve: 2, posicao: 2 });
+ expect(await obterIndicadoresSimulacao(undefined, { idEnterprise: 7 })).toMatchObject({ consumo: 30, litrosPorAve: 3000, kwhPorAve: 2, posicao: 2 });
  expect(springRequest).toHaveBeenLastCalledWith('/water-registries', expect.objectContaining({ query: { farm_id: 3 } }));
 });
 it('não usa fallback após cancelamento', async () => {

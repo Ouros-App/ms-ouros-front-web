@@ -42,14 +42,11 @@ describe('serviço de registros', () => {
       expect.any(String),
     );
   });
-  it('cria registro com fallback para /lots se /lots/aggregated falhar', async () => {
-    request.mockRejectedValueOnce(new Error('Endpoint não encontrado'))
-      .mockResolvedValueOnce({ id: 9 })
-      .mockResolvedValueOnce([{ ...dto, id: 9 }]);
-    const resultado = await criarRegistro(dados);
-    expect(resultado.id).toBe('9');
-    expect(request).toHaveBeenNthCalledWith(1, '/lots/aggregated', expect.any(Object), expect.any(String));
-    expect(request).toHaveBeenNthCalledWith(2, '/lots', expect.any(Object), expect.any(String));
+  it('não repete a criação em endpoint legado quando o agregado falha', async () => {
+    request.mockRejectedValueOnce(new Error('Endpoint não encontrado'));
+    await expect(criarRegistro(dados)).rejects.toThrow('Não foi possível criar o registro.');
+    expect(request).toHaveBeenCalledTimes(1);
+    expect(request).toHaveBeenCalledWith('/lots/aggregated', expect.any(Object), expect.any(String));
   });
   it('cria, atualiza e exclui registro', async () => {
     request.mockResolvedValueOnce({ id: 3 });
