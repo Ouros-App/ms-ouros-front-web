@@ -1,3 +1,4 @@
+import { MetasTabela } from '@/components/complex/MetasCard/MetasTabela';
 import { MetaModal } from '@/components/complex/MetasCard/MetaModal';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
@@ -86,4 +87,19 @@ it('não mostra valor alvo na edição de metas acompanhadas por status', () => 
   render(<MetaModal meta={{ id: '1', type: 'TASK_COMPLETION', estado: 'SP', meta: 'Manutenção', totalGranjas: 1, concluidos: 0 }} onFechar={vi.fn()} onSalvar={vi.fn()} />);
   expect(screen.getByLabelText('Meta estadual')).toBeTruthy();
   expect(screen.queryByLabelText(/Valor alvo/)).toBeNull();
+});
+
+
+it('renderiza metas de status na tabela com indicação de conclusão por status', () => {
+  render(<MetasTabela metas={[{ id: '1', type: 'TASK_COMPLETION', estado: 'SP', meta: 'Manutenção', status: 'Pendente', totalGranjas: 1, concluidos: 0 }]} onEditar={vi.fn()} onExcluir={vi.fn()} />);
+  expect(screen.getByText('Conclusão por status')).toBeTruthy();
+  expect(screen.getByText('Pendente')).toBeTruthy();
+});
+
+it('permite salvar edição de meta descritiva sem exigir campos numéricos ocultos', async () => {
+  const onSalvar = vi.fn().mockResolvedValue(undefined);
+  render(<MetaModal meta={{ id: '1', type: 'TASK_COMPLETION', estado: 'SP', meta: 'Manutenção', totalGranjas: 1, concluidos: 0 }} onFechar={vi.fn()} onSalvar={onSalvar} />);
+  fireEvent.change(screen.getByLabelText('Meta estadual'), { target: { value: 'Nova Manutenção' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+  await waitFor(() => expect(onSalvar).toHaveBeenCalledWith('1', expect.objectContaining({ meta: 'Nova Manutenção', type: 'TASK_COMPLETION' })));
 });

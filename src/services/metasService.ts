@@ -51,8 +51,10 @@ export async function listarMetasPaginadas(query: PageQuery, signal?: AbortSigna
     const summary = { total, concluidas, percentual: total > 0 ? (concluidas / total) * 100 : 0 };
     return { ...data, summary, content: data.content.map((m) => ({
         id: String(m.id), estado: m.region ?? '', meta: m.title,
+        type: m.type,
+        status: m.status,
         totalGranjas: m.target_value ?? 0,
-        concluidos: ['CONCLUIDA', 'COMPLETED', 'COMPLETED_SUCCESSFULLY'].includes(m.status.toUpperCase()) ? (m.target_value ?? 0) : 0,
+        concluidos: ['CONCLUIDA', 'COMPLETED', 'COMPLETED_SUCCESSFULLY'].includes((m.status ?? '').toUpperCase()) ? (m.target_value ?? 0) : 0,
     })) };
 }
 

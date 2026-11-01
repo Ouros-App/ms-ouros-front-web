@@ -24,8 +24,8 @@ it('registros e simulações preservam os filtros e mapeiam apenas o content', a
 });
 
 it('metas exigem contagens e resumo global reais', async () => {
- vi.mocked(springRequest).mockResolvedValueOnce({ ...envelope, statusCounts: { CONCLUIDA: 2, Pendente: 1 }, content: [{ id: 1, title: 'Água', region: 'SP', status: 'Pendente', target_value: 999 }] });
- expect(await listarMetasPaginadas(query)).toMatchObject({ summary: { percentual: (2 / 3) * 100, concluidas: 2, total: 3 }, content: [{ totalGranjas: 999, concluidos: 0 }] });
+ vi.mocked(springRequest).mockResolvedValueOnce({ ...envelope, statusCounts: { CONCLUIDA: 2, Pendente: 1 }, content: [{ id: 1, title: 'Água', region: 'SP', type: 'TASK_COMPLETION', status: 'Pendente', target_value: 999 }] });
+ expect(await listarMetasPaginadas(query)).toMatchObject({ summary: { percentual: (2 / 3) * 100, concluidas: 2, total: 3 }, content: [{ totalGranjas: 999, concluidos: 0, type: 'TASK_COMPLETION', status: 'Pendente' }] });
  vi.mocked(springRequest).mockResolvedValueOnce({ ...envelope, statusCounts: undefined, content: [] });
  await expect(listarMetasPaginadas(query)).rejects.toThrow('Resumo global');
 });
