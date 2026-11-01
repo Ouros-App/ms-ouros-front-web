@@ -29,3 +29,8 @@ const rawSpringUrl = import.meta.env.DEV
 export const SPRING_API_URL = rawSpringUrl.replace(/\/+$/, '');
 
 export const STORAGE_VERSION = import.meta.env.VITE_STORAGE_VERSION || 'v1';
+
+export const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'mpyey2bi';
+export const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'ouros_profile_photos';
+export const CLOUDINARY_FOLDER = import.meta.env.VITE_CLOUDINARY_FOLDER || 'ouros/profiles';
+
