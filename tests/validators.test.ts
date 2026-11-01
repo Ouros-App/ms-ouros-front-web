@@ -3,6 +3,7 @@ import { validateMeta, validateTituloMeta } from '@/utils/metasValidators';
 import { validateRanking } from '@/utils/rankingValidators';
 import { validatePerfil } from '@/utils/perfilValidators';
 import { validateSimulacao } from '@/utils/simulacaoValidators';
+import { validateRegistro } from '@/utils/validators';
 
 describe('validações de formulários', () => {
   it('valida metas e impede concluídos acima do total', () => {
@@ -30,5 +31,21 @@ describe('validações de formulários', () => {
     expect(Object.keys(errors)).toHaveLength(7);
     expect(validateSimulacao({ ...valid, idLote: 'a'.repeat(21) }).idLote).toBeTruthy();
     expect(validateSimulacao({ ...valid, idLote: 'inválido!' }).idLote).toBeTruthy();
+  });
+  it('valida cadastro inicial de lote sem exigir saídas ou hidrômetro', () => {
+    const novoLote = { idLote: 'L-10', dataEmissao: '2026-11-01', entraram: '5000', custo: '15000', hidrometro: '', sairam: '' };
+    expect(validateRegistro(novoLote, false)).toEqual({});
+    const invalidNovoLote = { idLote: '', dataEmissao: 'invalida', entraram: '0', custo: '0', hidrometro: '', sairam: '' };
+    const erros = validateRegistro(invalidNovoLote, false);
+    expect(erros.idLote).toBeTruthy();
+    expect(erros.dataEmissao).toBeTruthy();
+    expect(erros.entraram).toBeTruthy();
+    expect(erros.sairam).toBeUndefined();
+  });
+  it('exige galinhas que saíram apenas na edição do ciclo', () => {
+    const edicaoValida = { idLote: 'L-10', dataEmissao: '2026-11-01', entraram: '5000', custo: '15000', hidrometro: '120', sairam: '150' };
+    expect(validateRegistro(edicaoValida, true)).toEqual({});
+    const edicaoInvalida = { idLote: 'L-10', dataEmissao: '2026-11-01', entraram: '5000', custo: '15000', hidrometro: '120', sairam: '' };
+    expect(validateRegistro(edicaoInvalida, true).sairam).toBeTruthy();
   });
 });

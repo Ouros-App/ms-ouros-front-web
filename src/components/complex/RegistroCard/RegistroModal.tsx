@@ -12,20 +12,24 @@ interface CampoConfig {
     rotulo: string;
     tipo: 'text' | 'date' | 'number';
     passo?: string;
+    somenteEdicao?: boolean;
 }
 
 const campos: CampoConfig[] = [
-        { nome: 'dataEmissao', rotulo: 'Data de emissão', tipo: 'date' },
-    { nome: 'hidrometro', rotulo: 'Hidrômetro (m³)', tipo: 'number', passo: 'any' },
-    { nome: 'custo', rotulo: 'Custo do lote (R$)', tipo: 'number', passo: '0.01' },
-    { nome: 'entraram', rotulo: 'Galinhas que entraram', tipo: 'number', passo: '1' },
-    { nome: 'sairam', rotulo: 'Galinhas que saíram', tipo: 'number', passo: '1' },
+    { nome: 'dataEmissao', rotulo: 'Data de alojamento / emissão', tipo: 'date' },
+    { nome: 'entraram', rotulo: 'Galinhas que entraram (alojadas)', tipo: 'number', passo: '1' },
+    { nome: 'custo', rotulo: 'Custo inicial do lote (R$)', tipo: 'number', passo: '0.01' },
+    { nome: 'hidrometro', rotulo: 'Hidrômetro (m³)', tipo: 'number', passo: 'any', somenteEdicao: true },
+    { nome: 'sairam', rotulo: 'Galinhas que saíram', tipo: 'number', passo: '1', somenteEdicao: true },
 ];
 
 export function RegistroModal({ registro, onFechar, onSalvar }: RegistroModalProps) {
+    const isEdicao = Boolean(registro);
     const { values, errors, change, validar, atuais } = useRegistroForm(registro);
     const [granjas, setGranjas] = useState<Granja[]>([]);
     const [idFarm, setIdFarm] = useState(registro?.idFarm ? String(registro.idFarm) : '');
+    const camposExibidos = campos.filter((c) => !c.somenteEdicao || isEdicao);
+
     useEffect(() => {
         const controller = new AbortController();
         listarGranjas(controller.signal).then(setGranjas).catch((error: unknown) => {
@@ -56,17 +60,17 @@ export function RegistroModal({ registro, onFechar, onSalvar }: RegistroModalPro
     };
     
     return (
-    <Dialogo titulo={registro ? 'Editar registro' : 'Novo registro'} onFechar={onFechar}>
+    <Dialogo titulo={isEdicao ? 'Editar registro do lote' : 'Cadastrar novo lote'} onFechar={onFechar}>
         <form className="registro-form" onSubmit={enviar} noValidate>
             <div className="registro-form__grade">
                 <div className="registro-form__campo registro-form__campo--granja">
                     <label htmlFor="registro-granja" className="registro-form__rotulo">Granja</label>
-                    <select id="registro-granja" className="registro-form__input registro-form__select" value={idFarm} onChange={(e) => setIdFarm(e.target.value)} disabled={enviando || Boolean(registro)} required>
+                    <select id="registro-granja" className="registro-form__input registro-form__select" value={idFarm} onChange={(e) => setIdFarm(e.target.value)} disabled={enviando || isEdicao} required>
                         <option value="">Selecione a granja</option>
                         {granjas.map((g) => <option key={g.id} value={g.id}>{g.nome}</option>)}
                     </select>
                 </div>
-                {campos.map((campo) => {
+                {camposExibidos.map((campo) => {
                     const id = `registro-${campo.nome}`;
                     const erro = errors[campo.nome];
                     
@@ -86,7 +90,7 @@ export function RegistroModal({ registro, onFechar, onSalvar }: RegistroModalPro
                         onChange={(evento) => change(campo.nome, evento.target.value)}
                         aria-invalid={erro ? true : undefined}
                         aria-describedby={erro ? `${id}-erro` : undefined}
-                        disabled={enviando || (Boolean(registro) && campo.nome === 'hidrometro')}
+                        disabled={enviando || (isEdicao && campo.nome === 'hidrometro')}
                         />
                         
                         {erro && (
@@ -109,7 +113,11 @@ export function RegistroModal({ registro, onFechar, onSalvar }: RegistroModalPro
                 </div>
             </div>
 
-            <p className="registro-form__ajuda">A leitura inicial é registrada na granja. Na edição, o hidrômetro mostra o consumo acumulado da granja em m³.</p>
+            <p className="registro-form__ajuda">
+                {isEdicao
+                    ? 'Na edição, o hidrômetro reflete o consumo acumulado registrado pela fazenda.'
+                    : 'Cadastre o lote para a granja. A fazenda lançará as leituras diárias de água, energia e mortalidade no aplicativo.'}
+            </p>
             {falha && (
                 <p className="registro-form__falha" role="alert">
                     {falha}
@@ -122,7 +130,7 @@ export function RegistroModal({ registro, onFechar, onSalvar }: RegistroModalPro
                 </button>
                 
                 <button type="submit" className="registros-botao" disabled={enviando}>
-                    {enviando ? 'Salvando...' : 'Salvar'}
+                    {enviando ? 'Salvando...' : (isEdicao ? 'Salvar' : 'Cadastrar Lote')}
                 </button>
             </div>
         </form>
