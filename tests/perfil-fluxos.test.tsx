@@ -258,7 +258,12 @@ describe('Perfil - Fluxo de Senha e Cloudinary', () => {
     const dialog = document.querySelector('dialog');
     expect(dialog).toBeTruthy();
 
-    // Clicar no botão Cancelar da modal fecha a modal
+    // Clicar no botão Fechar (✕) fecha a modal
+    const botaoFechar = screen.getByRole('button', { name: /fechar alteração de senha/i });
+    fireEvent.click(botaoFechar);
+
+    // Reabrir e fechar com o botão Cancelar
+    fireEvent.click(botaoAlterarSenha);
     const botaoCancelar = screen.getByRole('button', { name: /cancelar/i });
     fireEvent.click(botaoCancelar);
 

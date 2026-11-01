@@ -14,6 +14,7 @@ interface NewPasswordCardProps {
   readonly busy: boolean;
   readonly statusMessage: ReactNode;
   readonly onSave: (password: string) => void;
+  readonly onClose?: () => void;
 }
 
 interface EmailRequestCardProps {
@@ -28,7 +29,7 @@ interface EmailRequestCardProps {
 
 const EMAIL_VALIDO = /^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/;
 
-function NewPasswordCard({ busy, statusMessage, onSave }: Readonly<NewPasswordCardProps>) {
+function NewPasswordCard({ busy, statusMessage, onSave, onClose }: Readonly<NewPasswordCardProps>) {
   const [senha, setSenha] = useState('');
   const [confirmacao, setConfirmacao] = useState('');
   const [erroLocal, setErroLocal] = useState('');
@@ -94,6 +95,13 @@ function NewPasswordCard({ busy, statusMessage, onSave }: Readonly<NewPasswordCa
           {busy ? 'Salvando...' : 'Salvar nova senha'}
         </button>
       </form>
+      {onClose && (
+        <p className="login-card-footer">
+          <button type="button" className="login-card__link" onClick={onClose}>
+            Cancelar
+          </button>
+        </p>
+      )}
     </section>
   );
 }
@@ -200,6 +208,7 @@ export function PasswordResetFlow({ onClose, initialEmail, onSuccess }: Readonly
         busy={busy}
         statusMessage={statusMessage}
         onSave={(novaSenha) => void reset.confirmarSenha(novaSenha)}
+        onClose={onClose}
       />
     );
   }

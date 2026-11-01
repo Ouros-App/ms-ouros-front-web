@@ -134,6 +134,14 @@ export default function PerfilPage() {
                     onClose={() => setRedefinindoSenha(false)}
                 >
                     <div className="perfil-page__modal-conteudo">
+                        <button
+                            type="button"
+                            className="perfil-page__modal-fechar"
+                            onClick={() => setRedefinindoSenha(false)}
+                            aria-label="Fechar alteração de senha"
+                        >
+                            ✕
+                        </button>
                         <PasswordResetFlow
                             initialEmail={perfil.email}
                             onClose={() => setRedefinindoSenha(false)}
