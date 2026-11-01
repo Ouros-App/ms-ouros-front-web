@@ -64,15 +64,17 @@ export function NovaMetaForm({onLancar}: NovaMetaFormProps){
                 Adicionar meta estadual:
             </label>
 
-            <label>Granja
-                <select aria-label="Granja" value={idFarm} onChange={(e) => setIdFarm(e.target.value)} disabled={enviando}>
+            <div className="nova-meta__grupo">
+            <label className="nova-meta__rotulo" htmlFor="meta-granja">Granja</label>
+                <select id="meta-granja" className="nova-meta__campo nova-meta__select" value={idFarm} onChange={(e) => setIdFarm(e.target.value)} disabled={enviando}>
                     <option value="">Selecione a granja</option>
                     {granjas.map((g) => <option key={g.id} value={g.id}>{g.nome}</option>)}
                 </select>
-            </label>
-            <label>Valor alvo de consumo de água (m³)
-                <input aria-label="Valor alvo" type="number" min="0" step="any" value={target} onChange={(e) => setTarget(e.target.value)} disabled={enviando} />
-            </label>
+            </div>
+            <div className="nova-meta__grupo">
+            <label className="nova-meta__rotulo" htmlFor="meta-alvo">Valor alvo de consumo de água (m³)</label>
+                <input id="meta-alvo" className="nova-meta__campo" aria-label="Valor alvo" type="number" min="0" step="any" value={target} onChange={(e) => setTarget(e.target.value)} disabled={enviando} />
+            </div>
             <div className='nova-meta__linha'>
                 <input
                 id="meta-nova"
