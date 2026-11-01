@@ -302,3 +302,142 @@
         transform: translateY(60px);
     }
 }
+
+
+/* TABLETS */
+@media (min-width: 768px) and (max-width: 1100px) {
+    .perfil-page__coluna {
+        padding: 20px 24px 40px;
+    }
+
+    .perfil-page__grade {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 28px;
+        align-items: start;
+    }
+
+    .perfil-page__divisor {
+        display: none;
+    }
+
+    .perfil-page__grade > .perfil-foto {
+        width: 100%;
+        min-width: 0;
+        display: flex;
+        justify-content: center;
+    }
+
+    .perfil-page__grade > .perfil-form {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        margin: 0;
+        transform: none;
+        justify-self: stretch;
+    }
+}
+
+/* CELULARES */
+@media (max-width: 767px) {
+    .perfil-page {
+        width: 100%;
+        min-height: 100dvh;
+        overflow-x: hidden;
+    }
+
+    .perfil-page__coluna {
+        width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+        padding: 18px 16px 100px;
+        overflow: hidden;
+    }
+
+    .perfil-page__topo {
+        align-items: flex-start;
+        margin-bottom: 24px;
+    }
+
+    .perfil-page__titulo {
+        font-size: clamp(1.05rem, 4vw, 1.4rem);
+    }
+
+    .perfil-page__grade {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 28px;
+        width: 100%;
+        min-width: 0;
+    }
+
+    .perfil-page__divisor {
+        display: none;
+    }
+
+    .perfil-page__grade > .perfil-foto {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        min-width: 0;
+        margin: 0;
+    }
+
+    .perfil-page__grade > .perfil-form {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        margin: 0;
+        padding: 0;
+        transform: none;
+        justify-self: stretch;
+        box-sizing: border-box;
+    }
+
+    .perfil-page__fundo {
+        width: 100%;
+        max-width: 100%;
+        opacity: 0.2;
+    }
+
+    .perfil-page__modal-dialog {
+        width: calc(100vw - 24px);
+        max-width: 100%;
+        max-height: calc(100dvh - 24px);
+        box-sizing: border-box;
+    }
+
+    .perfil-page__modal-conteudo {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .perfil-page__modal-conteudo .login-card.password-reset-card {
+        width: 100%;
+        max-width: 100%;
+        min-height: 0;
+        height: auto;
+        padding: 54px 18px 24px;
+        box-sizing: border-box;
+    }
+
+    .perfil-page__modal-conteudo .verification-card {
+        width: 100%;
+        max-width: 100%;
+        min-height: 0;
+        box-sizing: border-box;
+    }
+}
+
+@media (max-width: 480px) {
+    .perfil-page__coluna {
+        padding-right: 12px;
+        padding-left: 12px;
+    }
+
+    .perfil-page__aviso-sucesso {
+        width: 100%;
+        box-sizing: border-box;
+    }
+}
+
