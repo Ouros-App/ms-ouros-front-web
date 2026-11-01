@@ -1,29 +1,22 @@
 .verification-card {
-  width: 720px;
-  max-width: 852px;
-  height: 760px;
-  min-height: 300px;
-  margin: 0 auto;
-  padding: 40px 36px 36px 36px;
-  border: 2.5px solid #d8a23a;
-  border-radius: 25px;
-  background: #ffffff;
-  color: #1e293b;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  font-family: 'Poppins', sans-serif;
-  position: relative;
-  z-index: 999;
-  box-shadow: 0 10px 30px rgba(3, 20, 58, 0.12);
+    max-width: 852px;
+    min-height: 300px;
+    margin: 0 auto;
+    height: 760px;
+    width: 720px;
+    border: 2px solid #f5b82e;
+    border-radius: 13px;
+    background: #ffffff;
+    color: var(--ink);
+    box-shadow: none;
+    box-sizing: border-box;
+    z-index: 999;
+    margin-left: 50px;
 }
 
 .verification-card__badge {
-  width: 90px;
-  height: 90px;
+  width: 75px;
+  height: 75px;
   border-radius: 50%;
   background: rgba(216, 162, 58, 0.24);
   display: flex;
@@ -32,6 +25,9 @@
   margin-bottom: 20px;
   flex-shrink: 0;
   transition: transform 0.3s ease;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 95px;
 }
 
 .verification-card__badge:hover {
@@ -39,8 +35,8 @@
 }
 
 .verification-card__badge-icon {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   display: block;
 }
 
@@ -48,15 +44,18 @@
   width: 100%;
   max-width: 480px;
   margin-bottom: 24px;
+  margin-left: 110px;
+  text-align: center;
 }
 
 .verification-card__title {
   margin: 0 0 8px 0;
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 600;
   line-height: 1.25;
   color: #082b5c;
   letter-spacing: -0.02em;
+  text-align: center;
 }
 
 .verification-card__subtitle {
@@ -65,6 +64,8 @@
   font-weight: 400;
   line-height: 1.45;
   color: #5e5e5e;
+  text-align: center;
+  width: 100%;
 }
 
 .verification-card__email-highlight {
@@ -92,7 +93,7 @@
 }
 
 .verification-card__spam-hint {
-  margin: 10px 0 0 0;
+  margin: 30px 0 0 0;
   font-size: 13px;
   color: #71717a;
   line-height: 1.4;
@@ -114,11 +115,12 @@
   gap: 10.8px;
   width: 100%;
   margin-bottom: 24px;
+  margin-left: 200px;
 }
 
 .verification-card__otp-box {
-  width: 67.5px;
-  height: 87.75px;
+  width: 60.5px;
+  height: 80.75px;
   box-sizing: border-box;
   padding: 0;
   border: 1.35px solid #b1afaf;
@@ -161,6 +163,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-left: 200px;
   gap: 8px;
 }
 
@@ -183,15 +186,15 @@
 }
 
 .verification-card__submit {
-  width: 100%;
+  width: 870%;
   max-width: 460px;
-  height: 67.5px;
+  height: 47.5px;
   border: none;
-  border-radius: 16.2px;
+  border-radius: 10px;
   background: #171438;
   color: #ffffff;
   font-family: 'Poppins', sans-serif;
-  font-size: 21.6px;
+  font-size: 15px;
   font-weight: 600;
   letter-spacing: -0.02em;
   display: flex;
@@ -200,6 +203,8 @@
   gap: 12px;
   cursor: pointer;
   transition: background-color 0.2s, opacity 0.2s, transform 0.1s;
+  margin-left: 200px;
+  margin-top: 8px;
 }
 
 .verification-card__submit:hover:not(:disabled) {
@@ -225,7 +230,7 @@
 }
 
 .verification-card__footer {
-  margin-top: 20px;
+  margin-top: 40px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -234,7 +239,7 @@
 
 .verification-card__resend-text {
   margin: 0;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 400;
   color: #9f9f9f;
 }
@@ -245,7 +250,7 @@
   padding: 0;
   margin-left: 6px;
   font-family: 'Poppins', sans-serif;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   color: #110b95;
   cursor: pointer;
@@ -269,7 +274,7 @@
   border: none;
   padding: 6px 12px;
   font-family: 'Poppins', sans-serif;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
   color: #5e5e5e;
   cursor: pointer;
@@ -348,3 +353,168 @@
     font-size: 14px;
   }
 }
+
+@media (max-width: 1200px) and (min-width: 768px) {
+
+  .login-card {
+      margin-left: 0;
+      flex-shrink: 1;
+  }
+
+  .login-card-field,
+  .login-card__status,
+  .login-card-submit {
+      max-width: 100%;
+      box-sizing: border-box;
+  }
+
+  .login-card__input {
+      min-width: 0;
+      box-sizing: border-box;
+  }
+
+  .login-card-footer {
+      position: absolute;
+      left: 50%;
+      transform: translate(-50%, 240px);
+      width: max-content;
+      max-width: 100%;
+  }
+}
+
+/* =========================================
+ TABLETS
+========================================= */
+
+@media (max-width: 767px) {
+
+  .login-card {
+      width: 100%;
+      max-width: 720px;
+      height: auto;
+      min-height: 300px;
+      margin: 0 auto;
+  }
+
+  .login-card-title,
+  .login-card-subtitle {
+      transform: translateY(100px);
+  }
+
+  .login-card__form {
+      width: 100%;
+      min-width: 0;
+  }
+
+  .login-card-field {
+      width: 87%;
+      max-width: 100%;
+  }
+
+  .login-card__input {
+      width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+  }
+
+  .login-card__status {
+      max-width: 87%;
+      box-sizing: border-box;
+  }
+
+  .login-card-submit {
+      max-width: 87%;
+      box-sizing: border-box;
+  }
+
+  .login-card-footer {
+      position: static;
+      width: 100%;
+      transform: none;
+      margin-top: 0;
+  }
+}
+
+/* =========================================
+ CELULARES
+========================================= */
+
+@media (max-width: 480px) {
+
+  .login-card {
+      width: calc(100vw - 32px);
+      padding: 32px 12px;
+  }
+
+  .login-card-title {
+      font-size: 25px;
+  }
+
+  .login-card-field {
+      width: 87%;
+      transform: translate(0, 120px);
+      margin: 0 auto;
+  }
+
+  .login-card__status {
+      width: 87%;
+      transform: translate(0, 100px);
+      margin-left: auto;
+      margin-right: auto;
+  }
+
+  .login-card-submit {
+      width: 87%;
+      transform: translate(0, 120px);
+      margin-left: auto;
+      margin-right: auto;
+  }
+
+  .login-card-forgot {
+      max-width: 87%;
+  }
+
+  .login-card-footer {
+      font-size: 12px;
+  }
+}
+
+/* =========================================
+ CELULARES PEQUENOS
+========================================= */
+
+@media (max-width: 350px) {
+
+  .login-card {
+      width: calc(100vw - 20px);
+      padding-left: 8px;
+      padding-right: 8px;
+  }
+
+  .login-card-title {
+      font-size: 23px;
+  }
+
+  .login-card__input {
+      font-size: 13px;
+      padding-left: 9px;
+      padding-right: 9px;
+  }
+}
+
+/* =========================================
+ TELAS COM POUCA ALTURA
+========================================= */
+
+@media (max-height: 560px) {
+
+  .login-card {
+      height: auto;
+      min-height: 300px;
+  }
+
+  .login-page {
+      overflow-y: auto;
+  }
+}
+

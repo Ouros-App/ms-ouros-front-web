@@ -11,6 +11,7 @@ import { usePerfilFoto } from '@/hooks/usePerfilFoto';
 import type { PerfilDadosFormulario } from '@/types/perfil.types';
 import { asaFundo } from '../Simulacao/simulacaoAssets';
 import './Perfil.css';
+import './VerificationCardPerfil.css';
 
 export default function PerfilPage() {
     const { logout } = useAuth();
@@ -80,7 +81,6 @@ export default function PerfilPage() {
 
                 <header className="perfil-page__topo">
                     <h1 className="perfil-page__titulo">Perfil - Informações pessoais</h1>
-                    <p className="perfil-page__subtitulo">Altere suas informações quando necessário</p>
                     {avisoSenha && (
                         <div className="perfil-page__aviso-sucesso" role="status" aria-live="polite">
                             <span>{avisoSenha}</span>

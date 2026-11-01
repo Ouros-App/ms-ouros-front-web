@@ -1,12 +1,17 @@
 .metas-card {
     position: relative;
     z-index: 1;
-    border: 1px solid #e6e9f2;
-    border-radius: 14px;
-    background: #ffffff;
-    padding: 24px 18px;
-    box-shadow: 0 10px 30px rgba(10, 20, 80, 0.08);
-    font-family: 'Poppins', sans-serif;
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 26px;
+    padding: 24px 18px 190px;
+    background: rgba(255, 255, 255, 0);
+    border: 1px solid rgba(255, 255, 255, 0.65);
+    border-radius: 18px;
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(78px);
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
+    top: 20px;
 }
 
 .metas-card__oculto{
@@ -120,8 +125,17 @@
     border-radius: 12px;
 }
 
-.metas-tabela__rolagem{
+.metas-tabela__rolagem {
+    width: 100%;
+    max-height: 420px;
     overflow-x: auto;
+    overflow-y: auto;
+}
+
+.metas-tabela thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
 }
 
 .metas-tabela{

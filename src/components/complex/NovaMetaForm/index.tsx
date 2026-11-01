@@ -103,16 +103,19 @@ export function NovaMetaForm({ onLancar }: NovaMetaFormProps) {
                 {estadosDisponiveis.map((uf) => <option key={uf.uf} value={uf.uf}>{uf.nome} ({uf.uf})</option>)}
             </select>
         </div>
+
         <div className="nova-meta__grupo">
             <label className="nova-meta__rotulo" htmlFor="meta-prazo">Prazo</label>
             <input id="meta-prazo" className="nova-meta__campo" type="date" min={dataLocal(new Date())}
                 value={deadline} onChange={(e) => setDeadline(e.target.value)} disabled={sending} />
         </div>
+
         <div className="nova-meta__grupo">
             <label className="nova-meta__rotulo" htmlFor="meta-nova">Título da meta</label>
             <input id="meta-nova" className="nova-meta__campo" value={title} onChange={(e) => setTitle(e.target.value)}
                 maxLength={LIMITES_META.tituloMax} placeholder="Realizar manutenção preventiva" disabled={sending} />
         </div>
+
         <div className="nova-meta__aviso" role="status" aria-live="polite">
             {state && !ready && !audienceError && !(admin && !enterpriseId) && 'Consultando granjas participantes...'}
             {ready && (count ? `${count} granja(s) de ${state} receberão a meta na empresa selecionada.` : 'Nenhuma granja elegível nesta UF e empresa.')}
@@ -125,5 +128,6 @@ export function NovaMetaForm({ onLancar }: NovaMetaFormProps) {
         </button>
         {error && <p className="nova-meta__erro" role="alert">{error}</p>}
         {message && <p className="nova-meta__aviso" role="status">{message}</p>}
+        
     </form>;
 }
