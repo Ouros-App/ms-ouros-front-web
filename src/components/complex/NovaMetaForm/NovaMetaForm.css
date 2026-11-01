@@ -101,6 +101,13 @@
     outline: 3px solid rgba(26, 21, 150, 0.18);
     border-color: #6561bd;
 }
-.nova-meta__campo:disabled{ cursor: not-allowed; opacity: 0.65; }
+.nova-meta__campo:disabled{
+    cursor: not-allowed; 
+    opacity: 0.65; 
+}
 
-.nova-meta__botao--lancar { width: auto; padding: 0 16px; font: inherit; }
+.nova-meta__botao--lancar{ 
+    width: auto; 
+    padding: 0 16px; 
+    font: inherit; 
+}
