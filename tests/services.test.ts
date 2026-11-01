@@ -42,19 +42,16 @@ describe('serviço de registros', () => {
       expect.any(String),
     );
   });
-  it('cria registro com fallback para /lots se /lots/aggregated falhar', async () => {
-    request.mockRejectedValueOnce(new Error('Endpoint não encontrado'))
-      .mockResolvedValueOnce({ id: 9 })
-      .mockResolvedValueOnce([{ ...dto, id: 9 }]);
-    const resultado = await criarRegistro(dados);
-    expect(resultado.id).toBe('9');
-    expect(request).toHaveBeenNthCalledWith(1, '/lots/aggregated', expect.any(Object), expect.any(String));
-    expect(request).toHaveBeenNthCalledWith(2, '/lots', expect.any(Object), expect.any(String));
+  it('não repete a criação em endpoint legado quando o agregado falha', async () => {
+    request.mockRejectedValueOnce(new Error('Endpoint não encontrado'));
+    await expect(criarRegistro(dados)).rejects.toThrow('Não foi possível criar o registro.');
+    expect(request).toHaveBeenCalledTimes(1);
+    expect(request).toHaveBeenCalledWith('/lots/aggregated', expect.any(Object), expect.any(String));
   });
   it('cria, atualiza e exclui registro', async () => {
-    request.mockResolvedValueOnce({ id: 3 }).mockResolvedValueOnce([dto]);
+    request.mockResolvedValueOnce({ id: 3 });
     expect((await criarRegistro(dados)).id).toBe('3');
-    request.mockResolvedValueOnce({ id: 3 }).mockResolvedValueOnce([]);
+    request.mockResolvedValueOnce({ losts: 0 }).mockResolvedValueOnce({ id: 3 });
     expect((await atualizarRegistro('3', dados)).id).toBe('3');
     request.mockResolvedValueOnce(undefined);
     await excluirRegistro('3');
@@ -62,7 +59,7 @@ describe('serviço de registros', () => {
   });
   it('informa falha ao criar sem granja disponível', async () => {
     farms.mockResolvedValue([]);
-    await expect(criarRegistro({ ...dados, idFarm: undefined })).rejects.toThrow('Nenhuma granja');
+    await expect(criarRegistro({ ...dados, idFarm: undefined })).rejects.toThrow('Selecione a granja');
   });
 });
 describe('serviço de simulações', () => {

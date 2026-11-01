@@ -1,8 +1,8 @@
 import { memo } from 'react';
 import type { MetasTabelaProps } from '@/types/metas.types';
-import { calcularProgresso } from '@/utils/metas';
 
-const colunas = ['Estado', 'Meta Estadual', 'Total de Granjas', 'Concluídos', 'Progresso', 'Ações'];
+
+const colunas = ['Estado', 'Meta Estadual', 'Valor alvo', 'Status', 'Ações'];
 
 function MetasTabelaBase({ metas, onEditar, onExcluir }: MetasTabelaProps){
     return(
@@ -33,8 +33,7 @@ function MetasTabelaBase({ metas, onEditar, onExcluir }: MetasTabelaProps){
                                 <td>{meta.estado}</td>
                                 <td>{meta.meta}</td>
                                 <td>{meta.totalGranjas}</td>
-                                <td>{meta.concluidos}</td>
-                                <td>{calcularProgresso(meta)}%</td>
+                                <td>{meta.status ?? "Não informado"}</td>
 
                                 <td>
                                     <div className="metas-tabela__acoes">

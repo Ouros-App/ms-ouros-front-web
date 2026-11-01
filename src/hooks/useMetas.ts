@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { atualizarMeta, excluirMeta, lancarMetaEstadual, listarMetasPaginadas } from '@/services/metasService';
-import type { MetaEdicao } from '@/types/metas.types';
+import type { MetaCreation, MetaEdicao } from '@/types/metas.types';
 import type { MetasPageResponse } from '@/services/metasService';
 import { usePagedList } from './usePagedList';
 
@@ -9,8 +9,8 @@ export function useMetas() {
     const load = useCallback((page: number, size: number, signal: AbortSignal) =>
         listarMetasPaginadas({ page, size, search: busca }, signal), [busca]);
     const list = usePagedList<MetasPageResponse>(load);
-    const lancar = async (titulo: string) => {
-        await lancarMetaEstadual(titulo);
+    const lancar = async (titulo: string, options?: MetaCreation) => {
+        await lancarMetaEstadual(titulo, options);
         list.recarregar();
         return 1;
     };

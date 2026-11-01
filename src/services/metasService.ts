@@ -1,14 +1,15 @@
 import type { PageQuery, PageResponse } from '@/types/pagination.types';
-import type { MetaEdicao, MetaEstadual, ResumoMetas } from '@/types/metas.types';
+import type { MetaCreation, MetaEdicao, MetaEstadual, ResumoMetas } from '@/types/metas.types';
 import { springRequest } from './springClient';
 import { ServiceError } from './authService';
 
-export async function lancarMetaEstadual(titulo: string): Promise<void> {
+export async function lancarMetaEstadual(titulo: string, options?: MetaCreation): Promise<void> {
+    if (!options?.idFarm || !(options.targetValue > 0)) throw new ServiceError('Informe a granja e o valor alvo.');
     const hoje = new Date();
     const fim = new Date(hoje.getTime() + 90 * 86400000);
     await springRequest('/state-goals', { method: 'POST', body: {
-        title: titulo, type: 'WATER_CONSUMPTION', status: 'IN_PROGRESS', target_value: 100,
-        date_creation: hoje.toISOString().slice(0, 10), date_end: fim.toISOString().slice(0, 10), region: 'Sudeste',
+        title: titulo, type: 'WATER_CONSUMPTION', status: 'Em andamento', target_value: options.targetValue,
+        date_creation: hoje.toISOString().slice(0, 10), date_end: fim.toISOString().slice(0, 10), id_farm: options.idFarm,
     } });
 }
 
@@ -46,6 +47,10 @@ export async function listarMetasPaginadas(query: PageQuery, signal?: AbortSigna
         totalGranjas: m.target_value ?? 0,
         concluidos: ['CONCLUIDA', 'COMPLETED', 'COMPLETED_SUCCESSFULLY'].includes(m.status.toUpperCase()) ? (m.target_value ?? 0) : 0,
     })) };
+}
+
+export async function obterResumoMetas(signal?: AbortSignal): Promise<ResumoMetas> {
+    return (await listarMetasPaginadas({ page: 0, size: 1 }, signal)).summary;
 }
 
 function mapearSortMeta(sort?: string): string {

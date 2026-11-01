@@ -1,5 +1,6 @@
+vi.mock('@/services/farmService', () => ({ listarGranjas: vi.fn(async () => [{ id: 4, nome: 'Granja', regiao: 'Sudeste', idEnterprise: 1 }]) }));
 import { afterEach, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { NovaMetaForm } from '@/components/complex/NovaMetaForm';
 import Detalhe from '@/pages/RegistroDetalhe';
@@ -10,11 +11,14 @@ afterEach(cleanup);
 it('nova meta valida entrada, informa falha e confirma lançamento', async () => {
  const launch = vi.fn().mockRejectedValueOnce(new Error('Meta duplicada')).mockResolvedValueOnce(27);
  const view = render(<NovaMetaForm onLancar={launch} />);
+ await waitFor(() => expect(screen.getByRole('option', { name: 'Granja' })).toBeTruthy());
+ fireEvent.change(screen.getByLabelText('Granja'), { target: { value: '4' } });
+ fireEvent.change(screen.getByLabelText('Valor alvo'), { target: { value: '12.5' } });
  fireEvent.submit(view.container.querySelector('form')!); expect(screen.getByText('Informe a meta estadual.')).toBeTruthy();
  fireEvent.change(screen.getByRole('textbox'), { target: { value: 'Economia de água' } });
  fireEvent.submit(view.container.querySelector('form')!); expect(await screen.findByText('Meta duplicada')).toBeTruthy();
- fireEvent.submit(view.container.querySelector('form')!); expect(await screen.findByText('Meta lançada para 27 estados.')).toBeTruthy();
- expect(launch).toHaveBeenCalledWith('Economia de água');
+ fireEvent.submit(view.container.querySelector('form')!); expect(await screen.findByText('Meta de consumo de água criada para a granja selecionada.')).toBeTruthy();
+ expect(launch).toHaveBeenCalledWith('Economia de água', { idFarm: 4, targetValue: 12.5 });
 });
 it('detalhe apresenta dados do lote e erro de registro ausente', () => {
  const view = render(<MemoryRouter><Detalhe /></MemoryRouter>);

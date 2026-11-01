@@ -3,7 +3,7 @@ import { obterIndicadoresSimulacao } from '@/services/indicadoresService';
 import type { IndicadoresSimulacao, IndicadoresStatus } from '@/types/simulacoes.types';
 import { isAbortError } from '@/utils/delay';
 
-export function useIndicadoresSimulacao() {
+export function useIndicadoresSimulacao(idFarm?: number) {
     const [indicadores, setIndicadores] = useState<IndicadoresSimulacao | null>(null);
     const [status, setStatus] = useState<IndicadoresStatus>('carregando');
     const [mensagemErro, setMensagemErro] = useState('');
@@ -13,7 +13,7 @@ export function useIndicadoresSimulacao() {
         const controller = new AbortController();
         setStatus('carregando');
         
-        obterIndicadoresSimulacao(controller.signal)
+        obterIndicadoresSimulacao(controller.signal, { idFarm })
         .then((dados) => {
             setIndicadores(dados);
             setStatus('pronto');
@@ -25,7 +25,7 @@ export function useIndicadoresSimulacao() {
         });
         
         return () => controller.abort();
-        }, [tentativa]);
+        }, [tentativa, idFarm]);
         
         const recarregar = useCallback(() => setTentativa((n) => n + 1), []);
         return { indicadores, status, mensagemErro, recarregar };

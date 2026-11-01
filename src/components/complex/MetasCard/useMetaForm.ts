@@ -7,7 +7,7 @@ export function useMetaForm(meta: MetaEstadual){
     const [values, setValues] = useState<MetaValores>({
         meta: meta.meta,
         totalGranjas: String(meta.totalGranjas),
-        concluidos: String(meta.concluidos),
+        concluidos: '0',
     });
     
     const [errors, setErrors] = useState<MetaErros>({});

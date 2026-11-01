@@ -48,7 +48,7 @@ export function PerfilForm({ perfil, onSalvar, onSair }: PerfilFormProps) {
 
         <form className="perfil-form__corpo" onSubmit={enviar} noValidate>
             <CampoPerfil id="perfil-nome" rotulo="Nome" value={values.nome} onChange={(valor) => change('nome', valor)} erro={errors.nome} autoComplete="name" maxLength={80} desabilitado={enviando}/>
-            <CampoPerfil id="perfil-email" rotulo="Email" tipo="email" value={values.email} onChange={(valor) => change('email', valor)} erro={errors.email} autoComplete="email" maxLength={120} desabilitado={enviando} />
+            <CampoPerfil id="perfil-email" somenteLeitura rotulo="Email" tipo="email" value={values.email} onChange={(valor) => change('email', valor)} erro={errors.email} autoComplete="email" maxLength={120} desabilitado={enviando} />
             
             <div className="perfil-form__dupla">
                 <CampoPerfil id="perfil-cpf" rotulo="CPF" value={mascaraCpf(perfil.cpf)} somenteLeitura />
@@ -57,12 +57,13 @@ export function PerfilForm({ perfil, onSalvar, onSair }: PerfilFormProps) {
             
             <CampoPerfil
             id="perfil-senha"
+            somenteLeitura
             rotulo="Senha"
             tipo={mostrarSenha ? 'text' : 'password'}
             value={values.senha}
             onChange={(valor) => change('senha', valor)}
             erro={errors.senha}
-            ajuda="Deixe em branco para manter a senha atual."
+            ajuda="Para alterar a senha, use a recuperação de senha na tela de entrada."
             placeholder="••••••••••"
             autoComplete="new-password"
             maxLength={LIMITES.senhaMax}

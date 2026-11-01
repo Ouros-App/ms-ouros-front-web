@@ -76,7 +76,7 @@ describe('gestão de metas paginadas', () => {
     await waitFor(() => expect(result.current.status).toBe('pronto'));
     expect(result.current.resumo).toEqual(summary);
     await act(async () => { expect(await result.current.lancar('Água')).toBe(1); });
-    expect(lancarMetaEstadual).toHaveBeenCalledWith('Água');
+    expect(lancarMetaEstadual).toHaveBeenCalledWith('Água', undefined);
     act(() => result.current.pagination.onPageChange(1));
     await waitFor(() => expect(result.current.pagination.page).toBe(1));
     expect(result.current.resumo).toEqual(summary);

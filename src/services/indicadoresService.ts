@@ -8,18 +8,20 @@ import { springRequest } from "./springClient";
 
 export interface FiltroIndicadores {
     idEnterprise?: number | null;
+    idFarm?: number | null;
 }
 
 /**
  * Indicadores do topo da tela de simulação:
  * - posicao: /farms/{id}/ranking (rank_position)
- * - consumo / litrosPorAve: /farms/{id}/metrics/water-consumption (assumido em litros) e aves atuais da granja
+ * - consumo / litrosPorAve: /farms/{id}/metrics/water-consumption (em m³) e aves atuais da granja
  * - kwhPorAve: gasto alvo de energia / quantidade de aves da simulação mais recente (0 quando não há simulações)
  */
 export async function obterIndicadoresSimulacao(signal?: AbortSignal, filtro?: FiltroIndicadores): Promise<IndicadoresSimulacao> {
     try {
         const granjas = await listarGranjas(signal);
-        const doContexto = filtro?.idEnterprise ? granjas.filter((g) => g.idEnterprise === filtro.idEnterprise) : granjas;
+        const doContexto = granjas.filter((g) => (!filtro?.idEnterprise || g.idEnterprise === filtro.idEnterprise) && (!filtro?.idFarm || g.id === filtro.idFarm));
+        if (doContexto.length !== 1) throw new ServiceError('Selecione uma única granja para consultar os indicadores.');
         const granja = doContexto[0];
         if (!granja) throw new ServiceError('Nenhuma granja encontrada para calcular os indicadores.');
 
@@ -41,7 +43,7 @@ export async function obterIndicadoresSimulacao(signal?: AbortSignal, filtro?: F
         const aves = simulacoes[0]?.quantidadeAves ?? 0;
         return {
             consumo,
-            litrosPorAve: aves > 0 ? consumo / aves : 0,
+            litrosPorAve: aves > 0 ? (consumo * 1000) / aves : 0,
             kwhPorAve: aves > 0 ? (simulacoes[0]?.gastoAlvoEnergia ?? 0) / aves : 0,
             posicao: ranking.posicao ?? 0,
         };

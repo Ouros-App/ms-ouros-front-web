@@ -2,7 +2,6 @@ import type { PageQuery, PageResponse } from '@/types/pagination.types';
 import type { Registro, RegistroNovo } from "@/types/registros.types";
 import { isAbortError } from "@/utils/delay";
 import { ServiceError } from "./authService";
-import { listarGranjas } from "./farmService";
 import { springRequest } from "./springClient";
 
 interface ProductionSummary {
@@ -95,88 +94,55 @@ export async function obterRegistro(id: string, signal?: AbortSignal, filtro?: F
 }
 
 /**
- * Criação de lote avícola:
- * Prioriza POST /lots/aggregated (com leitura inicial de hidrômetro transacional).
- * Em caso de indisponibilidade ou ausência de suporte no backend, utiliza fallback seguro para POST /lots.
+ * Cria o lote pelo endpoint agregado e envia a leitura inicial do hidrômetro na mesma operação.
  */
-export async function criarRegistro(dados: RegistroNovo, filtro?: FiltroRegistros): Promise<Registro> {
-    try {
-        let idFarm = dados.idFarm;
-        if (!idFarm) {
-            const granjas = await listarGranjas();
-            const doContexto = filtro?.idEnterprise ? granjas.filter((g) => g.idEnterprise === filtro.idEnterprise) : granjas;
-            idFarm = doContexto[0]?.id;
-        }
-        if (!idFarm) throw new ServiceError('Nenhuma granja disponível para vincular o lote.');
+export async function criarRegistro(dados: RegistroNovo, _filtro?: FiltroRegistros): Promise<Registro>{
+    try{
+        const idFarm = dados.idFarm;
+        if (!idFarm) throw new ServiceError('Selecione a granja do lote.');
 
-        let loteId: number | undefined;
-
-        try {
-            const bodyAgregado: Record<string, unknown> = {
-                received_chickens: dados.entraram,
-                delivered_chickens: dados.sairam,
-                delivery_date: dados.dataEmissao,
-                cost: dados.custo,
-                id_farm: idFarm,
-                id_enterprise: filtro?.idEnterprise ?? undefined,
-            };
-            if (dados.hidrometro !== undefined && dados.hidrometro !== null && dados.hidrometro > 0) {
-                bodyAgregado.hydrometer_reading = dados.hidrometro;
-            }
-
-            const lote = await springRequest<LotResponse>(
-                '/lots/aggregated',
-                {
-                    method: 'POST',
-                    body: bodyAgregado,
+        const lote = await springRequest<LotResponse>(
+            '/lots/aggregated',
+            {
+                method: 'POST',
+                body: {
+                    received_chickens: dados.entraram,
+                    delivered_chickens: dados.sairam,
+                    delivery_date: dados.dataEmissao,
+                    cost: dados.custo,
+                    hydrometer_reading: dados.hidrometro,
+                    id_farm: idFarm,
+                    id_enterprise: _filtro?.idEnterprise ?? undefined,
                 },
-                'Não foi possível criar o lote agregado.',
-            );
-            loteId = lote?.id;
-        } catch {
-            const lote = await springRequest<LotResponse>(
-                '/lots',
-                {
-                    method: 'POST',
-                    body: {
-                        received_chickens: dados.entraram,
-                        delivered_chickens: dados.sairam,
-                        delivery_date: dados.dataEmissao,
-                        cost: dados.custo,
-                        id_farm: idFarm,
-                        id_enterprise: filtro?.idEnterprise ?? undefined,
-                    },
-                },
-                'Não foi possível criar o registro.',
-            );
-            loteId = lote?.id;
-        }
-
-        const criado = (await buscarResumos(filtro)).find((r) => r.id === String(loteId));
-        return criado ?? { ...dados, id: String(loteId ?? ''), idFarm };
+            },
+            'Não foi possível criar o registro.',
+        );
+        return { ...dados, id: String(lote.id), idLote: `L-${lote.id}`, idFarm };
     }
     catch (error) {
         throw falhar(error, 'Não foi possível criar o registro.');
     }
 }
 
-export async function atualizarRegistro(id: string, dados: RegistroNovo, filtro?: FiltroRegistros): Promise<Registro>{
+export async function atualizarRegistro(id: string, dados: RegistroNovo, _filtro?: FiltroRegistros): Promise<Registro>{
     try {
+        const atual = await springRequest<{ losts: number }>(`/lots/${encodeURIComponent(id)}`);
+        const perdas = Number(atual.losts ?? 0);
+        if (dados.sairam < perdas) throw new ServiceError('As saídas não podem ser inferiores às perdas já registradas.');
         await springRequest<LotResponse>(
             `/lots/${encodeURIComponent(id)}`,
             {
                 method: 'PATCH',
                 body: {
                     received_chickens: dados.entraram,
-                    delivered_chickens: dados.sairam,
+                    delivered_chickens: dados.sairam - perdas,
                     delivery_date: dados.dataEmissao,
                     cost: dados.custo,
                 },
             },
             'Não foi possível atualizar o registro.',
         );
-        const atualizado = (await buscarResumos(filtro)).find((r) => r.id === id);
-        return atualizado ?? { ...dados, id };
+        return { ...dados, id };
     }
     catch (error) {
         throw falhar(error, 'Não foi possível atualizar o registro.');

@@ -3,7 +3,7 @@ import { isRequired } from './validators';
 
 export const LIMITES_META ={
     tituloMin: 3,
-    tituloMax: 80,
+    tituloMax: 50,
 }as const;
 
 export function validateTituloMeta(valor: string): string | null{
@@ -20,8 +20,8 @@ export function validateMeta(values: MetaValores): MetaErros{
     const erroTitulo = validateTituloMeta(values.meta);
     if (erroTitulo) errors.meta = erroTitulo;
     const total = Number(values.totalGranjas);
-    if (!isRequired(values.totalGranjas) || !Number.isInteger(total) || total < 1){
-        errors.totalGranjas = 'Informe um número inteiro de granjas (1 ou mais).';
+    if (!isRequired(values.totalGranjas) || !Number.isFinite(total) || total <= 0){
+        errors.totalGranjas = 'Informe um valor alvo maior que zero.';
     }
     
     const concluidos = Number(values.concluidos);
