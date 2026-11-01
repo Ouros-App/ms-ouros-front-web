@@ -9,7 +9,7 @@
     display: flex;
     align-items: center;
     gap: 24px;
-    margin: 0 0 42px;
+    margin: 40px 0 42px;
     color: #111827;
     font-size: 1.2rem;
     font-weight: 600;
@@ -18,6 +18,13 @@
 .perfil-form__titulo > span:first-child{
     border-left: 2px solid var(--gold);
     padding-left: 4px;
+}
+
+.perfil-form input[readonly],
+.perfil-form input:disabled {
+    cursor: not-allowed !important;
+    background-color: #f1f2f4;
+    color: #6b7280;
 }
 
 .perfil-form__linha{
@@ -45,6 +52,7 @@
     gap: 40px;
     min-width: 0;
     width: 100%;
+    padding-top: 15px;
 }
 
 .perfil-form__dupla{
@@ -62,13 +70,31 @@
 }
 
 .perfil-form__senha-box {
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    padding: 8px 16px 12px;
+    border: 1px solid #1f2937;
+    border-radius: 8px;
+    background: #ffffff;
+}
+
+.perfil-form__senha-box legend{
+    padding: 0 5px;
+    margin-left: 0;
+    color: #111827;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 500;
+    line-height: 1;
+}
+
+.perfil-form__senha-conteudo{
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 14px 18px;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    background: #f9fafb;
+    width: 100%;
+    min-height: 36px;
     gap: 16px;
 }
 
@@ -84,31 +110,36 @@
     color: #4b5563;
 }
 
-.perfil-form__senha-mascara {
-    font-size: 1rem;
-    letter-spacing: 2px;
-    color: #111827;
+.perfil-form__senha-mascara{
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 400;
+    letter-spacing: 1.5px;
+    color: #40516b;
+    line-height: 1;
 }
 
-.perfil-form__trocar-senha {
+.perfil-form__trocar-senha{
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    margin-left: auto;
     padding: 8px 18px;
-    border: 1px solid #14113f;
+    border: 1px solid #D8A23A;
     border-radius: 6px;
-    background: #ffffff;
+    background: #D8A23A;
     color: #14113f;
-    font-family: inherit;
+    font-family: 'Poppins', sans-serif;
     font-size: 0.75rem;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
-    transition: background-color 0.2s, color 0.2s;
+    transition: background-color 0.2s;
     white-space: nowrap;
 }
 
 .perfil-form__trocar-senha:hover:not(:disabled) {
-    background: #14113f;
+    background: #bd892b;
+    border-color: #bd892b;
     color: #ffffff;
 }
 
@@ -128,6 +159,13 @@
     min-height: 1.2em;
     color: #166534;
     font-size: 0.85rem;
+}
+
+.perfil-form__senha-label{
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #1f2937;
+    font-family: inherit;
 }
 
 .perfil-form__salvar{
