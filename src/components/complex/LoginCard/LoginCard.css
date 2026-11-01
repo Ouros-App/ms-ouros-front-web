@@ -1,5 +1,5 @@
 .login-card {
-    width: 100%;
+    transform-origin: top left;
     max-width: 852px;
     min-height: 300px;
     margin: 0 auto;
@@ -51,19 +51,6 @@
     transform: translate(42px, 120px);
 }
 
-.login-card__label_senha {
-    position: absolute;
-    top: 37px;
-    left: 12px;
-    z-index: 1;
-    padding: 0 5px;
-    background: #ffffff;
-    color: #333333;
-    font-size: 11px;
-    line-height: 14px;
-}
-
-.login-card__label_senha,
 .login-card__label_email {
     position: absolute;
     top: -7px;
@@ -77,7 +64,15 @@
 }
 
 .login-card__label_senha {
+    position: absolute;
     top: -5px;
+    left: 12px;
+    z-index: 1;
+    padding: 0 5px;
+    background: #fff;
+    color: #333;
+    font-size: 11px;
+    line-height: 14px;
 }
 
 .login-card__label--error {
@@ -300,8 +295,8 @@
 .login-card__input:-webkit-autofill:hover,
 .login-card__input:-webkit-autofill:focus,
 .login-card__input:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
-    -webkit-text-fill-color: #222222 !important;
+    -webkit-box-shadow: 0 0 0 1000px #ffffff inset;
+    -webkit-text-fill-color: #222222;
     caret-color: #222222;
     transition: background-color 9999s ease-out;
 }
@@ -317,10 +312,6 @@
     border-radius: 8px;
 }
 
-/* Mantém o layout original e adapta a escala */
-.login-card {
-    transform-origin: top left;
-}
 
 /* Telas menores */
 @media (max-width: 1100px) {

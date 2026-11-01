@@ -139,11 +139,7 @@
     border: 1px solid #e5e7eb;
     border-radius: 12px;
   }
-  
-  .ranking-tabela__rolagem {
-    overflow-x: auto;
-  }
-  
+
   .ranking-tabela {
     width: 100%;
     min-width: 760px;

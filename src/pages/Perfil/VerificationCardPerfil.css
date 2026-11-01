@@ -5,7 +5,7 @@
     height: 670px;
     min-height: 0;
     margin: 0 auto;
-    padding: 34px 28px 26px;
+    padding: 24px 28px 26px;
     box-sizing: border-box;
     overflow: hidden;
 }
@@ -18,7 +18,6 @@
 
 .perfil-page__modal-conteudo .verification-card__subtitle {
     overflow-wrap: anywhere;
-    word-break: break-word;
 }
 
 .perfil-page__modal-conteudo .verification-card__form {
@@ -53,22 +52,36 @@
 }
 
 .perfil-page__modal-conteudo .verification-card__submit {
-    position: static !important;
+    position: static;
     display: flex;
-    width: 100% !important;
-    max-width: 100% !important;
+    width: 100%;
+    max-width: 100%;
     min-width: 0;
     height: 46px;
     min-height: 46px;
-    margin: 0 !important;
+    margin: 0;
     padding: 0 16px;
     box-sizing: border-box;
-    transform: none !important;
+    transform: none;
 }
 
 .perfil-page__modal-conteudo .verification-card__footer {
     width: 100%;
     margin-top: 24px;
+}
+
+.perfil-page__modal-conteudo .verification-card__status {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    text-align: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.perfil-page__modal-conteudo .verification-card__status--error {
+    align-self: center;
+    text-align: center;
 }
 
 @media (max-width: 480px) {
@@ -84,27 +97,3 @@
         height: 52px;
     }
 }
-
-.perfil-page__modal-conteudo .verification-card {
-    padding-top: 24px;
-}
-
-.perfil-page__modal-conteudo .verification-card__status {
-    width: 100%;
-    max-width: 100%;
-    margin: 0 auto;
-    text-align: center;
-    justify-content: center;
-    box-sizing: border-box;
-}
-
-.perfil-page__modal-conteudo .verification-card__form {
-    align-items: center;
-    width: 100%;
-}
-
-.perfil-page__modal-conteudo .verification-card__status--error {
-    align-self: center;
-    text-align: center;
-}
-
