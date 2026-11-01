@@ -1,0 +1,99 @@
+.perfil-page__modal-conteudo .verification-card {
+    width: 100%;
+    max-width: 520px;
+    min-width: 0;
+    height: 670px;
+    min-height: 0;
+    margin: 0 auto;
+    padding: 24px 28px 26px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.perfil-page__modal-conteudo .verification-card__header {
+    width: 100%;
+    margin: 0 0 24px;
+    text-align: center;
+}
+
+.perfil-page__modal-conteudo .verification-card__subtitle {
+    overflow-wrap: anywhere;
+}
+
+.perfil-page__modal-conteudo .verification-card__form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    gap: 18px;
+    box-sizing: border-box;
+}
+
+.perfil-page__modal-conteudo .verification-card__otp-group {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    gap: 9px;
+}
+
+.perfil-page__modal-conteudo .verification-card__otp-box {
+    flex: 1 1 0;
+    width: 100%;
+    max-width: 58px;
+    min-width: 0;
+    height: 62px;
+    box-sizing: border-box;
+}
+
+.perfil-page__modal-conteudo .verification-card__submit {
+    position: static;
+    display: flex;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    height: 46px;
+    min-height: 46px;
+    margin: 0;
+    padding: 0 16px;
+    box-sizing: border-box;
+    transform: none;
+}
+
+.perfil-page__modal-conteudo .verification-card__footer {
+    width: 100%;
+    margin-top: 24px;
+}
+
+.perfil-page__modal-conteudo .verification-card__status {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    text-align: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.perfil-page__modal-conteudo .verification-card__status--error {
+    align-self: center;
+    text-align: center;
+}
+
+@media (max-width: 480px) {
+    .perfil-page__modal-conteudo .verification-card {
+        padding: 26px 16px 22px;
+    }
+
+    .perfil-page__modal-conteudo .verification-card__otp-group {
+        gap: 5px;
+    }
+
+    .perfil-page__modal-conteudo .verification-card__otp-box {
+        height: 52px;
+    }
+}
