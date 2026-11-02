@@ -4,10 +4,14 @@ import type { MetaCreation, MetaEdicao } from '@/types/metas.types';
 import type { MetasPageResponse } from '@/services/metasService';
 import { usePagedList } from './usePagedList';
 
-export function useMetas() {
+export function useMetas(empresaSelecionada?: number | null) {
     const [busca, setBusca] = useState('');
-    const load = useCallback((page: number, size: number, signal: AbortSignal) =>
-        listarMetasPaginadas({ page, size, search: busca }, signal), [busca]);
+    const load = useCallback((page: number, size: number, signal: AbortSignal) => {
+        if (empresaSelecionada != null) {
+            return listarMetasPaginadas({ page, size, search: busca }, signal, empresaSelecionada);
+        }
+        return listarMetasPaginadas({ page, size, search: busca }, signal);
+    }, [busca, empresaSelecionada]);
     const list = usePagedList<MetasPageResponse>(load);
     const lancar = async (titulo: string, options?: MetaCreation) => {
         const result = await lancarMetaEstadual(titulo, options);

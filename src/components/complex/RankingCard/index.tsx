@@ -24,7 +24,7 @@ export function RankingCard({ participantes, status, mensagemErro, busca, ordena
                     id="ranking-busca"
                     type="search"
                     className="ranking-card__campo"
-                    placeholder="Pesquisar lote específico..."
+                    placeholder="Pesquisar granja ou região..."
                     value={busca}
                     onChange={(evento) => onBuscar(sanitizeBusca(evento.target.value))}
                     maxLength={40}

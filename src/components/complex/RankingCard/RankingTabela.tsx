@@ -37,7 +37,6 @@ function RankingTabelaBase({ participantes }: RankingTabelaProps){
                                     <td>{participante.posicao}</td>
                                     <td>
                                         <span className="ranking-tabela__participante">
-                                            <span className="ranking-tabela__avatar" aria-hidden="true" />
                                             {participante.nome}
                                         </span>
                                     </td>

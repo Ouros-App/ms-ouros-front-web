@@ -6,20 +6,45 @@ import { Sidebar } from '@/components/complex/Sidebar';
 import { SimulacoesCard } from '@/components/complex/SimulacaoCard';
 import { useIndicadoresSimulacao } from '@/hooks/useIndicadoresSimulacao';
 import { useSimulacoes } from '@/hooks/useSimulacoes';
+import { CHAVE_GRANJA_SIMULACAO } from '@/utils/chaves';
+import { lerArmazenado, salvarArmazenado } from '@/utils/storage';
 import { asaFundo } from '../Registros/RegistrosAssets';
 import './Simulacao.css';
 
 export default function SimulacaoPage(){
     const [granjas, setGranjas] = useState<Granja[]>([]);
-    const [idFarm, setIdFarm] = useState('');
+    const [idFarm, setIdFarm] = useState<string>(() => lerArmazenado<string>(CHAVE_GRANJA_SIMULACAO) ?? '');
     const [erroGranjas, setErroGranjas] = useState('');
+
     useEffect(() => {
         const controller = new AbortController();
-        listarGranjas(controller.signal).then(setGranjas).catch((error: unknown) => {
-            if (!controller.signal.aborted) setErroGranjas(error instanceof Error ? error.message : 'Falha ao carregar granjas.');
-        });
+        listarGranjas(controller.signal)
+            .then((lista) => {
+                setGranjas(lista);
+                if (lista.length > 0) {
+                    setIdFarm((atual) => {
+                        if (atual && lista.some((g) => String(g.id) === atual)) return atual;
+                        const salvo = lerArmazenado<string>(CHAVE_GRANJA_SIMULACAO);
+                        if (salvo && lista.some((g) => String(g.id) === salvo)) return salvo;
+                        const padrao = String(lista[0].id);
+                        salvarArmazenado(CHAVE_GRANJA_SIMULACAO, padrao);
+                        return padrao;
+                    });
+                }
+            })
+            .catch((error: unknown) => {
+                if (!controller.signal.aborted) setErroGranjas(error instanceof Error ? error.message : 'Falha ao carregar granjas.');
+            });
         return () => controller.abort();
     }, []);
+
+    const handleMudancaGranja = (novoId: string) => {
+        setIdFarm(novoId);
+        if (novoId) {
+            salvarArmazenado(CHAVE_GRANJA_SIMULACAO, novoId);
+        }
+    };
+
     const indicadores = useIndicadoresSimulacao(idFarm ? Number(idFarm) : undefined);
     const simulacoes = useSimulacoes();
     
@@ -43,30 +68,35 @@ export default function SimulacaoPage(){
             <main id="conteudo-principal" className="simulacao-page__conteudo" tabIndex={-1}>
                 <div className="simulacao-page__filtro">
                     <label htmlFor="indicadores-granja" className="simulacao-page__filtro-rotulo">Granja dos indicadores</label>
-                    <select id="indicadores-granja" className="simulacao-page__filtro-select" value={idFarm} onChange={(e) => setIdFarm(e.target.value)}>
-                        <option value="">Selecione a granja</option>
+                    <select
+                        id="indicadores-granja"
+                        className="simulacao-page__filtro-select"
+                        value={idFarm}
+                        onChange={(e) => handleMudancaGranja(e.target.value)}
+                    >
+                        {(!idFarm || granjas.length === 0) && <option value="">Selecione a granja</option>}
                         {granjas.map((g) => <option key={g.id} value={g.id}>{g.nome}</option>)}
                     </select>
-                {erroGranjas && <p className="simulacao-page__filtro-erro" role="alert">{erroGranjas}</p>}
+                    {erroGranjas && <p className="simulacao-page__filtro-erro" role="alert">{erroGranjas}</p>}
                 </div>
                 <IndicadoresSimulacao
-                indicadores={indicadores.indicadores}
-                status={indicadores.status}
-                mensagemErro={indicadores.mensagemErro}
-                onRecarregar={indicadores.recarregar}
+                    indicadores={indicadores.indicadores}
+                    status={indicadores.status}
+                    mensagemErro={indicadores.mensagemErro}
+                    onRecarregar={indicadores.recarregar}
                 />
 
                 <SimulacoesCard
-                simulacoes={simulacoes.simulacoes}
-                status={simulacoes.status}
-                mensagemErro={simulacoes.mensagemErro}
-                busca={simulacoes.busca}
-                ordenacao={simulacoes.ordenacao}
-                onBuscar={simulacoes.setBusca}
-                onOrdenar={simulacoes.setOrdenacao}
-                onSalvar={simulacoes.salvar}
-                onExcluir={simulacoes.excluir}
-                onRecarregar={simulacoes.recarregar}
+                    simulacoes={simulacoes.simulacoes}
+                    status={simulacoes.status}
+                    mensagemErro={simulacoes.mensagemErro}
+                    busca={simulacoes.busca}
+                    ordenacao={simulacoes.ordenacao}
+                    onBuscar={simulacoes.setBusca}
+                    onOrdenar={simulacoes.setOrdenacao}
+                    onSalvar={simulacoes.salvar}
+                    onExcluir={simulacoes.excluir}
+                    onRecarregar={simulacoes.recarregar}
                     pagination={simulacoes.pagination}
                 />
             </main>

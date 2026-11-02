@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import {
   Bar,
   BarChart,
@@ -111,7 +112,18 @@ function TooltipCustoPorLote({
 }
 
 export function CostByCohortChart({ dados }: Props) {
-  if (!dados || dados.length === 0) {
+  const temDadosReais = useMemo(() => {
+    if (!dados || dados.length === 0) return false;
+    return dados.some(
+      (d) =>
+        (d.current_year_cost && d.current_year_cost > 0) ||
+        (d.previous_year_cost && d.previous_year_cost > 0) ||
+        (d.current_year_lots && d.current_year_lots > 0) ||
+        (d.previous_year_lots && d.previous_year_lots > 0),
+    );
+  }, [dados]);
+
+  if (!temDadosReais) {
     return <p className="graficos-dashboard__vazio">Sem dados de lote para o período selecionado.</p>;
   }
 

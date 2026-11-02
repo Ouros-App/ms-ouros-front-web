@@ -187,7 +187,8 @@
   }
   
   .ranking-tabela__participante {
-    width: 170px;
+    max-width: 260px;
+    text-align: left;
   }
   
   .ranking-tabela__liga {

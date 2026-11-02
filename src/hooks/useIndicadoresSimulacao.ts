@@ -8,25 +8,31 @@ export function useIndicadoresSimulacao(idFarm?: number) {
     const [status, setStatus] = useState<IndicadoresStatus>('carregando');
     const [mensagemErro, setMensagemErro] = useState('');
     const [tentativa, setTentativa] = useState(0);
-    
+
     useEffect(() => {
+        if (!idFarm) {
+            setIndicadores(null);
+            setStatus('carregando');
+            return;
+        }
+
         const controller = new AbortController();
         setStatus('carregando');
-        
+
         obterIndicadoresSimulacao(controller.signal, { idFarm })
-        .then((dados) => {
-            setIndicadores(dados);
-            setStatus('pronto');
-        })
-        .catch((error: unknown) => {
-            if (controller.signal.aborted || isAbortError(error)) return;
-            setMensagemErro(error instanceof Error ? error.message : 'Não foi possível carregar os indicadores.');
-            setStatus('erro');
-        });
-        
+            .then((dados) => {
+                setIndicadores(dados);
+                setStatus('pronto');
+            })
+            .catch((error: unknown) => {
+                if (controller.signal.aborted || isAbortError(error)) return;
+                setMensagemErro(error instanceof Error ? error.message : 'Não foi possível carregar os indicadores.');
+                setStatus('erro');
+            });
+
         return () => controller.abort();
-        }, [tentativa, idFarm]);
-        
-        const recarregar = useCallback(() => setTentativa((n) => n + 1), []);
-        return { indicadores, status, mensagemErro, recarregar };
+    }, [tentativa, idFarm]);
+
+    const recarregar = useCallback(() => setTentativa((n) => n + 1), []);
+    return { indicadores, status, mensagemErro, recarregar };
 }

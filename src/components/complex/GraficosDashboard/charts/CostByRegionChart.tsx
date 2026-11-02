@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { BoxPlotStats, CostByRegion } from '@/types/dashboard.types';
 import { formatarMoeda, formatarValorAbreviado } from '@/utils/formato';
 
@@ -17,6 +17,26 @@ interface HoverInfo {
 
 export function CostByRegionChart({ dados }: Props) {
   const [hoverInfo, setHoverInfo] = useState<HoverInfo | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState(700);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const update = () => {
+      if (containerRef.current) {
+        const w = containerRef.current.clientWidth;
+        if (w > 0) setContainerWidth(w);
+      }
+    };
+    update();
+    if (typeof ResizeObserver !== 'undefined') {
+      const ro = new ResizeObserver(update);
+      ro.observe(containerRef.current);
+      return () => ro.disconnect();
+    }
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
 
   // Ordenação das macrorregiões oficiais conforme o Figma: Norte, Nordeste, Centro-Oeste, Sudeste, Sul
   const dadosOrdenados = useMemo(() => {
@@ -59,7 +79,7 @@ export function CostByRegionChart({ dados }: Props) {
     if (teto <= 0) return 250_000;
 
     // Arredondar para um múltiplo amigável com 15% de margem no topo para as hastes
-    const tetoComMargem = teto * 1.15;
+    const tetoComMargem = teto * 1.05;
     const expoente = Math.pow(10, Math.floor(Math.log10(tetoComMargem)));
     const normalizado = tetoComMargem / expoente;
 
@@ -76,16 +96,29 @@ export function CostByRegionChart({ dados }: Props) {
     return multiplicador * expoente;
   }, [dadosOrdenados]);
 
-  if (!dados || dados.length === 0) {
+  const temDadosReais = useMemo(() => {
+    if (!dados || dados.length === 0) return false;
+    return dados.some(
+      (d) =>
+        (d.current_year_cost && d.current_year_cost > 0) ||
+        (d.previous_year_cost && d.previous_year_cost > 0) ||
+        (d.cost && d.cost > 0) ||
+        (d.current_year?.total_cost && d.current_year.total_cost > 0) ||
+        (d.previous_year?.total_cost && d.previous_year.total_cost > 0) ||
+        (d.current_year?.lots_count && d.current_year.lots_count > 0),
+    );
+  }, [dados]);
+
+  if (!temDadosReais) {
     return <p className="graficos-dashboard__vazio">Sem dados regionais para o período selecionado.</p>;
   }
 
-  // Dimensões da área de plotagem SVG
-  const svgWidth = 560;
-  const svgHeight = 240;
-  const marginTop = 30;
-  const marginBottom = 35;
-  const marginLeft = 60;
+  // Dimensões da área de plotagem SVG adaptativa 1:1
+  const svgWidth = containerWidth;
+  const svgHeight = 340;
+  const marginTop = 20;
+  const marginBottom = 28;
+  const marginLeft = 55;
   const marginRight = 15;
 
   const plotWidth = svgWidth - marginLeft - marginRight;
@@ -102,67 +135,37 @@ export function CostByRegionChart({ dados }: Props) {
 
   const numRegioes = dadosOrdenados.length;
   const larguraCategoria = plotWidth / numRegioes;
-  const larguraBox = Math.min(22, larguraCategoria * 0.28);
-  const larguraCap = Math.min(14, larguraBox * 0.7);
-  const espacamentoSeries = larguraBox * 0.65;
+  const larguraBox = Math.min(50, Math.max(24, Math.round(larguraCategoria * 0.34)));
+  const larguraCap = Math.round(larguraBox * 0.65);
+  const espacamentoSeries = Math.round((larguraBox + 10) / 2);
 
   return (
     <div
+      ref={containerRef}
       className="grafico-container"
       style={{
         width: '100%',
-        height: 260,
+        height: 380,
         position: 'relative',
         display: 'flex',
         flexDirection: 'column',
       }}
       onMouseLeave={() => setHoverInfo(null)}
     >
-      {/* Legenda Superior */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'flex-end',
-          alignItems: 'center',
-          gap: '16px',
-          paddingRight: '15px',
-          marginBottom: '4px',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span
-            style={{
-              width: '10px',
-              height: '10px',
-              borderRadius: '2px',
-              backgroundColor: '#110B95',
-              display: 'inline-block',
-            }}
-          />
-          <span style={{ fontSize: '11px', fontWeight: 500, color: '#111827' }}>Ano passado</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span
-            style={{
-              width: '10px',
-              height: '10px',
-              borderRadius: '2px',
-              backgroundColor: '#D8A23A',
-              display: 'inline-block',
-            }}
-          />
-          <span style={{ fontSize: '11px', fontWeight: 500, color: '#111827' }}>Este ano</span>
-        </div>
-      </div>
+
 
       {/* SVG Responsivo do Box Plot */}
-      <div style={{ width: '100%', flex: 1, position: 'relative' }}>
+      <div style={{ width: '100%', flex: 1, minHeight: 0, position: 'relative' }}>
         <svg
           viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-          width="100%"
-          height="100%"
           preserveAspectRatio="none"
-          style={{ overflow: 'visible' }}
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            display: 'block',
+          }}
         >
           {/* Linhas de Grade e Ticks do Eixo Y */}
           {ticksY.map((tick, index) => {
@@ -180,10 +183,10 @@ export function CostByRegionChart({ dados }: Props) {
                 />
                 <text
                   x={marginLeft - 8}
-                  y={y + 3.5}
+                  y={y + 3}
                   textAnchor="end"
-                  fontSize={10}
-                  fill="#64748B"
+                  fontSize={8.5}
+                  fill="#94A3B8"
                   fontFamily="Poppins, sans-serif"
                 >
                   {formatarValorAbreviado(tick)}
@@ -212,7 +215,7 @@ export function CostByRegionChart({ dados }: Props) {
                 const yMed = getY(stats.median);
                 const yQ3 = getY(stats.q3);
                 const yMax = getY(stats.max);
-                const yAvg = typeof stats.avg === 'number' ? getY(stats.avg) : null;
+
 
                 const topBox = Math.min(yQ1, yQ3);
                 const heightBox = Math.max(3, Math.abs(yQ1 - yQ3));
@@ -236,25 +239,25 @@ export function CostByRegionChart({ dados }: Props) {
                     }}
                   >
                     {/* Haste Inferior e Cap (Mínimo ao Q1) */}
-                    <line x1={x} y1={yMin} x2={x} y2={yQ1} stroke={cor} strokeWidth={1.5} />
+                    <line x1={x} y1={yMin} x2={x} y2={yQ1} stroke={cor} strokeWidth={2} />
                     <line
                       x1={x - larguraCap / 2}
                       y1={yMin}
                       x2={x + larguraCap / 2}
                       y2={yMin}
                       stroke={cor}
-                      strokeWidth={1.5}
+                      strokeWidth={2}
                     />
 
                     {/* Haste Superior e Cap (Q3 ao Máximo) */}
-                    <line x1={x} y1={yQ3} x2={x} y2={yMax} stroke={cor} strokeWidth={1.5} />
+                    <line x1={x} y1={yQ3} x2={x} y2={yMax} stroke={cor} strokeWidth={2} />
                     <line
                       x1={x - larguraCap / 2}
                       y1={yMax}
                       x2={x + larguraCap / 2}
                       y2={yMax}
                       stroke={cor}
-                      strokeWidth={1.5}
+                      strokeWidth={2}
                     />
 
                     {/* Corpo da Caixa (Q1 ao Q3) */}
@@ -264,7 +267,7 @@ export function CostByRegionChart({ dados }: Props) {
                       width={larguraBox}
                       height={heightBox}
                       fill={cor}
-                      rx={2}
+                      rx={3}
                       style={{ transition: 'opacity 0.15s ease' }}
                     />
 
@@ -275,20 +278,9 @@ export function CostByRegionChart({ dados }: Props) {
                       x2={x + larguraBox / 2}
                       y2={yMed}
                       stroke="#FFFFFF"
-                      strokeWidth={2}
+                      strokeWidth={2.4}
                     />
 
-                    {/* Ponto da Média (losango/círculo opcional se presente) */}
-                    {yAvg !== null && (
-                      <circle
-                        cx={x}
-                        cy={yAvg}
-                        r={2.5}
-                        fill="#FFFFFF"
-                        stroke={cor}
-                        strokeWidth={1}
-                      />
-                    )}
                   </g>
                 );
               }
@@ -322,7 +314,7 @@ export function CostByRegionChart({ dados }: Props) {
                     width={larguraBox}
                     height={barHeight}
                     fill={cor}
-                    rx={2}
+                    rx={3}
                   />
                 </g>
               );
@@ -351,9 +343,9 @@ export function CostByRegionChart({ dados }: Props) {
                 {/* Rótulo da Região no Eixo X */}
                 <text
                   x={centerX}
-                  y={svgHeight - 12}
+                  y={svgHeight - 8}
                   textAnchor="middle"
-                  fontSize={11}
+                  fontSize={9.5}
                   fill="#64748B"
                   fontFamily="Poppins, sans-serif"
                   fontWeight={500}
@@ -370,8 +362,9 @@ export function CostByRegionChart({ dados }: Props) {
           <div
             style={{
               position: 'absolute',
-              left: `${Math.min(Math.max(hoverInfo.x - 70, 10), svgWidth - 180)}px`,
-              top: `${Math.max(hoverInfo.y - 120, 10)}px`,
+              left: `${Math.max(80, hoverInfo.x)}px`,
+              top: `${Math.max(hoverInfo.y - 10, 10)}px`,
+              transform: 'translate(-50%, -100%)',
               backgroundColor: '#0E0E50',
               border: `1px solid ${hoverInfo.serie === 'Ano passado' ? '#5A53FF' : '#D8A23A'}`,
               borderRadius: '8px',
@@ -446,6 +439,41 @@ export function CostByRegionChart({ dados }: Props) {
             )}
           </div>
         )}
+      </div>
+      {/* Legenda Inferior Centralizada (Figma #5998) */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: '24px',
+          paddingTop: '4px',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span
+            style={{
+              width: '10px',
+              height: '10px',
+              borderRadius: '2px',
+              backgroundColor: '#110B95',
+              display: 'inline-block',
+            }}
+          />
+          <span style={{ fontSize: '10px', fontWeight: 500, color: '#475569' }}>Ano passado</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span
+            style={{
+              width: '10px',
+              height: '10px',
+              borderRadius: '2px',
+              backgroundColor: '#D8A23A',
+              display: 'inline-block',
+            }}
+          />
+          <span style={{ fontSize: '10px', fontWeight: 500, color: '#475569' }}>Este ano</span>
+        </div>
       </div>
     </div>
   );

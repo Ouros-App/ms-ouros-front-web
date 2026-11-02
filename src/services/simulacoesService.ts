@@ -110,6 +110,6 @@ export async function excluirSimulacao(id: string): Promise<void> {
 }
 
 export async function listarSimulacoesPaginadas(query: PageQuery, signal?: AbortSignal, filtro?: FiltroSimulacoes): Promise<PageResponse<Simulacao>> {
-    const data = await springRequest<PageResponse<FarmSimulationDto>>('/farms/simulations/paged', { query: { ...query, sort: ({ consumoAtual: 'current_cgi', consumoAlvo: 'target_cgi', precoAgua: 'water_price', precoEnergia: 'energy_price', quantidadeAves: 'poultry_quantity', gastoAlvoEnergia: 'target_energy_kwh' }[query.sort ?? ''] ?? 'id'), direction: query.direction ?? 'desc', id_enterprise: filtro?.idEnterprise, id_farm: filtro?.idFarm }, signal });
+    const data = await springRequest<PageResponse<FarmSimulationDto>>('/farms/simulations/paged', { query: { ...query, sort: ({ consumoAtual: 'current_cgi', current_cgi: 'current_cgi', consumoAlvo: 'target_cgi', target_cgi: 'target_cgi', precoAgua: 'water_price', water_price: 'water_price', precoEnergia: 'energy_price', energy_price: 'energy_price', quantidadeAves: 'poultry_quantity', poultry_quantity: 'poultry_quantity', gastoAlvoEnergia: 'target_energy_kwh', target_energy_kwh: 'target_energy_kwh', id_lot: 'id_lot', created_at: 'created_at', id: 'id' }[query.sort ?? ''] ?? 'id'), direction: query.direction ?? 'desc', id_enterprise: filtro?.idEnterprise, id_farm: filtro?.idFarm }, signal });
     return { ...data, content: data.content.map(paraSimulacao) };
 }

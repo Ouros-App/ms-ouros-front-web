@@ -3,7 +3,9 @@ import type { FormEvent } from 'react';
 import type { SimulacaoModalProps, SimulacaoValores } from '@/types/simulacoes.types';
 import { listarGranjas, type Granja } from '@/services/farmService';
 import { simularRanking, type PrevisaoRanking } from '@/services/rankingService';
+import { CHAVE_GRANJA_SIMULACAO } from '@/utils/chaves';
 import { isAbortError } from '@/utils/delay';
+import { lerArmazenado, salvarArmazenado } from '@/utils/storage';
 import { Dialogo } from './Dialogo';
 import { useSimulacaoForm } from './useSimulacaoForms';
 
@@ -27,14 +29,31 @@ const campos: CampoConfig[] = [
 export function SimulacaoModal({ simulacao, onFechar, onSalvar }: SimulacaoModalProps) {
     const { values, errors, change, validar } = useSimulacaoForm(simulacao);
     const [granjas, setGranjas] = useState<Granja[]>([]);
-    const [idFarm, setIdFarm] = useState(simulacao?.idFarm ? String(simulacao.idFarm) : '');
+    const [idFarm, setIdFarm] = useState(() => {
+        if (simulacao?.idFarm) return String(simulacao.idFarm);
+        return lerArmazenado<string>(CHAVE_GRANJA_SIMULACAO) ?? '';
+    });
+
     useEffect(() => {
         const controller = new AbortController();
-        listarGranjas(controller.signal).then(setGranjas).catch((error: unknown) => {
+        listarGranjas(controller.signal).then((lista) => {
+            setGranjas(lista);
+            if (!simulacao?.idFarm && lista.length > 0) {
+                setIdFarm((atual) => {
+                    if (atual && lista.some((g) => String(g.id) === atual)) return atual;
+                    const salvo = lerArmazenado<string>(CHAVE_GRANJA_SIMULACAO);
+                    if (salvo && lista.some((g) => String(g.id) === salvo)) return salvo;
+                    const padrao = String(lista[0].id);
+                    salvarArmazenado(CHAVE_GRANJA_SIMULACAO, padrao);
+                    return padrao;
+                });
+            }
+        }).catch((error: unknown) => {
             if (!controller.signal.aborted) setFalha(error instanceof Error ? error.message : 'Não foi possível carregar as granjas.');
         });
         return () => controller.abort();
-    }, []);
+    }, [simulacao?.idFarm]);
+
     const [enviando, setEnviando] = useState(false);
     const [falha, setFalha] = useState('');
     const [previsao, setPrevisao] = useState<PrevisaoRanking | undefined>(simulacao?.previsao);
@@ -85,8 +104,20 @@ export function SimulacaoModal({ simulacao, onFechar, onSalvar }: SimulacaoModal
             <div className="simulacao-form__grade">
                 <div className="simulacao-form__campo simulacao-form__campo--granja">
                     <label htmlFor="simulacao-granja" className="simulacao-form__rotulo">Granja</label>
-                    <select id="simulacao-granja" className="simulacao-form__input simulacao-form__select" value={idFarm} onChange={(e) => setIdFarm(e.target.value)} disabled={enviando || Boolean(simulacao)} required>
-                        <option value="">Selecione a granja</option>
+                    <select
+                        id="simulacao-granja"
+                        className="simulacao-form__input simulacao-form__select"
+                        value={idFarm}
+                        onChange={(e) => {
+                            setIdFarm(e.target.value);
+                            if (e.target.value && !simulacao) {
+                                salvarArmazenado(CHAVE_GRANJA_SIMULACAO, e.target.value);
+                            }
+                        }}
+                        disabled={enviando || Boolean(simulacao)}
+                        required
+                    >
+                        {(!idFarm || granjas.length === 0) && <option value="">Selecione a granja</option>}
                         {granjas.map((g) => <option key={g.id} value={g.id}>{g.nome}</option>)}
                     </select>
                 </div>

@@ -202,7 +202,13 @@ export function BrazilChoroplethMapChart({ dados, dadosRegioesApi }: Props) {
     return REGIOES_BRASIL[key]?.defaultColor || '#110B95';
   };
 
-  if ((!dados || dados.length === 0) && (!dadosRegioesApi || dadosRegioesApi.length === 0)) {
+  const temDadosReais = useMemo(() => {
+    const temBuckets = dados && dados.some((b) => (b.total_cost && b.total_cost > 0) || (b.count && b.count > 0));
+    const temRegioes = dadosRegioesApi && dadosRegioesApi.some((r) => (r.cost && r.cost > 0) || (r.current_year_cost && r.current_year_cost > 0) || (r.previous_year_cost && r.previous_year_cost > 0));
+    return Boolean(temBuckets || temRegioes);
+  }, [dados, dadosRegioesApi]);
+
+  if (!temDadosReais) {
     return <p className="graficos-dashboard__vazio">Sem dados de custo para o período selecionado.</p>;
   }
 

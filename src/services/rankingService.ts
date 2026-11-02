@@ -33,6 +33,9 @@ interface RankingDto {
     region?: string;
     rank_position: number | null;
     score: number | null;
+    updated_at?: string;
+    updatedAt?: string;
+    last_update?: string;
 }
 
 interface PodiumDto {
@@ -142,7 +145,7 @@ export async function listarRankingPaginado(query: PageQuery, signal?: AbortSign
         if (g.rank_position == null) throw new ServiceError('Posição global do ranking indisponível.');
         return {
             id: String(g.farm_id), nome: g.farm_name ?? `Granja #${g.farm_id}`,
-            pontuacao: g.score ?? 0, atualizadoEm: '', posicao: g.rank_position,
+            pontuacao: g.score ?? 0, atualizadoEm: g.updated_at ?? g.updatedAt ?? g.last_update ?? '', posicao: g.rank_position,
             liga: ligaDaPosicao(g.rank_position - 1, data.totalElements),
         };
     }) };

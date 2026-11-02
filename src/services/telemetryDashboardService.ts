@@ -15,7 +15,7 @@ import { ServiceError } from './authService';
 function montarParametrosFiltros(filtros?: Partial<FiltrosDashboard>): string {
   if (!filtros) return '';
   const params = new URLSearchParams();
-  if (filtros.periodo && filtros.periodo !== 'atual' && filtros.periodo !== 'todos') {
+  if (filtros.periodo && filtros.periodo !== 'todos') {
     params.set('month', filtros.periodo);
   }
   if (filtros.estado && filtros.estado !== 'todos') {
@@ -25,6 +25,7 @@ function montarParametrosFiltros(filtros?: Partial<FiltrosDashboard>): string {
     params.set('management', filtros.gerencia);
   }
   if (filtros.enterpriseId != null) {
+    params.set('enterprise_id', String(filtros.enterpriseId));
     params.set('enterpriseId', String(filtros.enterpriseId));
   }
   const queryString = params.toString();

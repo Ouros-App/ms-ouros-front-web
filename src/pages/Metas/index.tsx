@@ -3,12 +3,14 @@ import { MetasCard } from '@/components/complex/MetasCard';
 import { MetasResumo } from '@/components/complex/MetasResumo';
 import { PerfilUsuario } from '@/components/complex/PerfilUsuario';
 import { Sidebar } from '@/components/complex/Sidebar';
+import { useAdminEnterprise } from '@/context/AdminEnterpriseContext';
 import { useMetas } from '@/hooks/useMetas';
 import { asaFundo } from '../Registros/RegistrosAssets';
 import './Metas.css';
 
 export default function MetasPage(){
-    const metas = useMetas();
+    const { empresaSelecionada } = useAdminEnterprise();
+    const metas = useMetas(empresaSelecionada);
     const resumo = { resumo: metas.resumo, status: metas.status, mensagemErro: metas.mensagemErro, recarregar: metas.recarregar };
 
     return(

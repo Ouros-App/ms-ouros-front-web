@@ -121,13 +121,23 @@ export function MonthlyCostChart({ dados }: Props) {
     });
   }, [dados]);
 
-  if (!dados || dados.length === 0 || dadosFormatados.length === 0) {
+  const temDadosReais = useMemo(() => {
+    if (!dados || dados.length === 0 || dadosFormatados.length === 0) return false;
+    return dados.some(
+      (d) =>
+        (typeof d.current_year_cost === "number" && d.current_year_cost > 0) ||
+        (typeof d.previous_year_cost === "number" && d.previous_year_cost > 0) ||
+        (typeof d.cost === "number" && d.cost > 0),
+    );
+  }, [dados, dadosFormatados]);
+
+  if (!temDadosReais) {
     return <p className="graficos-dashboard__vazio">Sem dados mensais para o período selecionado.</p>;
   }
 
   return (
-    <div className="grafico-container" style={{ width: '100%', height: 260 }}>
-      <ResponsiveContainer width="100%" height={260}>
+    <div className="grafico-container" style={{ width: '100%', height: 380 }}>
+      <ResponsiveContainer width="100%" height={380}>
         <LineChart
           data={dadosFormatados}
           margin={{ top: 15, right: 15, left: 0, bottom: 20 }}
@@ -136,13 +146,13 @@ export function MonthlyCostChart({ dados }: Props) {
           <XAxis
             dataKey="mesRotulo"
             stroke="#64748b"
-            fontSize={11}
+            fontSize={9.5}
             tickLine={false}
             axisLine={{ stroke: '#cbd5e1' }}
           />
           <YAxis
             stroke="#64748b"
-            fontSize={10}
+            fontSize={8.5}
             tickLine={false}
             axisLine={false}
             tickFormatter={(val: number) => formatarValorAbreviado(val)}
@@ -156,7 +166,7 @@ export function MonthlyCostChart({ dados }: Props) {
             iconType="circle"
             formatter={(value) => {
               const label = value === 'anoPassado' ? 'Ano passado' : 'Este ano';
-              return <span style={{ color: '#111827', fontSize: '11px', fontWeight: 500 }}>{label}</span>;
+              return <span style={{ color: '#475569', fontSize: '10px', fontWeight: 500 }}>{label}</span>;
             }}
           />
           <Line
