@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import type { SimulacaoModalProps, SimulacaoValores } from '@/types/simulacoes.types';
-import { listarGranjas, type Granja } from '@/services/farmService';
+import { listarGranjas } from '@/services/farmService';
+import type { Granja } from '@/types/granjas.types';
 import { simularRanking, type PrevisaoRanking } from '@/services/rankingService';
 import { CHAVE_GRANJA_SIMULACAO } from '@/utils/chaves';
 import { isAbortError } from '@/utils/delay';

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { listarGranjas, type Granja } from '@/services/farmService';
+import { listarGranjas } from '@/services/farmService';
+import type { Granja } from '@/types/granjas.types';
 import { IndicadoresSimulacao } from '@/components/complex/IndicadoresSimulacao';
 import { PerfilUsuario } from '@/components/complex/PerfilUsuario';
 import { Sidebar } from '@/components/complex/Sidebar';
