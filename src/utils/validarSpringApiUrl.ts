@@ -1,4 +1,6 @@
 /** Produção exige uma API HTTPS pública ou um caminho explícito de proxy na mesma origem. */
+export const SPRING_API_URL_PADRAO = 'https://ms-spring-api.discloud.app';
+
 export function validarSpringApiUrl(valor?: string): string {
   const url = valor ?? '';
   const mensagem = 'Configure VITE_SPRING_API_URL com uma URL HTTPS pública ou um caminho de proxy de mesma origem (ex.: /spring).';

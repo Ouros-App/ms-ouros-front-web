@@ -1,7 +1,7 @@
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'node:path';
-import { validarSpringApiUrl } from './src/utils/validarSpringApiUrl';
+import { SPRING_API_URL_PADRAO, validarSpringApiUrl } from './src/utils/validarSpringApiUrl';
 
 function removerBarrasFinais(url: string): string {
   let fim = url.length;
@@ -14,10 +14,12 @@ function removerBarrasFinais(url: string): string {
 export default defineConfig(({ mode, command, isPreview }) => {
   const env = loadEnv(mode, process.cwd(), '');
   if (command === 'build' && !isPreview) {
-    validarSpringApiUrl(env.VITE_SPRING_API_URL);
+    validarSpringApiUrl(env.VITE_SPRING_API_URL || SPRING_API_URL_PADRAO);
   }
   const authTarget = removerBarrasFinais(env.VITE_AUTH_API_URL || 'https://ms-auth-service.discloud.app');
-  const springTarget = removerBarrasFinais(env.VITE_SPRING_API_URL || 'http://localhost:8080');
+  const springTarget = removerBarrasFinais(
+    env.VITE_SPRING_API_URL || (command === 'build' ? SPRING_API_URL_PADRAO : 'http://localhost:8080'),
+  );
   const telemetryTarget = removerBarrasFinais(env.VITE_TELEMETRY_API_URL || 'https://ouros-dashboard.discloud.app');
 
   return {
