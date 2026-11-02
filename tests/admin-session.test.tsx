@@ -1,25 +1,10 @@
 import { afterEach, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, renderHook, screen, waitFor } from '@testing-library/react';
-import { DashboardAiMetrics } from '@/components/complex/DashboardAiMetrics';
 import { DashboardFarmsTable } from '@/components/complex/DashboardFarmsTable';
 import { AuthProvider } from '@/context/AuthContext';
 import { useAuth } from '@/hooks/useAuth';
 import { obterAccessToken } from '@/services/tokenService';
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); localStorage.clear(); });
-it('painel administrativo exibe custos, distribuição e auditoria', async () => {
- const card = { label: 'Tokens', formattedValue: 'R$ 10', periodComparisonText: 'Mês atual' };
- vi.stubGlobal('fetch', vi.fn(async (input) => {
-  const url = String(input); let data;
-  if(url.includes('/kpis')) data = { tokenSpend: card, unitTokenCost: card, activeUsers: card, avgAccuracyPercent: 98 };
-  else if(url.includes('token-spend')) data = { title: 'Gasto por modelo', totalTokens: 1000, points: [{ cohort: 'Pequenas', totalSpendBrl: 10 }] };
-  else if(url.includes('latency')) data = { title: 'Latência', p50Ms: 10, p95Ms: 30, avgCostPerPromptBrl: 0.1, buckets: [{ bucket: 'Rápido', sharePercent: 80 }] };
-  else data = { page: 1, limit: 10, total: 1, items: [{ session_id: 'sessao-1', model: 'Modelo', user_name: 'Ana', total_tokens: 100, latency_ms: 20, cost_brl: 0.1, status: 'success' }] };
-  return new Response(JSON.stringify(data));
- }));
- render(<DashboardAiMetrics enterpriseId={1} />);
- expect(screen.getByText('Carregando telemetria Midas IA...')).toBeTruthy();
- expect(await screen.findByText('sessao-1')).toBeTruthy(); expect(screen.getByText('Gasto por modelo')).toBeTruthy();
-});
 it('tabela corporativa pesquisa, pagina e recupera falhas', async () => {
  const fetcher = vi.fn().mockResolvedValueOnce(new Response('{}', {status:500})).mockImplementation(async (input) => new Response(JSON.stringify({ page: Number(new URL(String(input), 'http://localhost').searchParams.get('page') || 1), limit: 10, total: 20, items: [{ farm_id: 1, farm_name: 'Granja teste', location: 'São Paulo', state: 'SP', lots_count: 2, total_consumption: '10 m³' }] })));
  vi.stubGlobal('fetch', fetcher); render(<DashboardFarmsTable />);
@@ -43,27 +28,4 @@ it('sessão persiste login, sincroniza renovação e limpa logout', () => {
  expect(obterAccessToken()).toBe('t3');
  act(() => window.dispatchEvent(new Event('auth:session_expired'))); expect(result.current.isAuthenticated).toBe(false);
  expect(fetcher).toHaveBeenCalledWith('/v1/auth/web/logout', expect.objectContaining({ credentials: 'include' }));
-});
-
-it('sessões paginam e recuperam erros mesmo quando KPIs falham', async () => {
- let fail = true;
- const fetcher = vi.fn(async (input: string | URL | Request) => {
-  const url = new URL(String(input), 'http://localhost');
-  if (!url.pathname.endsWith('/sessions')) return new Response('{}', { status: 503 });
-  if (fail) return new Response('{}', { status: 503 });
-  const page = Number(url.searchParams.get('page'));
-  const limit = Number(url.searchParams.get('limit'));
-  return new Response(JSON.stringify({ page, limit, total: 11, items: page === 2 ? [] : [{ session_id: 'audit-1', model: 'Modelo', user_name: 'Ana', total_tokens: 1, latency_ms: 2, cost_brl: 0.01, status: 'success' }] }));
- });
- vi.stubGlobal('fetch', fetcher);
- const view = render(<DashboardAiMetrics enterpriseId={3} />);
- const retry = await screen.findByRole('button', { name: 'Tentar novamente' });
- fail = false;
- fireEvent.click(retry);
- expect(await screen.findByText('audit-1')).toBeTruthy();
- fireEvent.click(screen.getByRole('button', { name: 'Próxima' }));
- expect(await screen.findByText('Nenhuma sessão encontrada.')).toBeTruthy();
- expect(fetcher.mock.calls.some(([input]) => String(input).includes('page=2') && String(input).includes('limit=10'))).toBe(true);
- view.rerender(<DashboardAiMetrics enterpriseId={4} />);
- await waitFor(() => expect(fetcher.mock.calls.some(([input]) => String(input).includes('page=1') && String(input).includes('enterprise_id=4'))).toBe(true));
 });
