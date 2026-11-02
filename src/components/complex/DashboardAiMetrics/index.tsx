@@ -3,6 +3,7 @@ import { usePagedList } from '@/hooks/usePagedList';
 import { Pagination } from '@/components/common/Pagination';
 import {
   getAdminAiKpis,
+  getAdminAiTokenSpend,
   getAdminAiTokenSpendComparative,
   getAdminAiRequestSpendComparative,
   getAdminAiCostByRegion,
@@ -18,7 +19,6 @@ import {
   FALLBACK_AI_COST_BY_REGION,
   FALLBACK_AI_MONTHLY_COST,
 } from '@/services/adminAiMetricsService';
-import { isAbortError } from '@/utils/delay';
 import { AiTokenSpendChart } from './charts/AiTokenSpendChart';
 import { AiRequestSpendChart } from './charts/AiRequestSpendChart';
 import { AiCostByRegionChart } from './charts/AiCostByRegionChart';
@@ -31,12 +31,13 @@ interface DashboardAiMetricsProps {
 
 export function DashboardAiMetrics({ enterpriseId }: DashboardAiMetricsProps) {
   const [kpis, setKpis] = useState<AdminAiKpisResponse>(FALLBACK_AI_KPIS);
+  const [spendTitle, setSpendTitle] = useState<string | null>(null);
   const [tokenSpend, setTokenSpend] = useState<AdminAiComparativeCohortPoint[]>(FALLBACK_AI_TOKEN_SPEND);
   const [requestSpend, setRequestSpend] = useState<AdminAiComparativeCohortPoint[]>(FALLBACK_AI_REQUEST_SPEND);
   const [costByRegion, setCostByRegion] = useState<AdminAiRegionPoint[]>(FALLBACK_AI_COST_BY_REGION);
   const [monthlyCost, setMonthlyCost] = useState<AdminAiMonthlyPoint[]>(FALLBACK_AI_MONTHLY_COST);
   const [periodo, setPeriodo] = useState('atual');
-  const [carregando, setCarregando] = useState(false);
+  const [carregando, setCarregando] = useState(true);
 
   const loadSessions = useCallback(
     (page: number, size: number, signal: AbortSignal) =>
@@ -49,23 +50,21 @@ export function DashboardAiMetrics({ enterpriseId }: DashboardAiMetricsProps) {
     const controller = new AbortController();
     setCarregando(true);
 
-    Promise.all([
+    Promise.allSettled([
       getAdminAiKpis(enterpriseId ?? undefined, controller.signal),
+      getAdminAiTokenSpend(enterpriseId ?? undefined, controller.signal),
       getAdminAiTokenSpendComparative(enterpriseId ?? undefined, controller.signal),
       getAdminAiRequestSpendComparative(enterpriseId ?? undefined, controller.signal),
       getAdminAiCostByRegion(enterpriseId ?? undefined, controller.signal),
       getAdminAiMonthlyCost(enterpriseId ?? undefined, controller.signal),
     ])
-      .then(([resKpi, resToken, resReq, resReg, resMonth]) => {
-        setKpis(resKpi);
-        setTokenSpend(resToken);
-        setRequestSpend(resReq);
-        setCostByRegion(resReg);
-        setMonthlyCost(resMonth);
-      })
-      .catch((err) => {
-        if (controller.signal.aborted || isAbortError(err)) return;
-        console.warn('Falha ao carregar métricas de IA:', err);
+      .then(([resKpi, resSpend, resToken, resReq, resReg, resMonth]) => {
+        if (resKpi.status === 'fulfilled') setKpis(resKpi.value);
+        if (resSpend.status === 'fulfilled') setSpendTitle(resSpend.value.title);
+        if (resToken.status === 'fulfilled') setTokenSpend(resToken.value);
+        if (resReq.status === 'fulfilled') setRequestSpend(resReq.value);
+        if (resReg.status === 'fulfilled') setCostByRegion(resReg.value);
+        if (resMonth.status === 'fulfilled') setMonthlyCost(resMonth.value);
       })
       .finally(() => {
         if (!controller.signal.aborted) setCarregando(false);
@@ -76,6 +75,8 @@ export function DashboardAiMetrics({ enterpriseId }: DashboardAiMetricsProps) {
 
   return (
     <div className="dashboard-ai-metrics" aria-label="Gerenciamento de IA e Observabilidade Midas">
+      {carregando && <p role="status">Carregando telemetria Midas IA...</p>}
+
       {/* Controles do topo do painel de IA */}
       <div className="dashboard-ai-metrics__controles">
         <div className="dashboard-ai-metrics__periodo-box">
@@ -103,10 +104,6 @@ export function DashboardAiMetrics({ enterpriseId }: DashboardAiMetricsProps) {
             <polyline points="6 9 12 15 18 9" />
           </svg>
         </div>
-
-        {carregando && (
-          <span className="dashboard-ai-metrics__loading-tag">Atualizando métricas...</span>
-        )}
       </div>
 
       {/* 3 KPI Cards com estilo Figma #6052:1734 */}
@@ -135,9 +132,9 @@ export function DashboardAiMetrics({ enterpriseId }: DashboardAiMetricsProps) {
 
       {/* Grid 2x2 com os 4 Gráficos do Figma 6052:1721 */}
       <div className="dashboard-ai-metrics__charts-grid">
-        {/* Gráfico 1: Gasto de tokens */}
+        {/* Gráfico 1: Gasto de tokens / Gasto por modelo */}
         <section className="dashboard-ai-metrics__chart-card" aria-label="Gasto de tokens">
-          <h2 className="dashboard-ai-metrics__chart-title">Gasto de tokens</h2>
+          <h2 className="dashboard-ai-metrics__chart-title">{spendTitle ?? 'Gasto de tokens'}</h2>
           <AiTokenSpendChart dados={tokenSpend} />
         </section>
 
@@ -172,7 +169,7 @@ export function DashboardAiMetrics({ enterpriseId }: DashboardAiMetricsProps) {
         </header>
 
         {sessions.status === 'carregando' && (
-          <p role="status" className="dashboard-ai-metrics__info">Carregando sessões de IA...</p>
+          <p role="status" className="dashboard-ai-metrics__info">Carregando sessões...</p>
         )}
         {sessions.status === 'erro' && (
           <div role="alert" className="dashboard-ai-metrics__info">
