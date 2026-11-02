@@ -81,22 +81,26 @@ export function PerfilForm({ perfil, onSalvar, onSair, onTrocarSenha }: Readonly
                     />
                 </div>
 
-                <div className="perfil-form__senha-box">
-                    <div className="perfil-form__senha-info">
-                        <span className="perfil-form__senha-rotulo">Senha</span>
-                        <span className="perfil-form__senha-mascara" aria-label="Senha oculta">••••••••••••</span>
-                    </div>
-                    {onTrocarSenha && (
-                        <button
+                <fieldset className="perfil-form__senha-box">
+                    <legend>Senha</legend>
+                    
+                    <div className="perfil-form__senha-conteudo">
+                        <span className="perfil-form__senha-mascara" aria-label="Senha oculta" >
+                            ••••••••••••
+                        </span>
+                        
+                        {onTrocarSenha && (
+                            <button
                             type="button"
                             className="perfil-form__trocar-senha"
                             onClick={onTrocarSenha}
                             disabled={enviando}
-                        >
-                            Alterar senha
-                        </button>
-                    )}
-                </div>
+                            >
+                                Alterar senha
+                            </button>
+                        )}
+                    </div>
+                </fieldset>
 
                 {falha && (
                     <p className="perfil-form__falha" role="alert">
