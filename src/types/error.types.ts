@@ -7,6 +7,8 @@ export interface ErrorPageProps{
     titulo: string;
     descricao: string;
     onTentarNovamente?: () => void;
+    rotaRetorno?: string;
+    rotuloRetorno?: string;
 }
 
 export interface ErrorProps{
