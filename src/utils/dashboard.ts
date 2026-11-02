@@ -9,8 +9,6 @@ export const opcoesPeriodo: OpcaoFiltro[] = [
   { valor: `Ano ${anoAtual}`, rotulo: `Ano ${anoAtual}` },
   { valor: `Ano ${anoAtual - 1}`, rotulo: `Ano ${anoAtual - 1}` },
   { valor: `Ano ${anoAtual - 2}`, rotulo: `Ano ${anoAtual - 2}` },
-  { valor: 'ultimos-3', rotulo: 'Últimos 3 meses' },
-  { valor: 'ultimos-6', rotulo: 'Últimos 6 meses' },
 ];
 
 const estados: [string, string][] = [

@@ -15,7 +15,7 @@ import { ServiceError } from './authService';
 function montarParametrosFiltros(filtros?: Partial<FiltrosDashboard>): string {
   if (!filtros) return '';
   const params = new URLSearchParams();
-  if (filtros.periodo && filtros.periodo !== 'atual' && filtros.periodo !== 'todos') {
+  if (filtros.periodo && filtros.periodo !== 'todos') {
     params.set('month', filtros.periodo);
   }
   if (filtros.estado && filtros.estado !== 'todos') {

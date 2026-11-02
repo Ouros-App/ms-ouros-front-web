@@ -118,42 +118,7 @@ export function CostByRegionChart({ dados }: Props) {
       }}
       onMouseLeave={() => setHoverInfo(null)}
     >
-      {/* Legenda Superior */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'flex-end',
-          alignItems: 'center',
-          gap: '16px',
-          paddingRight: '15px',
-          marginBottom: '4px',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span
-            style={{
-              width: '10px',
-              height: '10px',
-              borderRadius: '2px',
-              backgroundColor: '#110B95',
-              display: 'inline-block',
-            }}
-          />
-          <span style={{ fontSize: '11px', fontWeight: 500, color: '#111827' }}>Ano passado</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span
-            style={{
-              width: '10px',
-              height: '10px',
-              borderRadius: '2px',
-              backgroundColor: '#D8A23A',
-              display: 'inline-block',
-            }}
-          />
-          <span style={{ fontSize: '11px', fontWeight: 500, color: '#111827' }}>Este ano</span>
-        </div>
-      </div>
+
 
       {/* SVG Responsivo do Box Plot */}
       <div style={{ width: '100%', flex: 1, position: 'relative' }}>
@@ -212,7 +177,7 @@ export function CostByRegionChart({ dados }: Props) {
                 const yMed = getY(stats.median);
                 const yQ3 = getY(stats.q3);
                 const yMax = getY(stats.max);
-                const yAvg = typeof stats.avg === 'number' ? getY(stats.avg) : null;
+
 
                 const topBox = Math.min(yQ1, yQ3);
                 const heightBox = Math.max(3, Math.abs(yQ1 - yQ3));
@@ -278,17 +243,6 @@ export function CostByRegionChart({ dados }: Props) {
                       strokeWidth={2}
                     />
 
-                    {/* Ponto da Média (losango/círculo opcional se presente) */}
-                    {yAvg !== null && (
-                      <circle
-                        cx={x}
-                        cy={yAvg}
-                        r={2.5}
-                        fill="#FFFFFF"
-                        stroke={cor}
-                        strokeWidth={1}
-                      />
-                    )}
                   </g>
                 );
               }
@@ -446,6 +400,41 @@ export function CostByRegionChart({ dados }: Props) {
             )}
           </div>
         )}
+      </div>
+      {/* Legenda Inferior Centralizada (Figma #5998) */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: '24px',
+          marginTop: '6px',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span
+            style={{
+              width: '10px',
+              height: '10px',
+              borderRadius: '2px',
+              backgroundColor: '#110B95',
+              display: 'inline-block',
+            }}
+          />
+          <span style={{ fontSize: '11px', fontWeight: 500, color: '#111827' }}>Ano passado</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span
+            style={{
+              width: '10px',
+              height: '10px',
+              borderRadius: '2px',
+              backgroundColor: '#D8A23A',
+              display: 'inline-block',
+            }}
+          />
+          <span style={{ fontSize: '11px', fontWeight: 500, color: '#111827' }}>Este ano</span>
+        </div>
       </div>
     </div>
   );
