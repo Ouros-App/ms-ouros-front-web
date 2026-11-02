@@ -25,19 +25,12 @@
 .seletor-empresa-adm__rotulo {
   display: flex;
   align-items: center;
-  gap: 6px;
   color: #475569;
   font-size: 13px;
   font-weight: 500;
   white-space: nowrap;
   user-select: none;
-}
-
-.seletor-empresa-adm__icone {
-  width: 16px;
-  height: 16px;
-  color: #d8a23a;
-  flex-shrink: 0;
+  cursor: pointer;
 }
 
 .seletor-empresa-adm__texto {
