@@ -7,16 +7,6 @@ import { AdminEnterpriseProvider } from '@/context/AdminEnterpriseContext';
 import { PrivateRoute } from '@/routes/PrivateRoute';
 import { isFarmOwner } from '@/services/tokenService';
 import DashboardPage from '@/pages/Dashboard';
-import { AiTokenSpendChart } from '@/components/complex/DashboardAiMetrics/charts/AiTokenSpendChart';
-import { AiRequestSpendChart } from '@/components/complex/DashboardAiMetrics/charts/AiRequestSpendChart';
-import { AiCostByRegionChart } from '@/components/complex/DashboardAiMetrics/charts/AiCostByRegionChart';
-import { AiMonthlyCostChart } from '@/components/complex/DashboardAiMetrics/charts/AiMonthlyCostChart';
-import {
-  FALLBACK_AI_TOKEN_SPEND,
-  FALLBACK_AI_REQUEST_SPEND,
-  FALLBACK_AI_COST_BY_REGION,
-  FALLBACK_AI_MONTHLY_COST,
-} from '@/services/adminAiMetricsService';
 
 // Mock useAuth com perfil de administrador
 const mockUser = { id: '1', name: 'Admin Geral', email: 'adm@ouros.com', role: 'admin', accountType: 'admin' };
@@ -53,75 +43,36 @@ afterEach(() => {
   activeAuthUser = mockUser;
 });
 
-describe('Dashboard IA e Governança ADM - Cobertura Completa', () => {
-  it('renderiza os 4 componentes visuais de gráficos com dados de fallback', () => {
-    const { container: c1 } = render(<AiTokenSpendChart dados={FALLBACK_AI_TOKEN_SPEND} />);
-    expect(c1.querySelector('.dashboard-ai-metrics__chart-wrapper')).toBeTruthy();
-
-    const { container: c2 } = render(<AiRequestSpendChart dados={FALLBACK_AI_REQUEST_SPEND} />);
-    expect(c2.querySelector('.dashboard-ai-metrics__chart-wrapper')).toBeTruthy();
-
-    const { container: c3 } = render(<AiCostByRegionChart dados={FALLBACK_AI_COST_BY_REGION} />);
-    expect(c3.querySelector('.dashboard-ai-metrics__chart-wrapper')).toBeTruthy();
-
-    const { container: c4 } = render(<AiMonthlyCostChart dados={FALLBACK_AI_MONTHLY_COST} />);
-    expect(c4.querySelector('.dashboard-ai-metrics__chart-wrapper')).toBeTruthy();
-  });
-
-  it('DashboardAiMetrics renderiza controles, KPI cards, gráficos e permite trocar período', async () => {
-    const fetcher = vi.fn().mockImplementation(async (input: string | URL | Request) => {
-      const url = String(input);
-      if (url.includes('/kpis')) {
-        return new Response(JSON.stringify({
-          tokenSpend: { label: 'Gasto de Tokens- 2025', formattedValue: 'R$ 15.11M', comparisonLabel: 'Total', value: 15110000 },
-          unitTokenCost: { label: 'Reais/Token', formattedValue: 'R$ 0.94', comparisonLabel: 'Custo', value: 0.94 },
-          activeUsers: { label: 'Usuários', formattedValue: '104.728', comparisonLabel: 'Total', value: 104728 },
-        }));
-      }
-      if (url.includes('/sessions')) {
-        return new Response(JSON.stringify({
-          total: 1,
-          page: 1,
-          limit: 10,
-          items: [
-            {
-              session_id: 'midas-sess-test-01',
-              user_id: 99,
-              user_name: 'Usuário Teste',
-              account_type: 'admin',
-              enterprise_id: 1,
-              farm_id: null,
-              model: 'openai/gpt-oss-120b',
-              prompt_tokens: 500,
-              completion_tokens: 500,
-              total_tokens: 1000,
-              cost_brl: 0.94,
-              latency_ms: 50,
-              accuracy_rate: 98,
-              status: 'success',
-              created_at: '2026-10-28T10:00:00Z',
-            },
-          ],
-        }));
-      }
-      return new Response(JSON.stringify({ items: [] }));
+describe('Dashboard IA e Governança ADM', () => {
+  it('consulta os cinco gráficos Prometheus e renderiza as séries reais', async () => {
+    const charts = [
+      ['ai-request-rate', 'Requests por segundo', [{ time: '12:00', value: 0 }]],
+      ['ai-p95-latency', 'Latência p95 por rota', [{ label: '/chat', value: 0.25 }]],
+      ['ai-chat-outcomes', 'Chat por resultado', [{ label: 'success', value: 2 }]],
+      ['ai-agent-usage', 'Uso de agentes', [{ label: 'agent-a', value: 1 }]],
+      ['ai-tool-usage', 'Uso de tools', [{ label: 'tool-a', value: 1 }]],
+    ] as const;
+    const fetcher = vi.fn(async (input: string | URL | Request) => {
+      const chartId = charts.find(([id]) => String(input).includes(`/${id}/data`))?.[0];
+      const chart = charts.find(([id]) => id === chartId);
+      if (!chart) return new Response('{}', { status: 404 });
+      return new Response(JSON.stringify({
+        dashboard_id: 'prometheus-ai',
+        chart: { id: chart[0], title: chart[1], type: chart[0] === 'ai-request-rate' ? 'line' : 'bar' },
+        items: chart[2],
+      }));
     });
     vi.stubGlobal('fetch', fetcher);
 
-    render(<DashboardAiMetrics enterpriseId={1} />);
+    render(<DashboardAiMetrics />);
 
-    // Verifica presença dos KPI cards
-    expect(await screen.findByText('R$ 15.11M')).toBeTruthy();
-    expect(screen.getAllByText('R$ 0.94').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText('104.728')).toBeTruthy();
-
-    // Filtro de período
-    const select = screen.getByRole('combobox', { name: /Filtrar métricas de IA por período/i });
-    fireEvent.change(select, { target: { value: 'ultimo-trimestre' } });
-    expect((select as HTMLSelectElement).value).toBe('ultimo-trimestre');
-
-    // Sessão carregada
-    expect(await screen.findByText('midas-sess-test-01')).toBeTruthy();
+    expect(await screen.findByText('Requests por segundo')).toBeTruthy();
+    expect(screen.getByText('Latência p95 por rota')).toBeTruthy();
+    expect(screen.getByText('Chat por resultado')).toBeTruthy();
+    expect(screen.getByText('Uso de agentes')).toBeTruthy();
+    expect(screen.getByText('Uso de tools')).toBeTruthy();
+    expect(fetcher).toHaveBeenCalledTimes(5);
+    expect(fetcher.mock.calls.every(([url]) => String(url).includes('/v1/dashboards/prometheus-ai/charts/'))).toBe(true);
   });
 
   it('SeletorEmpresaAdm renderiza apenas para administradores e permite seleção de empresa', async () => {

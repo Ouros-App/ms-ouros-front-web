@@ -155,7 +155,7 @@ export default function DashboardPage() {
           {/* Conteúdo da Aba 2: Gerenciamento de IA (Figma 6052:1721) */}
           {isAdmin && abaAtiva === 'ia' && (
             <div id="painel-ia" role="tabpanel" aria-labelledby="aba-ia">
-              <DashboardAiMetrics enterpriseId={empresaSelecionada} />
+              <DashboardAiMetrics />
             </div>
           )}
         </main>
