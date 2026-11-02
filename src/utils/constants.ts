@@ -1,3 +1,5 @@
+import { SPRING_API_URL_PADRAO } from './validarSpringApiUrl';
+
 export const APP_TITLE = import.meta.env.VITE_APP_TITLE || 'Ouros';
 export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
@@ -24,7 +26,7 @@ const rawSpringUrl = import.meta.env.DEV
   ? (import.meta.env.VITE_FORCE_DIRECT_SPRING === 'true'
       ? (import.meta.env.VITE_SPRING_API_URL || 'http://localhost:8080')
       : '/spring')
-  : (import.meta.env.VITE_SPRING_API_URL || '');
+  : (import.meta.env.VITE_SPRING_API_URL || SPRING_API_URL_PADRAO);
 
 export const SPRING_API_URL = rawSpringUrl.replace(/\/+$/, '');
 

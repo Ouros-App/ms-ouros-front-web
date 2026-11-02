@@ -48,7 +48,9 @@ cp .env.example .env
 
 Ajuste o arquivo .env conforme o ambiente:
 
-O build exige `VITE_SPRING_API_URL` com uma URL HTTPS pública (como a de `.env.example`) ou um caminho de proxy de mesma origem, como `/spring`. O proxy deve ser configurado no servidor de produção; o Nginx fornecido serve apenas arquivos estáticos. Use `/` somente quando as rotas da API forem atendidas na raiz da mesma origem. Endereços locais e HTTP são permitidos somente no desenvolvimento.
+O build usa `https://ms-spring-api.discloud.app` como padrão para `VITE_SPRING_API_URL`; configure essa variável somente se o endpoint for diferente. Também aceita uma URL HTTPS pública ou um caminho de proxy de mesma origem, como `/spring`. O proxy precisa existir no servidor de produção; o Nginx deste projeto serve apenas arquivos estáticos.
+
+Credenciais privadas nunca devem usar o prefixo `VITE_`, pois essas variáveis são incorporadas ao frontend.
 
 O login web usa refresh token em cookie `HttpOnly` e mantém o access token apenas em memória. Configure `OUROS_WEB_ALLOWED_ORIGINS` no `ms-auth-service` com a origem HTTPS exata deste frontend em produção. Não inclua curingas nessa lista.
 
