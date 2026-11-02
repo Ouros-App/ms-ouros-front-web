@@ -9,7 +9,7 @@ const AJUDA: Record<LoginHelp, string> = {
     conta: 'As contas são criadas pelo gestor da sua granja. Peça a ele para cadastrar o seu e-mail no OUROS.',
 };
 
-export function LoginCard({ status, message, onSubmit, onForgotPassword }: LoginCardProps) {
+export function LoginCard({ status, message, onSubmit, onForgotPassword }: LoginCardProps){
     const {
         values,
         errors,
@@ -172,8 +172,6 @@ export function LoginCard({ status, message, onSubmit, onForgotPassword }: Login
                 </p>
             )}
         </section>
-
-        
     );
 }
 

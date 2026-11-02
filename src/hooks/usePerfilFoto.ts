@@ -67,7 +67,7 @@ export function usePerfilFoto(salva: string | null) {
      * - Se o usuário escolheu uma nova foto, envia para o Cloudinary e retorna a secure_url.
      * - Se nada mudou, retorna a foto salva original.
      */
-    const obterFotoFinal = useCallback(async (): Promise<string | null> => {
+    const obterFotoFinal = useCallback(async (): Promise<string | null | undefined> => {
         if (removido) {
             return null;
         }
@@ -80,8 +80,8 @@ export function usePerfilFoto(salva: string | null) {
                 setProcessando(false);
             }
         }
-        return salva;
-    }, [removido, arquivoPendente, salva]);
+        return undefined;
+    }, [removido, arquivoPendente]);
 
     return {
         foto,
