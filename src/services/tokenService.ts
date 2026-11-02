@@ -25,6 +25,17 @@ export interface KeycloakTokenClaims {
 /**
  * Decodifica o payload de um JWT de forma segura no navegador.
  */
+export function isFarmOwner(
+  userOrClaims?: { role?: string; accountType?: string; account_type?: string } | null,
+): boolean {
+  if (!userOrClaims) return false;
+  return (
+    userOrClaims.role === 'farm_owner' ||
+    userOrClaims.accountType === 'farm_owner' ||
+    userOrClaims.account_type === 'farm_owner'
+  );
+}
+
 export function parseJwt<T = KeycloakTokenClaims>(token: string): T | null {
   try {
     const parts = token.split('.');

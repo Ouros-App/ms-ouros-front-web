@@ -11,6 +11,7 @@ import './Login.css';
 
 interface LoginLocationState {
   from?: string;
+  erro?: string;
 }
 
 export default function LoginPage() {
@@ -28,7 +29,10 @@ export default function LoginPage() {
     backToCredentials,
   } = useLogin();
 
-  const redirectTo = (location.state as LoginLocationState | null)?.from ?? '/ranking';
+  const locationState = location.state as LoginLocationState | null;
+  const redirectTo = locationState?.from ?? '/ranking';
+  const effectiveStatus = status !== 'idle' ? status : (locationState?.erro ? 'error' : 'idle');
+  const effectiveMessage = message || locationState?.erro || '';
 
   if (isAuthenticated) {
     return <Navigate to={redirectTo} replace />;
@@ -83,8 +87,8 @@ export default function LoginPage() {
           <PasswordResetFlow onClose={() => setRedefinindoSenha(false)} />
         ) : step === 'credentials' || !pendingChallenge ? (
           <LoginCard
-            status={status}
-            message={message}
+            status={effectiveStatus}
+            message={effectiveMessage}
             onSubmit={submitCredentials}
             onForgotPassword={() => setRedefinindoSenha(true)}
           />

@@ -1,16 +1,28 @@
+import { useCallback, useEffect, useState } from 'react';
 import { usePagedList } from '@/hooks/usePagedList';
 import { Pagination } from '@/components/common/Pagination';
-import { useCallback, useEffect, useState } from 'react';
 import {
   getAdminAiKpis,
-  getAdminAiTokenSpend,
-  getAdminAiLatency,
+  getAdminAiTokenSpendComparative,
+  getAdminAiRequestSpendComparative,
+  getAdminAiCostByRegion,
+  getAdminAiMonthlyCost,
   getAdminAiSessionsPage,
   type AdminAiKpisResponse,
-  type AdminAiTokenSpendResponse,
-  type AdminAiLatencyResponse,
+  type AdminAiComparativeCohortPoint,
+  type AdminAiRegionPoint,
+  type AdminAiMonthlyPoint,
+  FALLBACK_AI_KPIS,
+  FALLBACK_AI_TOKEN_SPEND,
+  FALLBACK_AI_REQUEST_SPEND,
+  FALLBACK_AI_COST_BY_REGION,
+  FALLBACK_AI_MONTHLY_COST,
 } from '@/services/adminAiMetricsService';
 import { isAbortError } from '@/utils/delay';
+import { AiTokenSpendChart } from './charts/AiTokenSpendChart';
+import { AiRequestSpendChart } from './charts/AiRequestSpendChart';
+import { AiCostByRegionChart } from './charts/AiCostByRegionChart';
+import { AiMonthlyCostChart } from './charts/AiMonthlyCostChart';
 import './DashboardAiMetrics.css';
 
 interface DashboardAiMetricsProps {
@@ -18,13 +30,20 @@ interface DashboardAiMetricsProps {
 }
 
 export function DashboardAiMetrics({ enterpriseId }: DashboardAiMetricsProps) {
-  const [kpis, setKpis] = useState<AdminAiKpisResponse | null>(null);
-  const [spend, setSpend] = useState<AdminAiTokenSpendResponse | null>(null);
-  const [latency, setLatency] = useState<AdminAiLatencyResponse | null>(null);
-  const loadSessions = useCallback((page: number, size: number, signal: AbortSignal) =>
-    getAdminAiSessionsPage({ page, size }, enterpriseId ?? undefined, signal), [enterpriseId]);
+  const [kpis, setKpis] = useState<AdminAiKpisResponse>(FALLBACK_AI_KPIS);
+  const [tokenSpend, setTokenSpend] = useState<AdminAiComparativeCohortPoint[]>(FALLBACK_AI_TOKEN_SPEND);
+  const [requestSpend, setRequestSpend] = useState<AdminAiComparativeCohortPoint[]>(FALLBACK_AI_REQUEST_SPEND);
+  const [costByRegion, setCostByRegion] = useState<AdminAiRegionPoint[]>(FALLBACK_AI_COST_BY_REGION);
+  const [monthlyCost, setMonthlyCost] = useState<AdminAiMonthlyPoint[]>(FALLBACK_AI_MONTHLY_COST);
+  const [periodo, setPeriodo] = useState('atual');
+  const [carregando, setCarregando] = useState(false);
+
+  const loadSessions = useCallback(
+    (page: number, size: number, signal: AbortSignal) =>
+      getAdminAiSessionsPage({ page, size }, enterpriseId ?? undefined, signal),
+    [enterpriseId],
+  );
   const sessions = usePagedList(loadSessions);
-  const [carregando, setCarregando] = useState(true);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -32,13 +51,17 @@ export function DashboardAiMetrics({ enterpriseId }: DashboardAiMetricsProps) {
 
     Promise.all([
       getAdminAiKpis(enterpriseId ?? undefined, controller.signal),
-      getAdminAiTokenSpend(enterpriseId ?? undefined, controller.signal),
-      getAdminAiLatency(enterpriseId ?? undefined, controller.signal),
+      getAdminAiTokenSpendComparative(enterpriseId ?? undefined, controller.signal),
+      getAdminAiRequestSpendComparative(enterpriseId ?? undefined, controller.signal),
+      getAdminAiCostByRegion(enterpriseId ?? undefined, controller.signal),
+      getAdminAiMonthlyCost(enterpriseId ?? undefined, controller.signal),
     ])
-      .then(([resKpi, resSpend, resLat]) => {
+      .then(([resKpi, resToken, resReq, resReg, resMonth]) => {
         setKpis(resKpi);
-        setSpend(resSpend);
-        setLatency(resLat);
+        setTokenSpend(resToken);
+        setRequestSpend(resReq);
+        setCostByRegion(resReg);
+        setMonthlyCost(resMonth);
       })
       .catch((err) => {
         if (controller.signal.aborted || isAbortError(err)) return;
@@ -51,82 +74,118 @@ export function DashboardAiMetrics({ enterpriseId }: DashboardAiMetricsProps) {
     return () => controller.abort();
   }, [enterpriseId]);
 
-
   return (
-    <section className="dashboard-ai-metrics" aria-label="Métricas de IA e Observabilidade Midas">
-      {kpis?.tokenSpend && <><header className="dashboard-ai-metrics__header">
-        <div>
-          <h2 className="dashboard-ai-metrics__title">🤖 Observabilidade Midas IA & LLMs</h2>
-          <p className="dashboard-ai-metrics__subtitle">
-            Consumo de tokens, latência de inferência e auditoria de prompts (Figma 6052:1721)
-          </p>
+    <div className="dashboard-ai-metrics" aria-label="Gerenciamento de IA e Observabilidade Midas">
+      {/* Controles do topo do painel de IA */}
+      <div className="dashboard-ai-metrics__controles">
+        <div className="dashboard-ai-metrics__periodo-box">
+          <select
+            id="ai-periodo-select"
+            className="dashboard-ai-metrics__select"
+            value={periodo}
+            onChange={(e) => setPeriodo(e.target.value)}
+            aria-label="Filtrar métricas de IA por período"
+          >
+            <option value="atual">Mês Atual</option>
+            <option value="ultimo-trimestre">Último Trimestre</option>
+            <option value="ano-vigente">Ano Vigente (2025/2026)</option>
+          </select>
+          <svg
+            className="dashboard-ai-metrics__select-chevron"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
         </div>
-        <span className="dashboard-ai-metrics__badge">Acurácia Geral: {kpis.avgAccuracyPercent}%</span>
-      </header>
 
-      <div className="dashboard-ai-metrics__kpis">
+        {carregando && (
+          <span className="dashboard-ai-metrics__loading-tag">Atualizando métricas...</span>
+        )}
+      </div>
+
+      {/* 3 KPI Cards com estilo Figma #6052:1734 */}
+      <div className="dashboard-ai-metrics__kpis-container">
+        {/* Card 1: Gasto de Tokens */}
         <div className="dashboard-ai-metrics__kpi-card">
-          <span className="dashboard-ai-metrics__kpi-label">{kpis.tokenSpend.label}</span>
-          <strong className="dashboard-ai-metrics__kpi-value">{kpis.tokenSpend.formattedValue}</strong>
-          <span className="dashboard-ai-metrics__kpi-sub">{kpis.tokenSpend.periodComparisonText}</span>
+          <span className="dashboard-ai-metrics__kpi-tag">{kpis.tokenSpend.comparisonLabel}</span>
+          <div className="dashboard-ai-metrics__kpi-valor">{kpis.tokenSpend.formattedValue}</div>
+          <div className="dashboard-ai-metrics__kpi-label">{kpis.tokenSpend.label}</div>
         </div>
+
+        {/* Card 2: Reais/Token */}
         <div className="dashboard-ai-metrics__kpi-card">
-          <span className="dashboard-ai-metrics__kpi-label">{kpis.unitTokenCost.label}</span>
-          <strong className="dashboard-ai-metrics__kpi-value">{kpis.unitTokenCost.formattedValue}</strong>
-          <span className="dashboard-ai-metrics__kpi-sub">{kpis.unitTokenCost.periodComparisonText}</span>
+          <span className="dashboard-ai-metrics__kpi-tag">{kpis.unitTokenCost.comparisonLabel}</span>
+          <div className="dashboard-ai-metrics__kpi-valor">{kpis.unitTokenCost.formattedValue}</div>
+          <div className="dashboard-ai-metrics__kpi-label">{kpis.unitTokenCost.label}</div>
         </div>
+
+        {/* Card 3: Usuários */}
         <div className="dashboard-ai-metrics__kpi-card">
-          <span className="dashboard-ai-metrics__kpi-label">{kpis.activeUsers.label}</span>
-          <strong className="dashboard-ai-metrics__kpi-value">{kpis.activeUsers.formattedValue}</strong>
-          <span className="dashboard-ai-metrics__kpi-sub">{kpis.activeUsers.periodComparisonText}</span>
+          <span className="dashboard-ai-metrics__kpi-tag">{kpis.activeUsers.comparisonLabel}</span>
+          <div className="dashboard-ai-metrics__kpi-valor">{kpis.activeUsers.formattedValue}</div>
+          <div className="dashboard-ai-metrics__kpi-label">{kpis.activeUsers.label}</div>
         </div>
       </div>
 
-      <div className="dashboard-ai-metrics__grid">
-        {spend && (
-          <div className="dashboard-ai-metrics__panel">
-            <h3 className="dashboard-ai-metrics__panel-title">{spend.title}</h3>
-            <p className="dashboard-ai-metrics__panel-meta">Total de Tokens: {spend.totalTokens.toLocaleString('pt-BR')}</p>
-            <div className="dashboard-ai-metrics__cohorts">
-              {spend.points.slice(0, 4).map((pt) => (
-                <div key={pt.cohort} className="dashboard-ai-metrics__cohort-row">
-                  <span>{pt.cohort}</span>
-                  <strong>R$ {pt.totalSpendBrl.toFixed(2)}</strong>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+      {/* Grid 2x2 com os 4 Gráficos do Figma 6052:1721 */}
+      <div className="dashboard-ai-metrics__charts-grid">
+        {/* Gráfico 1: Gasto de tokens */}
+        <section className="dashboard-ai-metrics__chart-card" aria-label="Gasto de tokens">
+          <h2 className="dashboard-ai-metrics__chart-title">Gasto de tokens</h2>
+          <AiTokenSpendChart dados={tokenSpend} />
+        </section>
 
-        {latency && (
-          <div className="dashboard-ai-metrics__panel">
-            <h3 className="dashboard-ai-metrics__panel-title">{latency.title}</h3>
-            <p className="dashboard-ai-metrics__panel-meta">
-              P50: {latency.p50Ms}ms · P95: {latency.p95Ms}ms · Custo médio: R$ {latency.avgCostPerPromptBrl.toFixed(2)}
+        {/* Gráfico 2: Gasto por requisição */}
+        <section className="dashboard-ai-metrics__chart-card" aria-label="Gasto por requisição">
+          <h2 className="dashboard-ai-metrics__chart-title">Gasto por requisição</h2>
+          <AiRequestSpendChart dados={requestSpend} />
+        </section>
+
+        {/* Gráfico 3: Custo por região */}
+        <section className="dashboard-ai-metrics__chart-card" aria-label="Custo por região">
+          <h2 className="dashboard-ai-metrics__chart-title">Custo por região</h2>
+          <AiCostByRegionChart dados={costByRegion} />
+        </section>
+
+        {/* Gráfico 4: Custo mensal */}
+        <section className="dashboard-ai-metrics__chart-card" aria-label="Custo mensal">
+          <h2 className="dashboard-ai-metrics__chart-title">Custo mensal</h2>
+          <AiMonthlyCostChart dados={monthlyCost} />
+        </section>
+      </div>
+
+      {/* Auditoria de Sessões Midas IA */}
+      <section className="dashboard-ai-metrics__sessions" aria-label="Auditoria de Sessões do Midas IA">
+        <header className="dashboard-ai-metrics__sessions-header">
+          <div>
+            <h2 className="dashboard-ai-metrics__chart-title">Auditoria de Sessões Midas</h2>
+            <p className="dashboard-ai-metrics__sessions-subtitle">
+              Registro operacional de inferência, tokens consumidos e acurácia ({sessions.pagination.totalElements} interações registradas)
             </p>
-            <div className="dashboard-ai-metrics__buckets">
-              {latency.buckets.map((b) => (
-                <div key={b.bucket} className="dashboard-ai-metrics__bucket-item">
-                  <span>{b.bucket}</span>
-                  <div className="dashboard-ai-metrics__progress">
-                    <div className="dashboard-ai-metrics__bar" style={{ width: `${b.sharePercent}%` }} />
-                  </div>
-                  <span>{b.sharePercent}%</span>
-                </div>
-              ))}
-            </div>
+          </div>
+        </header>
+
+        {sessions.status === 'carregando' && (
+          <p role="status" className="dashboard-ai-metrics__info">Carregando sessões de IA...</p>
+        )}
+        {sessions.status === 'erro' && (
+          <div role="alert" className="dashboard-ai-metrics__info">
+            <p>{sessions.mensagemErro}</p>
+            <button type="button" className="dashboard-ai-metrics__btn" onClick={sessions.recarregar}>
+              Tentar novamente
+            </button>
           </div>
         )}
-      </div>
-
-      </>}
-      {carregando && <p role="status">Carregando telemetria Midas IA...</p>}
-      {sessions.status === 'carregando' && <p role="status">Carregando sessões...</p>}
-      {sessions.status === 'erro' && <div role="alert"><p>{sessions.mensagemErro}</p><button type="button" onClick={sessions.recarregar}>Tentar novamente</button></div>}
-      {sessions.status === 'pronto' && sessions.items.length === 0 && <p role="status">Nenhuma sessão encontrada.</p>}
-      {sessions.status === 'pronto' && sessions.items.length > 0 && (
-        <div className="dashboard-ai-metrics__sessions">
-          <h3 className="dashboard-ai-metrics__panel-title">Auditoria de Sessões Midas</h3>
+        {sessions.status === 'pronto' && sessions.items.length === 0 && (
+          <p role="status" className="dashboard-ai-metrics__info">Nenhuma sessão encontrada.</p>
+        )}
+        {sessions.status === 'pronto' && sessions.items.length > 0 && (
           <div className="dashboard-ai-metrics__table-wrapper">
             <table className="dashboard-ai-metrics__table">
               <thead>
@@ -137,27 +196,33 @@ export function DashboardAiMetrics({ enterpriseId }: DashboardAiMetricsProps) {
                   <th>Tokens</th>
                   <th>Latência</th>
                   <th>Custo</th>
+                  <th>Acurácia</th>
                   <th>Status</th>
                 </tr>
               </thead>
               <tbody>
                 {sessions.items.map((s) => (
                   <tr key={s.session_id}>
-                    <td>{s.session_id}</td>
+                    <td className="dashboard-ai-metrics__table-strong">{s.session_id}</td>
                     <td>{s.model}</td>
                     <td>{s.user_name}</td>
-                    <td>{s.total_tokens}</td>
+                    <td>{s.total_tokens.toLocaleString('pt-BR')}</td>
                     <td>{s.latency_ms}ms</td>
                     <td>R$ {s.cost_brl.toFixed(2)}</td>
-                    <td><span className="dashboard-ai-metrics__status">{s.status}</span></td>
+                    <td>{s.accuracy_rate ? `${s.accuracy_rate}%` : '100%'}</td>
+                    <td>
+                      <span className={`dashboard-ai-metrics__status-badge dashboard-ai-metrics__status-badge--${s.status}`}>
+                        {s.status === 'success' ? 'Sucesso' : s.status}
+                      </span>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </div>
-      )}
-      <Pagination {...sessions.pagination} />
-    </section>
+        )}
+        <Pagination {...sessions.pagination} />
+      </section>
+    </div>
   );
 }

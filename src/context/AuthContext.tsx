@@ -8,6 +8,7 @@ import { lerArmazenado, removerArmazenado, salvarArmazenado } from '@/utils/stor
 import { encerrarSessaoWeb } from '@/services/authService';
 import {
   executarRenovacaoToken,
+  isFarmOwner,
   isTokenExpirado,
   limparTokens,
   obterAccessToken,
@@ -37,6 +38,10 @@ function persistirUsuario(user: User): User {
 function restaurarSessao(): AuthState {
   const user = lerArmazenado<User>(CHAVE_SESSAO);
   if (user && typeof user.id === 'string' && typeof user.name === 'string') {
+    if (isFarmOwner(user)) {
+      removerArmazenado(CHAVE_SESSAO);
+      return authInitialState;
+    }
     return { user: persistirUsuario(user), isAuthenticated: false, isInitializing: true };
   }
   return authInitialState;
@@ -52,6 +57,12 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const login = (user: User) => {
     sessionVersion.current++;
     setRestoreError('');
+    if (isFarmOwner(user)) {
+      limparTokens();
+      removerArmazenado(CHAVE_SESSAO);
+      dispatch({ type: 'LOGOUT' });
+      return;
+    }
     limparTokens();
     const usuarioPersistido = persistirUsuario(user);
     if (user.token) {
