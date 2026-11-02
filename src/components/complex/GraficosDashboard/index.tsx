@@ -24,12 +24,10 @@ export function GraficosDashboard({ filtros }: GraficosDashboardProps) {
           custoPorRegiao.recarregar();
         }}
       >
-        {(custo.dados || custoPorRegiao.dados) && (
-          <BrazilChoroplethMapChart
-            dados={custo.dados ?? []}
-            dadosRegioesApi={custoPorRegiao.dados}
-          />
-        )}
+        <BrazilChoroplethMapChart
+          dados={custo.dados ?? []}
+          dadosRegioesApi={custoPorRegiao.dados ?? []}
+        />
       </PainelGrafico>
 
       <PainelGrafico
@@ -38,7 +36,7 @@ export function GraficosDashboard({ filtros }: GraficosDashboardProps) {
         mensagemErro={custoPorLote.mensagemErro}
         onRecarregar={custoPorLote.recarregar}
       >
-        {custoPorLote.dados && <CostByCohortChart dados={custoPorLote.dados} />}
+        <CostByCohortChart dados={custoPorLote.dados ?? []} />
       </PainelGrafico>
 
       <PainelGrafico
@@ -47,7 +45,7 @@ export function GraficosDashboard({ filtros }: GraficosDashboardProps) {
         mensagemErro={custoPorRegiao.mensagemErro}
         onRecarregar={custoPorRegiao.recarregar}
       >
-        {custoPorRegiao.dados && <CostByRegionChart dados={custoPorRegiao.dados} />}
+        <CostByRegionChart dados={custoPorRegiao.dados ?? []} />
       </PainelGrafico>
 
       <PainelGrafico
@@ -56,7 +54,7 @@ export function GraficosDashboard({ filtros }: GraficosDashboardProps) {
         mensagemErro={custoMensal.mensagemErro}
         onRecarregar={custoMensal.recarregar}
       >
-        {custoMensal.dados && <MonthlyCostChart dados={custoMensal.dados} />}
+        <MonthlyCostChart dados={custoMensal.dados ?? []} />
       </PainelGrafico>
     </div>
   );

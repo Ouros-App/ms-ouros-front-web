@@ -121,7 +121,17 @@ export function MonthlyCostChart({ dados }: Props) {
     });
   }, [dados]);
 
-  if (!dados || dados.length === 0 || dadosFormatados.length === 0) {
+  const temDadosReais = useMemo(() => {
+    if (!dados || dados.length === 0 || dadosFormatados.length === 0) return false;
+    return dados.some(
+      (d) =>
+        (typeof d.current_year_cost === "number" && d.current_year_cost > 0) ||
+        (typeof d.previous_year_cost === "number" && d.previous_year_cost > 0) ||
+        (typeof d.cost === "number" && d.cost > 0),
+    );
+  }, [dados, dadosFormatados]);
+
+  if (!temDadosReais) {
     return <p className="graficos-dashboard__vazio">Sem dados mensais para o período selecionado.</p>;
   }
 

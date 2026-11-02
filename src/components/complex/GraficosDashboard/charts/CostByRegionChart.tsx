@@ -76,7 +76,20 @@ export function CostByRegionChart({ dados }: Props) {
     return multiplicador * expoente;
   }, [dadosOrdenados]);
 
-  if (!dados || dados.length === 0) {
+  const temDadosReais = useMemo(() => {
+    if (!dados || dados.length === 0) return false;
+    return dados.some(
+      (d) =>
+        (d.current_year_cost && d.current_year_cost > 0) ||
+        (d.previous_year_cost && d.previous_year_cost > 0) ||
+        (d.cost && d.cost > 0) ||
+        (d.current_year?.total_cost && d.current_year.total_cost > 0) ||
+        (d.previous_year?.total_cost && d.previous_year.total_cost > 0) ||
+        (d.current_year?.lots_count && d.current_year.lots_count > 0),
+    );
+  }, [dados]);
+
+  if (!temDadosReais) {
     return <p className="graficos-dashboard__vazio">Sem dados regionais para o período selecionado.</p>;
   }
 
