@@ -2,6 +2,8 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { DashboardAiMetrics } from '@/components/complex/DashboardAiMetrics';
+import { getPrometheusAiCharts } from '@/services/adminAiMetricsService';
+import { ServiceError } from '@/services/authService';
 import { SeletorEmpresaAdm } from '@/components/complex/SeletorEmpresaAdm';
 import { AdminEnterpriseProvider } from '@/context/AdminEnterpriseContext';
 import { PrivateRoute } from '@/routes/PrivateRoute';
@@ -73,6 +75,45 @@ describe('Dashboard IA e Governança ADM', () => {
     expect(screen.getByText('Uso de tools')).toBeTruthy();
     expect(fetcher).toHaveBeenCalledTimes(5);
     expect(fetcher.mock.calls.every(([url]) => String(url).includes('/v1/dashboards/prometheus-ai/charts/'))).toBe(true);
+  });
+
+  it('mantém os gráficos disponíveis e identifica cada consulta Prometheus que falhou', async () => {
+    const fetcher = vi.fn(async (input: string | URL | Request) => {
+      const url = String(input);
+      const chartId = url.match(/charts\/([^/]+)\/data/)?.[1];
+      if (chartId === 'ai-agent-usage') return new Response('{}', { status: 503 });
+      return new Response(JSON.stringify({
+        dashboard_id: 'prometheus-ai',
+        chart: { id: chartId, title: chartId === 'ai-request-rate' ? 'Requests por segundo' : chartId, type: 'bar' },
+        items: [{ label: 'success', value: 1 }],
+      }));
+    });
+    vi.stubGlobal('fetch', fetcher);
+
+    render(<DashboardAiMetrics />);
+
+    expect(await screen.findByText('Requests por segundo')).toBeTruthy();
+    expect(screen.getByRole('list', { name: 'Gráficos com falha' }).textContent).toContain('ai-agent-usage');
+    expect(screen.getByText('ai-chat-outcomes')).toBeTruthy();
+  });
+
+  it('preserva o status HTTP quando todas as consultas Prometheus falham', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('{}', { status: 503 })));
+
+    await expect(getPrometheusAiCharts()).rejects.toMatchObject({
+      status: 503,
+      message: 'Erro ao carregar dados Prometheus (503)',
+    } satisfies Partial<ServiceError>);
+  });
+
+  it('propaga o cancelamento das consultas Prometheus', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('{}')));
+    const controller = new AbortController();
+    controller.abort();
+
+    await expect(getPrometheusAiCharts(controller.signal)).rejects.toMatchObject({
+      name: 'AbortError',
+    });
   });
 
   it('SeletorEmpresaAdm renderiza apenas para administradores e permite seleção de empresa', async () => {

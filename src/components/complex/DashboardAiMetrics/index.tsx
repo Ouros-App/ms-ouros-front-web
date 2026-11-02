@@ -17,7 +17,8 @@ import './DashboardAiMetrics.css';
 
 const chartColors = ['#6750a4', '#d8a23a', '#299d8f', '#e76f51', '#4f7cac'];
 
-function AiChart({ chart, color }: { chart: PrometheusChartData; color: string }): ReactNode {
+/** Renders the chart type and labels defined by a Prometheus chart payload. */
+function AiChart({ chart, color }: Readonly<{ chart: PrometheusChartData; color: string }>): ReactNode {
   const isTimeSeries = chart.chart.type === 'line';
   const labelKey = isTimeSeries ? 'time' : 'label';
 
@@ -53,8 +54,10 @@ function AiChart({ chart, color }: { chart: PrometheusChartData; color: string }
   );
 }
 
+/** Renders Prometheus charts and reports individual and total query failures. */
 export function DashboardAiMetrics(): ReactNode {
   const [charts, setCharts] = useState<PrometheusChartData[]>([]);
+  const [failedCharts, setFailedCharts] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -62,8 +65,12 @@ export function DashboardAiMetrics(): ReactNode {
     const controller = new AbortController();
     setLoading(true);
     setError(null);
+    setFailedCharts([]);
     void getPrometheusAiCharts(controller.signal)
-      .then(setCharts)
+      .then((result) => {
+        setCharts(result.charts);
+        setFailedCharts(result.failures);
+      })
       .catch((cause: unknown) => {
         if (!controller.signal.aborted) {
           setError(cause instanceof Error ? cause.message : 'Erro ao carregar telemetria Prometheus.');
@@ -84,6 +91,13 @@ export function DashboardAiMetrics(): ReactNode {
       {error && <p role="alert" className="dashboard-ai-metrics__info">{error}</p>}
       {!loading && !error && charts.length === 0 && (
         <p className="dashboard-ai-metrics__info">Nenhum gráfico de IA disponível no dashboard Prometheus.</p>
+      )}
+      {failedCharts.length > 0 && (
+        <ul aria-label="Gráficos com falha" className="dashboard-ai-metrics__info">
+          {failedCharts.map((chartId) => (
+            <li key={chartId}>Falha ao carregar: {chartId}</li>
+          ))}
+        </ul>
       )}
       {!error && charts.length > 0 && (
         <div className="dashboard-ai-metrics__charts-grid">

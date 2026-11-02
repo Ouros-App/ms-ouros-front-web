@@ -23,16 +23,38 @@ const AI_CHART_IDS = [
   'ai-tool-usage',
 ] as const;
 
-export async function getPrometheusAiCharts(signal?: AbortSignal): Promise<PrometheusChartData[]> {
-  const results = await Promise.all(
+export interface PrometheusAiChartsResult {
+  charts: PrometheusChartData[];
+  failures: string[];
+}
+
+/** Fetches every AI chart, retaining partial successes and propagating cancellation. */
+export async function getPrometheusAiCharts(signal?: AbortSignal): Promise<PrometheusAiChartsResult> {
+  const results = await Promise.allSettled(
     AI_CHART_IDS.map(async (chartId) => {
       const url = `${TELEMETRY_API_URL}/v1/dashboards/${AI_DASHBOARD_ID}/charts/${chartId}/data`;
       const response = await fetchComAuth(url, { signal });
       if (!response.ok) {
-        throw new ServiceError(`Erro ao carregar dados Prometheus (${response.status})`);
+        throw new ServiceError(`Erro ao carregar dados Prometheus (${response.status})`, response.status);
       }
       return (await response.json()) as PrometheusChartData;
     }),
   );
-  return results;
+  if (signal?.aborted) throw new DOMException('A consulta foi cancelada.', 'AbortError');
+
+  const charts: PrometheusChartData[] = [];
+  const failures: string[] = [];
+  results.forEach((result, index) => {
+    if (result.status === 'fulfilled') {
+      charts.push(result.value);
+    } else {
+      failures.push(AI_CHART_IDS[index]);
+    }
+  });
+
+  if (charts.length === 0) {
+    const failure = results.find((result) => result.status === 'rejected');
+    if (failure?.status === 'rejected') throw failure.reason;
+  }
+  return { charts, failures };
 }

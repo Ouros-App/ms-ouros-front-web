@@ -16,6 +16,7 @@ import './Dashboard.css';
 
 type AbaDashboard = 'operacional' | 'ia';
 
+/** Renders operational dashboards and the admin-only AI metrics tab. */
 export default function DashboardPage() {
   const { user } = useAuth();
   const { empresaSelecionada } = useAdminEnterprise();
