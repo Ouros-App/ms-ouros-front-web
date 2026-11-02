@@ -218,13 +218,21 @@
 }
 
 .dashboard-ai-metrics__status-badge--success {
-  background: #ecfdf5;
-  color: #059669;
+  background: #dcfce7;
+  color: #14532d;
 }
 
 .dashboard-ai-metrics__status-badge--error {
-  background: #fef2f2;
-  color: #dc2626;
+  background: #fee2e2;
+  color: #7f1d1d;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-ai-metrics__kpi-card,
+  .dashboard-ai-metrics__btn {
+    transition: none;
+    transform: none;
+  }
 }
 
 .dashboard-ai-metrics__info {

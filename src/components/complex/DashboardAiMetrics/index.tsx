@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
 import { usePagedList } from '@/hooks/usePagedList';
 import { Pagination } from '@/components/common/Pagination';
 import {
@@ -26,10 +27,10 @@ import { AiMonthlyCostChart } from './charts/AiMonthlyCostChart';
 import './DashboardAiMetrics.css';
 
 interface DashboardAiMetricsProps {
-  enterpriseId?: number | null;
+  readonly enterpriseId?: number | null;
 }
 
-export function DashboardAiMetrics({ enterpriseId }: DashboardAiMetricsProps) {
+export function DashboardAiMetrics({ enterpriseId }: DashboardAiMetricsProps): ReactNode {
   const [kpis, setKpis] = useState<AdminAiKpisResponse>(FALLBACK_AI_KPIS);
   const [spendTitle, setSpendTitle] = useState<string | null>(null);
   const [tokenSpend, setTokenSpend] = useState<AdminAiComparativeCohortPoint[]>(FALLBACK_AI_TOKEN_SPEND);
@@ -50,7 +51,7 @@ export function DashboardAiMetrics({ enterpriseId }: DashboardAiMetricsProps) {
     const controller = new AbortController();
     setCarregando(true);
 
-    Promise.allSettled([
+    void Promise.allSettled([
       getAdminAiKpis(enterpriseId ?? undefined, controller.signal),
       getAdminAiTokenSpend(enterpriseId ?? undefined, controller.signal),
       getAdminAiTokenSpendComparative(enterpriseId ?? undefined, controller.signal),
@@ -75,11 +76,12 @@ export function DashboardAiMetrics({ enterpriseId }: DashboardAiMetricsProps) {
 
   return (
     <div className="dashboard-ai-metrics" aria-label="Gerenciamento de IA e Observabilidade Midas">
-      {carregando && <p role="status">Carregando telemetria Midas IA...</p>}
+      {carregando && <output className="dashboard-ai-metrics__info">Carregando telemetria Midas IA...</output>}
 
       {/* Controles do topo do painel de IA */}
       <div className="dashboard-ai-metrics__controles">
         <div className="dashboard-ai-metrics__periodo-box">
+          <label htmlFor="ai-periodo-select" className="sr-only">Filtrar por período</label>
           <select
             id="ai-periodo-select"
             className="dashboard-ai-metrics__select"
@@ -169,7 +171,7 @@ export function DashboardAiMetrics({ enterpriseId }: DashboardAiMetricsProps) {
         </header>
 
         {sessions.status === 'carregando' && (
-          <p role="status" className="dashboard-ai-metrics__info">Carregando sessões...</p>
+          <output className="dashboard-ai-metrics__info">Carregando sessões...</output>
         )}
         {sessions.status === 'erro' && (
           <div role="alert" className="dashboard-ai-metrics__info">
@@ -180,7 +182,7 @@ export function DashboardAiMetrics({ enterpriseId }: DashboardAiMetricsProps) {
           </div>
         )}
         {sessions.status === 'pronto' && sessions.items.length === 0 && (
-          <p role="status" className="dashboard-ai-metrics__info">Nenhuma sessão encontrada.</p>
+          <output className="dashboard-ai-metrics__info">Nenhuma sessão encontrada.</output>
         )}
         {sessions.status === 'pronto' && sessions.items.length > 0 && (
           <div className="dashboard-ai-metrics__table-wrapper">
