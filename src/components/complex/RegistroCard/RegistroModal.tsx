@@ -1,4 +1,5 @@
-import { listarGranjas, type Granja } from '@/services/farmService';
+import { listarGranjas } from '@/services/farmService';
+import type { Granja } from '@/types/granjas.types';
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import type { RegistroModalProps, RegistroValores } from '@/types/registros.types';

@@ -16,6 +16,7 @@ import './Dashboard.css';
 
 type AbaDashboard = 'operacional' | 'ia';
 
+/** Renders operational dashboards and the admin-only AI metrics tab. */
 export default function DashboardPage() {
   const { user } = useAuth();
   const { empresaSelecionada } = useAdminEnterprise();
@@ -155,7 +156,7 @@ export default function DashboardPage() {
           {/* Conteúdo da Aba 2: Gerenciamento de IA (Figma 6052:1721) */}
           {isAdmin && abaAtiva === 'ia' && (
             <div id="painel-ia" role="tabpanel" aria-labelledby="aba-ia">
-              <DashboardAiMetrics enterpriseId={empresaSelecionada} />
+              <DashboardAiMetrics />
             </div>
           )}
         </main>

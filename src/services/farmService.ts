@@ -1,11 +1,5 @@
+import type { Granja } from '@/types/granjas.types';
 import { springRequest } from './springClient';
-
-export interface Granja {
-    id: number;
-    nome: string;
-    regiao: string | null;
-    idEnterprise: number | null;
-}
 
 interface FarmResponse {
     id: number;

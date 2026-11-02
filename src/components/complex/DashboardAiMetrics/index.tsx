@@ -1,227 +1,111 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
-import { usePagedList } from '@/hooks/usePagedList';
-import { Pagination } from '@/components/common/Pagination';
 import {
-  getAdminAiKpis,
-  getAdminAiTokenSpend,
-  getAdminAiTokenSpendComparative,
-  getAdminAiRequestSpendComparative,
-  getAdminAiCostByRegion,
-  getAdminAiMonthlyCost,
-  getAdminAiSessionsPage,
-  type AdminAiKpisResponse,
-  type AdminAiComparativeCohortPoint,
-  type AdminAiRegionPoint,
-  type AdminAiMonthlyPoint,
-  FALLBACK_AI_KPIS,
-  FALLBACK_AI_TOKEN_SPEND,
-  FALLBACK_AI_REQUEST_SPEND,
-  FALLBACK_AI_COST_BY_REGION,
-  FALLBACK_AI_MONTHLY_COST,
-} from '@/services/adminAiMetricsService';
-import { AiTokenSpendChart } from './charts/AiTokenSpendChart';
-import { AiRequestSpendChart } from './charts/AiRequestSpendChart';
-import { AiCostByRegionChart } from './charts/AiCostByRegionChart';
-import { AiMonthlyCostChart } from './charts/AiMonthlyCostChart';
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
+import { getPrometheusAiCharts } from '@/services/adminAiMetricsService';
+import type { PrometheusChartData } from '@/services/adminAiMetricsService';
 import './DashboardAiMetrics.css';
 
-interface DashboardAiMetricsProps {
-  readonly enterpriseId?: number | null;
+const chartColors = ['#6750a4', '#d8a23a', '#299d8f', '#e76f51', '#4f7cac'];
+
+/** Renders the chart type and labels defined by a Prometheus chart payload. */
+function AiChart({ chart, color }: Readonly<{ chart: PrometheusChartData; color: string }>): ReactNode {
+  const isTimeSeries = chart.chart.type === 'line';
+  const labelKey = isTimeSeries ? 'time' : 'label';
+
+  return (
+    <section className="dashboard-ai-metrics__chart-card" aria-label={chart.chart.title}>
+      <h2 className="dashboard-ai-metrics__chart-title">{chart.chart.title}</h2>
+      {chart.items.length === 0 ? (
+        <p className="dashboard-ai-metrics__vazio">Sem dados retornados pelo Prometheus.</p>
+      ) : (
+        <div className="dashboard-ai-metrics__grafico-shell">
+          <ResponsiveContainer width="100%" height="100%">
+            {isTimeSeries ? (
+              <LineChart data={chart.items} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis dataKey={labelKey} tick={{ fontSize: 12 }} />
+                <YAxis tick={{ fontSize: 12 }} />
+                <Tooltip />
+                <Line type="monotone" dataKey="value" stroke={color} strokeWidth={2} dot={false} />
+              </LineChart>
+            ) : (
+              <BarChart data={chart.items} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis dataKey={labelKey} tick={{ fontSize: 12 }} />
+                <YAxis tick={{ fontSize: 12 }} />
+                <Tooltip />
+                <Bar dataKey="value" fill={color} radius={[4, 4, 0, 0]} />
+              </BarChart>
+            )}
+          </ResponsiveContainer>
+        </div>
+      )}
+    </section>
+  );
 }
 
-export function DashboardAiMetrics({ enterpriseId }: DashboardAiMetricsProps): ReactNode {
-  const [kpis, setKpis] = useState<AdminAiKpisResponse>(FALLBACK_AI_KPIS);
-  const [spendTitle, setSpendTitle] = useState<string | null>(null);
-  const [tokenSpend, setTokenSpend] = useState<AdminAiComparativeCohortPoint[]>(FALLBACK_AI_TOKEN_SPEND);
-  const [requestSpend, setRequestSpend] = useState<AdminAiComparativeCohortPoint[]>(FALLBACK_AI_REQUEST_SPEND);
-  const [costByRegion, setCostByRegion] = useState<AdminAiRegionPoint[]>(FALLBACK_AI_COST_BY_REGION);
-  const [monthlyCost, setMonthlyCost] = useState<AdminAiMonthlyPoint[]>(FALLBACK_AI_MONTHLY_COST);
-  const [periodo, setPeriodo] = useState('atual');
-  const [carregando, setCarregando] = useState(true);
-
-  const loadSessions = useCallback(
-    (page: number, size: number, signal: AbortSignal) =>
-      getAdminAiSessionsPage({ page, size }, enterpriseId ?? undefined, signal),
-    [enterpriseId],
-  );
-  const sessions = usePagedList(loadSessions);
+/** Renders Prometheus charts and reports individual and total query failures. */
+export function DashboardAiMetrics(): ReactNode {
+  const [charts, setCharts] = useState<PrometheusChartData[]>([]);
+  const [failedCharts, setFailedCharts] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
-    setCarregando(true);
-
-    void Promise.allSettled([
-      getAdminAiKpis(enterpriseId ?? undefined, controller.signal),
-      getAdminAiTokenSpend(enterpriseId ?? undefined, controller.signal),
-      getAdminAiTokenSpendComparative(enterpriseId ?? undefined, controller.signal),
-      getAdminAiRequestSpendComparative(enterpriseId ?? undefined, controller.signal),
-      getAdminAiCostByRegion(enterpriseId ?? undefined, controller.signal),
-      getAdminAiMonthlyCost(enterpriseId ?? undefined, controller.signal),
-    ])
-      .then(([resKpi, resSpend, resToken, resReq, resReg, resMonth]) => {
-        if (resKpi.status === 'fulfilled') setKpis(resKpi.value);
-        if (resSpend.status === 'fulfilled') setSpendTitle(resSpend.value.title);
-        if (resToken.status === 'fulfilled') setTokenSpend(resToken.value);
-        if (resReq.status === 'fulfilled') setRequestSpend(resReq.value);
-        if (resReg.status === 'fulfilled') setCostByRegion(resReg.value);
-        if (resMonth.status === 'fulfilled') setMonthlyCost(resMonth.value);
+    setLoading(true);
+    setError(null);
+    setFailedCharts([]);
+    void getPrometheusAiCharts(controller.signal)
+      .then((result) => {
+        setCharts(result.charts);
+        setFailedCharts(result.failures);
+      })
+      .catch((cause: unknown) => {
+        if (!controller.signal.aborted) {
+          setError(cause instanceof Error ? cause.message : 'Erro ao carregar telemetria Prometheus.');
+        }
       })
       .finally(() => {
-        if (!controller.signal.aborted) setCarregando(false);
+        if (!controller.signal.aborted) setLoading(false);
       });
-
     return () => controller.abort();
-  }, [enterpriseId]);
+  }, []);
 
   return (
-    <div className="dashboard-ai-metrics" aria-label="Gerenciamento de IA e Observabilidade Midas">
-      {carregando && <output className="dashboard-ai-metrics__info">Carregando telemetria Midas IA...</output>}
-
-      {/* Controles do topo do painel de IA */}
-      <div className="dashboard-ai-metrics__controles">
-        <div className="dashboard-ai-metrics__periodo-box">
-          <label htmlFor="ai-periodo-select" className="sr-only">Filtrar por período</label>
-          <select
-            id="ai-periodo-select"
-            className="dashboard-ai-metrics__select"
-            value={periodo}
-            onChange={(e) => setPeriodo(e.target.value)}
-            aria-label="Filtrar métricas de IA por período"
-          >
-            <option value="atual">Mês Atual</option>
-            <option value="ultimo-trimestre">Último Trimestre</option>
-            <option value="ano-vigente">Ano Vigente (2025/2026)</option>
-          </select>
-          <svg
-            className="dashboard-ai-metrics__select-chevron"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <polyline points="6 9 12 15 18 9" />
-          </svg>
+    <div className="dashboard-ai-metrics" aria-label="Observabilidade Midas AI">
+      <p className="dashboard-ai-metrics__description">
+        Métricas operacionais do Midas AI consultadas diretamente no dashboard Prometheus.
+      </p>
+      {loading && <output className="dashboard-ai-metrics__info">Carregando dados do Prometheus…</output>}
+      {error && <p role="alert" className="dashboard-ai-metrics__info">{error}</p>}
+      {!loading && !error && charts.length === 0 && (
+        <p className="dashboard-ai-metrics__info">Nenhum gráfico de IA disponível no dashboard Prometheus.</p>
+      )}
+      {failedCharts.length > 0 && (
+        <ul aria-label="Gráficos com falha" className="dashboard-ai-metrics__info">
+          {failedCharts.map((chartId) => (
+            <li key={chartId}>Falha ao carregar: {chartId}</li>
+          ))}
+        </ul>
+      )}
+      {!error && charts.length > 0 && (
+        <div className="dashboard-ai-metrics__charts-grid">
+          {charts.map((chart, index) => (
+            <AiChart key={chart.chart.id} chart={chart} color={chartColors[index % chartColors.length]} />
+          ))}
         </div>
-      </div>
-
-      {/* 3 KPI Cards com estilo Figma #6052:1734 */}
-      <div className="dashboard-ai-metrics__kpis-container">
-        {/* Card 1: Gasto de Tokens */}
-        <div className="dashboard-ai-metrics__kpi-card">
-          <span className="dashboard-ai-metrics__kpi-tag">{kpis.tokenSpend.comparisonLabel}</span>
-          <div className="dashboard-ai-metrics__kpi-valor">{kpis.tokenSpend.formattedValue}</div>
-          <div className="dashboard-ai-metrics__kpi-label">{kpis.tokenSpend.label}</div>
-        </div>
-
-        {/* Card 2: Reais/Token */}
-        <div className="dashboard-ai-metrics__kpi-card">
-          <span className="dashboard-ai-metrics__kpi-tag">{kpis.unitTokenCost.comparisonLabel}</span>
-          <div className="dashboard-ai-metrics__kpi-valor">{kpis.unitTokenCost.formattedValue}</div>
-          <div className="dashboard-ai-metrics__kpi-label">{kpis.unitTokenCost.label}</div>
-        </div>
-
-        {/* Card 3: Usuários */}
-        <div className="dashboard-ai-metrics__kpi-card">
-          <span className="dashboard-ai-metrics__kpi-tag">{kpis.activeUsers.comparisonLabel}</span>
-          <div className="dashboard-ai-metrics__kpi-valor">{kpis.activeUsers.formattedValue}</div>
-          <div className="dashboard-ai-metrics__kpi-label">{kpis.activeUsers.label}</div>
-        </div>
-      </div>
-
-      {/* Grid 2x2 com os 4 Gráficos do Figma 6052:1721 */}
-      <div className="dashboard-ai-metrics__charts-grid">
-        {/* Gráfico 1: Gasto de tokens / Gasto por modelo */}
-        <section className="dashboard-ai-metrics__chart-card" aria-label="Gasto de tokens">
-          <h2 className="dashboard-ai-metrics__chart-title">{spendTitle ?? 'Gasto de tokens'}</h2>
-          <AiTokenSpendChart dados={tokenSpend} />
-        </section>
-
-        {/* Gráfico 2: Gasto por requisição */}
-        <section className="dashboard-ai-metrics__chart-card" aria-label="Gasto por requisição">
-          <h2 className="dashboard-ai-metrics__chart-title">Gasto por requisição</h2>
-          <AiRequestSpendChart dados={requestSpend} />
-        </section>
-
-        {/* Gráfico 3: Custo por região */}
-        <section className="dashboard-ai-metrics__chart-card" aria-label="Custo por região">
-          <h2 className="dashboard-ai-metrics__chart-title">Custo por região</h2>
-          <AiCostByRegionChart dados={costByRegion} />
-        </section>
-
-        {/* Gráfico 4: Custo mensal */}
-        <section className="dashboard-ai-metrics__chart-card" aria-label="Custo mensal">
-          <h2 className="dashboard-ai-metrics__chart-title">Custo mensal</h2>
-          <AiMonthlyCostChart dados={monthlyCost} />
-        </section>
-      </div>
-
-      {/* Auditoria de Sessões Midas IA */}
-      <section className="dashboard-ai-metrics__sessions" aria-label="Auditoria de Sessões do Midas IA">
-        <header className="dashboard-ai-metrics__sessions-header">
-          <div>
-            <h2 className="dashboard-ai-metrics__chart-title">Auditoria de Sessões Midas</h2>
-            <p className="dashboard-ai-metrics__sessions-subtitle">
-              Registro operacional de inferência, tokens consumidos e acurácia ({sessions.pagination.totalElements} interações registradas)
-            </p>
-          </div>
-        </header>
-
-        {sessions.status === 'carregando' && (
-          <output className="dashboard-ai-metrics__info">Carregando sessões...</output>
-        )}
-        {sessions.status === 'erro' && (
-          <div role="alert" className="dashboard-ai-metrics__info">
-            <p>{sessions.mensagemErro}</p>
-            <button type="button" className="dashboard-ai-metrics__btn" onClick={sessions.recarregar}>
-              Tentar novamente
-            </button>
-          </div>
-        )}
-        {sessions.status === 'pronto' && sessions.items.length === 0 && (
-          <output className="dashboard-ai-metrics__info">Nenhuma sessão encontrada.</output>
-        )}
-        {sessions.status === 'pronto' && sessions.items.length > 0 && (
-          <div className="dashboard-ai-metrics__table-wrapper">
-            <table className="dashboard-ai-metrics__table">
-              <thead>
-                <tr>
-                  <th>Sessão</th>
-                  <th>Modelo</th>
-                  <th>Usuário</th>
-                  <th>Tokens</th>
-                  <th>Latência</th>
-                  <th>Custo</th>
-                  <th>Acurácia</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sessions.items.map((s) => (
-                  <tr key={s.session_id}>
-                    <td className="dashboard-ai-metrics__table-strong">{s.session_id}</td>
-                    <td>{s.model}</td>
-                    <td>{s.user_name}</td>
-                    <td>{s.total_tokens.toLocaleString('pt-BR')}</td>
-                    <td>{s.latency_ms}ms</td>
-                    <td>R$ {s.cost_brl.toFixed(2)}</td>
-                    <td>{s.accuracy_rate ? `${s.accuracy_rate}%` : '100%'}</td>
-                    <td>
-                      <span className={`dashboard-ai-metrics__status-badge dashboard-ai-metrics__status-badge--${s.status}`}>
-                        {s.status === 'success' ? 'Sucesso' : s.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-        <Pagination {...sessions.pagination} />
-      </section>
+      )}
     </div>
   );
 }

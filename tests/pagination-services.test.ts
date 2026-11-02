@@ -8,7 +8,6 @@ import { listarSimulacoesPaginadas } from '@/services/simulacoesService';
 import { listarMetasPaginadas, isMetaConcluida, atualizarMeta } from '@/services/metasService';
 import { listarRankingPaginado } from '@/services/rankingService';
 import { getCorporateFarmsPage } from '@/services/telemetryDashboardService';
-import { getAdminAiSessionsPage } from '@/services/adminAiMetricsService';
 beforeEach(() => vi.resetAllMocks());
 const query = { page: 2, size: 25, search: 'Granja', sort: 'nome' };
 const envelope = { page: 2, size: 25, totalElements: 53, totalPages: 3 };
@@ -38,21 +37,17 @@ it('ranking mantém posição e liga globais mesmo após busca textual', async (
  expect(springRequest).toHaveBeenLastCalledWith('/farms/rankings/paged', expect.objectContaining({ query: { ...query, sort: 'farm_name', direction: 'asc', id_enterprise: 3 } }));
 });
 
-for (const type of ['farms', 'sessions'] as const) {
- it(`telemetria ${type}: converte índices e usa limit sem perder escopo`, async () => {
-  vi.mocked(fetchComAuth).mockResolvedValueOnce(new Response(JSON.stringify({ items: [], page: 3, limit: 25, total: 53 })));
-  const result = type === 'farms'
-    ? await getCorporateFarmsPage(query, { enterpriseId: 3, state: 'SP', management: 'Norte', month: '2026-10' })
-    : await getAdminAiSessionsPage(query, 3);
-  const url = new URL(String(vi.mocked(fetchComAuth).mock.calls[0][0]), 'http://localhost');
-  expect(url.searchParams.get('page')).toBe('3');
-  expect(url.searchParams.get('limit')).toBe('25');
-  expect(url.searchParams.get('page_size')).toBeNull();
-  expect(url.searchParams.get('enterprise_id')).toBe('3');
-  expect(url.searchParams.get('search')).toBe('Granja');
-  expect(result).toEqual({ content: [], ...envelope });
- });
-}
+it('telemetria farms converte índices e usa limit sem perder escopo', async () => {
+ vi.mocked(fetchComAuth).mockResolvedValueOnce(new Response(JSON.stringify({ items: [], page: 3, limit: 25, total: 53 })));
+ const result = await getCorporateFarmsPage(query, { enterpriseId: 3, state: 'SP', management: 'Norte', month: '2026-10' });
+ const url = new URL(String(vi.mocked(fetchComAuth).mock.calls[0][0]), 'http://localhost');
+ expect(url.searchParams.get('page')).toBe('3');
+ expect(url.searchParams.get('limit')).toBe('25');
+ expect(url.searchParams.get('page_size')).toBeNull();
+ expect(url.searchParams.get('enterprise_id')).toBe('3');
+ expect(url.searchParams.get('search')).toBe('Granja');
+ expect(result).toEqual({ content: [], ...envelope });
+});
 
 
 it('isMetaConcluida reconhece status multilingue e atualizarMeta envia status', async () => {
