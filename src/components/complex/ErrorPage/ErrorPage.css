@@ -76,6 +76,46 @@
     transform: translateY(-25px);
 }
 
+.error-page__acoes{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.error-page__botao{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 24px;
+    border: 2px solid #0b2a5b;
+    border-radius: 10px;
+    background-color: #0b2a5b;
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.error-page__botao--secundario{
+    background-color: #ffffff;
+    color: #0b2a5b;
+}
+
+.error-page__botao:hover{
+    background-color: #123a7a;
+    color: #ffffff;
+}
+
+.error-page__botao:focus-visible{
+    outline: 3px solid #f5b82e;
+    outline-offset: 3px;
+}
+
 @media(max-width: 480px){
     .error-page__mascot{
         width: 150px;

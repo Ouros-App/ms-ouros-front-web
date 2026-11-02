@@ -47,7 +47,7 @@
     width: 98px;
     height: 36px;
     border-radius:8px;
-    transform: translate(107px);
+    transform: translate(7px);
 }
 
 .dialogo .registro-botao--secundario:hover:not(:disabled) {
@@ -61,7 +61,7 @@
     width: 90px;
     height: 36px;
     border-radius:8px;
-    transform: translate(107px);
+    transform: translate(7px);
 }
 
 .dialogo .registro-botao--perigo:hover:not(:disabled) {

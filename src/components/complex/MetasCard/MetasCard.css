@@ -99,13 +99,13 @@
 }
 
 .metas-botao--perigo{
-    background: var(--danger);
-    border-color: var(--danger);
-    color: #ffffff;
+    background: #deab55;
+    border-color: var(--gold);
+    color: black;
 }
 
 .metas-botao--perigo:hover:not(:disabled){
-    background: #991b1b;
+    background: #deab55;
 }
 
 .metas-card__estado{
