@@ -17,7 +17,9 @@ export default defineConfig(({ mode, command, isPreview }) => {
     validarSpringApiUrl(env.VITE_SPRING_API_URL || SPRING_API_URL_PADRAO);
   }
   const authTarget = removerBarrasFinais(env.VITE_AUTH_API_URL || 'https://ms-auth-service.discloud.app');
-  const springTarget = removerBarrasFinais(env.VITE_SPRING_API_URL || SPRING_API_URL_PADRAO);
+  const springTarget = removerBarrasFinais(
+    env.VITE_SPRING_API_URL || (command === 'build' ? SPRING_API_URL_PADRAO : 'http://localhost:8080'),
+  );
   const telemetryTarget = removerBarrasFinais(env.VITE_TELEMETRY_API_URL || 'https://ouros-dashboard.discloud.app');
 
   return {
