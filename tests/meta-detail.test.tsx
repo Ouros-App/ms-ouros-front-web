@@ -8,6 +8,7 @@ const registroState = vi.hoisted(() => ({ status: 'pronto', mensagemErro: '', re
 vi.mock('@/hooks/useRegistro', () => ({ useRegistro: () => registroState }));
 afterEach(cleanup);
 
+<<<<<<< HEAD
 const renderizar = (caminho: string) => render(
   <MemoryRouter initialEntries={[caminho]}>
     <Routes>
@@ -26,6 +27,32 @@ it('detalhe apresenta dados do lote e erro de registro ausente', () => {
   renderizar('/registros/1');
   expect(screen.getByText('Registro não encontrado')).toBeTruthy();
   expect(screen.getByRole('link', { name: 'Voltar para registros' }).getAttribute('href')).toBe('/registros');
+=======
+function renderDetalhe() {
+  return render(
+    <MemoryRouter initialEntries={['/registros/1']}>
+      <Routes>
+        <Route path="/registros/:id" element={<Detalhe />} />
+      </Routes>
+    </MemoryRouter>,
+  );
+}
+
+it('detalhe apresenta dados do lote e erro de registro ausente', () => {
+  const view = renderDetalhe();
+  expect(screen.getByRole('heading', { name: 'Lote L1' })).toBeTruthy();
+  expect(screen.getByText('Galinhas atuais')).toBeTruthy();
+
+  registroState.registro = null as never;
+  view.rerender(
+    <MemoryRouter initialEntries={['/registros/1']}>
+      <Routes>
+        <Route path="/registros/:id" element={<Detalhe />} />
+      </Routes>
+    </MemoryRouter>,
+  );
+  expect(screen.getByText('Registro não encontrado')).toBeTruthy();
+>>>>>>> fe27c542f14a357ea4631989578a4bb83f162fa7
 });
 
 it('detalhe sem id na rota mostra erro com link de retorno', () => {
