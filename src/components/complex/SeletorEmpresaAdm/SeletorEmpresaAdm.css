@@ -1,33 +1,105 @@
 .seletor-empresa-adm {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  background-color: rgba(255, 255, 255, 0.9);
-  padding: 6px 12px;
-  border-radius: 8px;
+  gap: 10px;
+  background-color: #ffffff;
+  padding: 4px 6px 4px 12px;
+  border-radius: 10px;
   border: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  font-family: 'Poppins', sans-serif;
+  height: 42px;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.seletor-empresa-adm__label {
-  font-size: 13px;
-  font-weight: 600;
+.seletor-empresa-adm:hover {
+  border-color: #cbd5e1;
+}
+
+.seletor-empresa-adm:focus-within {
+  border-color: #d8a23a;
+  box-shadow: 0 0 0 3px rgba(216, 162, 58, 0.15);
+}
+
+.seletor-empresa-adm__rotulo {
+  display: flex;
+  align-items: center;
   color: #475569;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  user-select: none;
+  cursor: pointer;
+}
+
+.seletor-empresa-adm__texto {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.seletor-empresa-adm__select-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .seletor-empresa-adm__select {
-  padding: 4px 8px;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding: 6px 28px 6px 10px;
   font-size: 13px;
-  border-radius: 6px;
-  border: 1px solid #cbd5e1;
-  background-color: #ffffff;
-  color: #1e293b;
+  font-family: inherit;
   font-weight: 500;
+  color: #0f172a;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
   cursor: pointer;
   outline: none;
+  max-width: 240px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.seletor-empresa-adm__select:hover {
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
 }
 
 .seletor-empresa-adm__select:focus {
-  border-color: #f59e0b;
-  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+  background-color: #ffffff;
+  border-color: #d8a23a;
+}
+
+.seletor-empresa-adm__select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.seletor-empresa-adm__chevron {
+  position: absolute;
+  right: 8px;
+  width: 14px;
+  height: 14px;
+  color: #64748b;
+  pointer-events: none;
+  transition: transform 0.15s ease;
+}
+
+@media (max-width: 768px) {
+  .seletor-empresa-adm {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .seletor-empresa-adm__select-wrapper {
+    flex: 1;
+  }
+  .seletor-empresa-adm__select {
+    width: 100%;
+    max-width: none;
+  }
 }

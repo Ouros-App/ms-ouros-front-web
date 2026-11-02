@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { iniciarLogin, verificarCodigoLogin } from '@/services/authService';
-import { claimsToUser, parseJwt } from '@/services/tokenService';
+import { claimsToUser, isFarmOwner, parseJwt } from '@/services/tokenService';
 import type {
   LoginStatus,
   LoginStep,
@@ -106,6 +106,15 @@ export function useLogin() {
           tokenResponse.access_token,
           tokenResponse.refresh_token,
         );
+
+        if (isFarmOwner(user) || claims?.account_type === 'farm_owner') {
+          setPendingChallenge(null);
+          setStatus('error');
+          setMessage(
+            'Acesso restrito: Produtores (farm_owner) devem utilizar exclusivamente o aplicativo móvel Ouros. O painel web é restrito a gestores e administradores.',
+          );
+          return;
+        }
 
         // Descarte seguro da senha em memória
         setPendingChallenge(null);

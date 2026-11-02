@@ -54,7 +54,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 16px;
-    margin-bottom: 26px;
+    margin-bottom: 24px;
 }
 
 .dashboard-page__titulo{
@@ -79,6 +79,56 @@
     flex-wrap: wrap;
 }
 
+/* Abas de Navegação Executiva (ADM: Operacional vs IA) */
+.dashboard-page__abas {
+    display: inline-flex;
+    align-items: center;
+    background: #f1f5f9;
+    padding: 4px;
+    border-radius: 10px;
+    gap: 4px;
+    margin-bottom: 22px;
+    border: 1px solid #e2e8f0;
+}
+
+.dashboard-page__aba-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 18px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: #64748b;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dashboard-page__aba-btn:hover {
+    color: #1e293b;
+    background: rgba(255, 255, 255, 0.6);
+}
+
+.dashboard-page__aba-btn--ativo {
+    background: #ffffff;
+    color: #171438;
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.dashboard-page__aba-icone {
+    width: 16px;
+    height: 16px;
+    stroke-width: 2.2;
+}
+
+.dashboard-page__aba-btn--ativo .dashboard-page__aba-icone {
+    color: #d8a23a;
+}
+
 .dashboard-page__conteudo{
     position: relative;
     z-index: 1;
@@ -87,5 +137,15 @@
 @media (max-width: 640px){
     .dashboard-page__coluna {
         padding: 18px 14px 32px;
+    }
+    .dashboard-page__abas {
+        width: 100%;
+        display: flex;
+    }
+    .dashboard-page__aba-btn {
+        flex: 1;
+        justify-content: center;
+        padding: 8px 10px;
+        font-size: 12px;
     }
 }

@@ -1,19 +1,22 @@
 import { useState } from 'react';
+import type { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { LoginCard } from '@/components/complex/LoginCard';
 import { PasswordResetFlow } from '@/components/complex/PasswordResetFlow';
 import { VerificationCard } from '@/components/complex/VerificationCard';
 import { useAuth } from '@/hooks/useAuth';
 import { useLogin } from '@/hooks/useLogin';
+import type { LoginStatus } from '@/types/auth.types';
 import { efeitoDireito, efeitoEsquerdo, logo, mascote } from './LoginAssets';
 import { destaques } from './LoginContent';
 import './Login.css';
 
 interface LoginLocationState {
   from?: string;
+  erro?: string;
 }
 
-export default function LoginPage() {
+export default function LoginPage(): ReactNode {
   const { isAuthenticated } = useAuth();
   const location = useLocation();
   const [redefinindoSenha, setRedefinindoSenha] = useState(false);
@@ -28,11 +31,48 @@ export default function LoginPage() {
     backToCredentials,
   } = useLogin();
 
-  const redirectTo = (location.state as LoginLocationState | null)?.from ?? '/ranking';
+  const locationState = location.state as LoginLocationState | null;
+  const redirectTo = locationState?.from ?? '/ranking';
+
+  let effectiveStatus: LoginStatus = status;
+  if (status === 'idle' && locationState?.erro) {
+    effectiveStatus = 'error';
+  }
+  const effectiveMessage = message || locationState?.erro || '';
 
   if (isAuthenticated) {
     return <Navigate to={redirectTo} replace />;
   }
+
+  const renderAuthCard = (): ReactNode => {
+    if (redefinindoSenha) {
+      return <PasswordResetFlow onClose={() => setRedefinindoSenha(false)} />;
+    }
+
+    if (step === 'credentials' || !pendingChallenge) {
+      return (
+        <LoginCard
+          status={effectiveStatus}
+          message={effectiveMessage}
+          onSubmit={submitCredentials}
+          onForgotPassword={() => setRedefinindoSenha(true)}
+        />
+      );
+    }
+
+    return (
+      <VerificationCard
+        maskedEmail={pendingChallenge.maskedEmail}
+        status={status}
+        message={message}
+        onVerify={submitOtp}
+        onResend={resendOtp}
+        onBack={backToCredentials}
+        expiresIn={pendingChallenge.expiresIn}
+        isMock={pendingChallenge.isMock}
+      />
+    );
+  };
 
   return (
     <main className="login-page">
@@ -79,27 +119,7 @@ export default function LoginPage() {
           )}
         </section>
 
-        {redefinindoSenha ? (
-          <PasswordResetFlow onClose={() => setRedefinindoSenha(false)} />
-        ) : step === 'credentials' || !pendingChallenge ? (
-          <LoginCard
-            status={status}
-            message={message}
-            onSubmit={submitCredentials}
-            onForgotPassword={() => setRedefinindoSenha(true)}
-          />
-        ) : (
-          <VerificationCard
-            maskedEmail={pendingChallenge.maskedEmail}
-            status={status}
-            message={message}
-            onVerify={submitOtp}
-            onResend={resendOtp}
-            onBack={backToCredentials}
-            expiresIn={pendingChallenge.expiresIn}
-            isMock={pendingChallenge.isMock}
-          />
-        )}
+        {renderAuthCard()}
       </div>
     </main>
   );
