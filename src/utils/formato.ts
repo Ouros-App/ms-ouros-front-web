@@ -6,14 +6,22 @@ export const formatarMoeda = (valor: number) => moeda.format(valor);
 export const formatarNumero = (valor: number) => numero.format(valor);
 export const formatarDecimal = (valor: number) => decimal.format(valor);
 
-export function formatarData(iso: string): string {
-  const [ano, mes, dia] = iso.split('-');
+export function formatarData(iso?: string | null): string {
+  if (!iso || !iso.trim()) return '-';
+  const partes = iso.split('-');
+  if (partes.length < 3) return '-';
+  const [ano, mes, dia] = partes;
+  if (!dia || !mes || !ano) return '-';
   return `${dia}/${mes}/${ano}`;
 }
 
-export function formatarDataHora(iso: string): string {
+export function formatarDataHora(iso?: string | null): string {
+  if (!iso || !iso.trim()) return '-';
   const [data, hora = '00:00'] = iso.split('T');
-  const [ano, mes, dia] = data.split('-');
+  const partes = data.split('-');
+  if (partes.length < 3) return '-';
+  const [ano, mes, dia] = partes;
+  if (!dia || !mes || !ano) return '-';
   return `${dia}/${mes}/${ano} | ${hora.slice(0, 5)}`;
 }
 

@@ -20,7 +20,9 @@ test('valida lote, data e quantidades de aves', () => {
 
 test('formata datas e valores de exibição', () => {
   assert.equal(formatarData('2026-10-29'), '29/10/2026');
+  assert.equal(formatarData(''), '-');
   assert.equal(formatarDataHora('2026-10-29T13:25:00'), '29/10/2026 | 13:25');
+  assert.equal(formatarDataHora(''), '-');
   assert.equal(formatarMes('2026-02'), 'Fev');
   assert.equal(formatarMes(''), '');
   assert.equal(formatarValorAbreviado(1500000), 'R$ 1,5M');
