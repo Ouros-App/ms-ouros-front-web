@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { DashboardAiMetrics } from '@/components/complex/DashboardAiMetrics';
 import { getPrometheusAiCharts } from '@/services/adminAiMetricsService';
@@ -42,6 +42,7 @@ vi.mock('recharts', async () => {
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
+  vi.useRealTimers();
   activeAuthUser = mockUser;
 });
 
@@ -55,7 +56,16 @@ describe('Dashboard IA e Governança ADM', () => {
       ['ai-tool-usage', 'Uso de tools', [{ label: 'tool-a', value: 1 }]],
     ] as const;
     const fetcher = vi.fn(async (input: string | URL | Request) => {
-      const chartId = charts.find(([id]) => String(input).includes(`/${id}/data`))?.[0];
+      const url = String(input);
+      if (url.includes('/v1/admin/ai-metrics/kpis')) {
+        return new Response(JSON.stringify({
+          token_spend: { value: 1.25, formatted: 'US$ 1,25', unit: 'US$', year: null, period: '2026-11' },
+          total_tokens: { value: 1250, formatted: '1.250', unit: 'tokens', year: null, period: '2026-11' },
+          unit_cost: { value: 1, formatted: 'US$ 1,00', unit: 'US$/1k tokens', year: null, period: '2026-11' },
+          active_users: { value: 2, formatted: '2', unit: 'usuários', year: 2026, period: null },
+        }));
+      }
+      const chartId = charts.find(([id]) => url.includes(`/${id}/data`))?.[0];
       const chart = charts.find(([id]) => id === chartId);
       if (!chart) return new Response('{}', { status: 404 });
       return new Response(JSON.stringify({
@@ -68,18 +78,66 @@ describe('Dashboard IA e Governança ADM', () => {
 
     render(<DashboardAiMetrics />);
 
-    expect(await screen.findByText('Requests por segundo')).toBeTruthy();
-    expect(screen.getByText('Latência p95 por rota')).toBeTruthy();
-    expect(screen.getByText('Chat por resultado')).toBeTruthy();
-    expect(screen.getByText('Uso de agentes')).toBeTruthy();
-    expect(screen.getByText('Uso de tools')).toBeTruthy();
-    expect(fetcher).toHaveBeenCalledTimes(5);
-    expect(fetcher.mock.calls.every(([url]) => String(url).includes('/v1/dashboards/prometheus-ai/charts/'))).toBe(true);
+    expect(await screen.findByRole('heading', { name: /Requests por segundo/ })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /Latência p95 por rota \(ms\)/ })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /Chat por resultado \(solicitações\/5 min\)/ })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /Uso de agentes \(eventos\/5 min\)/ })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /Uso de tools \(eventos\/5 min\)/ })).toBeTruthy();
+    expect(await screen.findByText('1.250')).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Tokens no mês' })).toBeTruthy();
+    expect(fetcher).toHaveBeenCalledTimes(6);
+    fireEvent.change(screen.getByLabelText('Mês dos KPIs'), { target: { value: '2024-02' } });
+    await waitFor(() => {
+      expect(fetcher.mock.calls.some(([url]) => String(url).includes('month=2024-02'))).toBe(true);
+    });
+  });
+
+  it('uses the new current month when clearing the selector after a month rollover', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-10-31T23:59:59.000Z'));
+    const fetcher = vi.fn(async (input: string | URL | Request) => {
+      const url = String(input);
+      if (url.includes('/v1/admin/ai-metrics/kpis')) {
+        return new Response(JSON.stringify({
+          token_spend: { value: 1, formatted: '1', unit: 'R$', year: null, period: '2026-10' },
+          total_tokens: { value: 1, formatted: '1', unit: 'tokens', year: null, period: '2026-10' },
+          unit_cost: { value: 1, formatted: '1', unit: 'R$/1k tokens', year: null, period: '2026-10' },
+          active_users: { value: 1, formatted: '1', unit: 'usuários', year: 2026, period: null },
+        }));
+      }
+      const chartId = url.match(/charts\/([^/]+)\/data/)?.[1] ?? 'ai-request-rate';
+      return new Response(JSON.stringify({
+        dashboard_id: 'prometheus-ai',
+        chart: { id: chartId, title: chartId, type: 'line' },
+        items: [],
+      }));
+    });
+    vi.stubGlobal('fetch', fetcher);
+
+    render(<DashboardAiMetrics />);
+    await waitFor(() => {
+      expect(fetcher.mock.calls.some(([url]) => String(url).includes('month=2026-10'))).toBe(true);
+    });
+
+    vi.setSystemTime(new Date('2026-11-01T00:00:01.000Z'));
+    fireEvent.change(screen.getByLabelText('Mês dos KPIs'), { target: { value: '' } });
+
+    await waitFor(() => {
+      expect(fetcher.mock.calls.some(([url]) => String(url).includes('month=2026-11'))).toBe(true);
+    });
   });
 
   it('mantém os gráficos disponíveis e identifica cada consulta Prometheus que falhou', async () => {
     const fetcher = vi.fn(async (input: string | URL | Request) => {
       const url = String(input);
+      if (url.includes('/v1/admin/ai-metrics/kpis')) {
+        return new Response(JSON.stringify({
+          token_spend: { value: null, formatted: 'Sem dados', unit: 'US$', year: null, period: '2026-11' },
+          total_tokens: { value: null, formatted: 'Sem dados', unit: 'tokens', year: null, period: '2026-11' },
+          unit_cost: { value: null, formatted: 'Sem dados', unit: 'US$/1k tokens', year: null, period: '2026-11' },
+          active_users: { value: 2, formatted: '2', unit: 'usuários', year: 2026, period: null },
+        }));
+      }
       const chartId = url.match(/charts\/([^/]+)\/data/)?.[1];
       if (chartId === 'ai-agent-usage') return new Response('{}', { status: 503 });
       return new Response(JSON.stringify({
@@ -92,9 +150,9 @@ describe('Dashboard IA e Governança ADM', () => {
 
     render(<DashboardAiMetrics />);
 
-    expect(await screen.findByText('Requests por segundo')).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: /Requests por segundo/ })).toBeTruthy();
     expect(screen.getByRole('list', { name: 'Gráficos com falha' }).textContent).toContain('ai-agent-usage');
-    expect(screen.getByText('ai-chat-outcomes')).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /ai-chat-outcomes/ })).toBeTruthy();
   });
 
   it('preserva o status HTTP quando todas as consultas Prometheus falham', async () => {
