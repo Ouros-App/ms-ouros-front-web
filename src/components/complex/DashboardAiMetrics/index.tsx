@@ -25,7 +25,9 @@ const chartUnits: Record<string, string> = {
 
 const chartColors = ['#6750a4', '#d8a23a', '#299d8f', '#e76f51', '#4f7cac'];
 
-const currentMonth = new Date().toISOString().slice(0, 7);
+function getCurrentMonth(): string {
+  return new Date().toISOString().slice(0, 7);
+}
 
 function KpiCard({
   label,
@@ -70,7 +72,12 @@ function AiChart({ chart, color }: Readonly<{ chart: PrometheusChartData; color:
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                 <XAxis dataKey={labelKey} tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />
-                <Tooltip formatter={(value) => [`${Number(value).toLocaleString('pt-BR')} ${unit}`, unit]} />
+                <Tooltip
+                  formatter={(value) => [
+                    `${Number(value).toLocaleString('pt-BR', { maximumFractionDigits: 6 })} ${unit}`,
+                    unit,
+                  ]}
+                />
                 <Line type="monotone" dataKey="value" stroke={color} strokeWidth={2} dot={false} />
               </LineChart>
             ) : (
@@ -78,7 +85,12 @@ function AiChart({ chart, color }: Readonly<{ chart: PrometheusChartData; color:
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                 <XAxis dataKey={labelKey} tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />
-                <Tooltip formatter={(value) => [`${Number(value).toLocaleString('pt-BR')} ${unit}`, unit]} />
+                <Tooltip
+                  formatter={(value) => [
+                    `${Number(value).toLocaleString('pt-BR', { maximumFractionDigits: 6 })} ${unit}`,
+                    unit,
+                  ]}
+                />
                 <Bar dataKey="value" fill={color} radius={[4, 4, 0, 0]} />
               </BarChart>
             )}
@@ -94,7 +106,7 @@ export function DashboardAiMetrics(): ReactNode {
   const [charts, setCharts] = useState<PrometheusChartData[]>([]);
   const [failedCharts, setFailedCharts] = useState<string[]>([]);
   const [kpis, setKpis] = useState<AdminAiKpisResponse | null>(null);
-  const [month, setMonth] = useState(currentMonth);
+  const [month, setMonth] = useState(getCurrentMonth);
   const [kpiLoading, setKpiLoading] = useState(true);
   const [kpiError, setKpiError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -150,7 +162,7 @@ export function DashboardAiMetrics(): ReactNode {
           type="month"
           value={month}
           required
-          onChange={(event) => setMonth(event.target.value || currentMonth)}
+          onChange={(event) => setMonth(event.target.value || getCurrentMonth())}
         />
       </label>
       {kpiLoading && <output className="dashboard-ai-metrics__info">Carregando KPIs de IA…</output>}

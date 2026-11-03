@@ -42,6 +42,7 @@ vi.mock('recharts', async () => {
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
+  vi.useRealTimers();
   activeAuthUser = mockUser;
 });
 
@@ -88,6 +89,41 @@ describe('Dashboard IA e Governança ADM', () => {
     fireEvent.change(screen.getByLabelText('Mês dos KPIs'), { target: { value: '2024-02' } });
     await waitFor(() => {
       expect(fetcher.mock.calls.some(([url]) => String(url).includes('month=2024-02'))).toBe(true);
+    });
+  });
+
+  it('uses the new current month when clearing the selector after a month rollover', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-10-31T23:59:59.000Z'));
+    const fetcher = vi.fn(async (input: string | URL | Request) => {
+      const url = String(input);
+      if (url.includes('/v1/admin/ai-metrics/kpis')) {
+        return new Response(JSON.stringify({
+          token_spend: { value: 1, formatted: '1', unit: 'R$', year: null, period: '2026-10' },
+          total_tokens: { value: 1, formatted: '1', unit: 'tokens', year: null, period: '2026-10' },
+          unit_cost: { value: 1, formatted: '1', unit: 'R$/1k tokens', year: null, period: '2026-10' },
+          active_users: { value: 1, formatted: '1', unit: 'usuários', year: 2026, period: null },
+        }));
+      }
+      const chartId = url.match(/charts\/([^/]+)\/data/)?.[1] ?? 'ai-request-rate';
+      return new Response(JSON.stringify({
+        dashboard_id: 'prometheus-ai',
+        chart: { id: chartId, title: chartId, type: 'line' },
+        items: [],
+      }));
+    });
+    vi.stubGlobal('fetch', fetcher);
+
+    render(<DashboardAiMetrics />);
+    await waitFor(() => {
+      expect(fetcher.mock.calls.some(([url]) => String(url).includes('month=2026-10'))).toBe(true);
+    });
+
+    vi.setSystemTime(new Date('2026-11-01T00:00:01.000Z'));
+    fireEvent.change(screen.getByLabelText('Mês dos KPIs'), { target: { value: '' } });
+
+    await waitFor(() => {
+      expect(fetcher.mock.calls.some(([url]) => String(url).includes('month=2026-11'))).toBe(true);
     });
   });
 
