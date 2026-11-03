@@ -54,8 +54,8 @@ O **Ouros Web** foi desenvolvido para centralizar a tomada de decisão no agrone
   - **Gráficos Interativos:** Visualização temporal de desempenho e curvas de consumo desenvolvidas com Recharts.
   - **Tabela Comparativa de Fazendas:** Visão detalhada por unidade (`DashboardFarmsTable`).
 - **Dashboard de Métricas de IA (Visão Admin):**
-  - Painel de observabilidade técnica e financeira de Inteligência Artificial.
-  - Acompanhamento de custos por provedor/modelo, volume de requisições, latência média e consumo de tokens de entrada e saída.
+  - KPIs mensais de custo, tokens consumidos e custo por mil tokens, com seletor de mês; usuários ativos são o snapshot Analytics atual, sem filtro mensal.
+  - Custos e quantidades são exibidos conforme as unidades e a formatação retornadas pela API; latência p95 é convertida de segundos para milissegundos e taxas mostram suas unidades.
 
 ### 2. 📋 Gestão de Registros de Campo (`/registros` e `/registros/:id`)
 - Listagem paginada e filtrável de registros diários de lotes e granjas.

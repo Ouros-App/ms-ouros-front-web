@@ -11,39 +11,69 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { getPrometheusAiCharts } from '@/services/adminAiMetricsService';
-import type { PrometheusChartData } from '@/services/adminAiMetricsService';
+import { getAdminAiKpis, getPrometheusAiCharts } from '@/services/adminAiMetricsService';
+import type { AdminAiKpiItem, AdminAiKpisResponse, PrometheusChartData } from '@/services/adminAiMetricsService';
 import './DashboardAiMetrics.css';
 
 const chartColors = ['#6750a4', '#d8a23a', '#299d8f', '#e76f51', '#4f7cac'];
 
+const currentMonth = new Date().toISOString().slice(0, 7);
+
+function KpiCard({
+  label,
+  item,
+  showUnit = true,
+}: {
+  label: string;
+  item: AdminAiKpiItem | undefined;
+  showUnit?: boolean;
+}): ReactNode {
+  return (
+    <section className="dashboard-ai-metrics__kpi-card" aria-label={label}>
+      <h2>{label}</h2>
+      <strong>{!item || item.value === null ? 'Sem dados' : item.formatted}</strong>
+      {showUnit && item?.unit && <span>{item.unit}</span>}
+    </section>
+  );
+}
+
 /** Renders the chart type and labels defined by a Prometheus chart payload. */
 function AiChart({ chart, color }: Readonly<{ chart: PrometheusChartData; color: string }>): ReactNode {
+  const latency = chart.chart.id === 'ai-p95-latency';
+  const unit = latency
+    ? 'ms'
+    : chart.chart.id === 'ai-agent-usage' || chart.chart.id === 'ai-tool-usage'
+      ? 'events/s'
+      : 'req/s';
+  const title = `${chart.chart.title} (${unit})`;
+  const items = latency
+    ? chart.items.map((item) => ({ ...item, value: Number(item.value) * 1000 }))
+    : chart.items;
   const isTimeSeries = chart.chart.type === 'line';
   const labelKey = isTimeSeries ? 'time' : 'label';
 
   return (
-    <section className="dashboard-ai-metrics__chart-card" aria-label={chart.chart.title}>
-      <h2 className="dashboard-ai-metrics__chart-title">{chart.chart.title}</h2>
-      {chart.items.length === 0 ? (
+    <section className="dashboard-ai-metrics__chart-card" aria-label={title}>
+      <h2 className="dashboard-ai-metrics__chart-title">{title}</h2>
+      {items.length === 0 ? (
         <p className="dashboard-ai-metrics__vazio">Sem dados retornados pelo Prometheus.</p>
       ) : (
         <div className="dashboard-ai-metrics__grafico-shell">
           <ResponsiveContainer width="100%" height="100%">
             {isTimeSeries ? (
-              <LineChart data={chart.items} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
+              <LineChart data={items} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                 <XAxis dataKey={labelKey} tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />
-                <Tooltip />
+                <Tooltip formatter={(value) => [`${Number(value).toLocaleString('pt-BR')} ${unit}`, unit]} />
                 <Line type="monotone" dataKey="value" stroke={color} strokeWidth={2} dot={false} />
               </LineChart>
             ) : (
-              <BarChart data={chart.items} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
+              <BarChart data={items} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                 <XAxis dataKey={labelKey} tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />
-                <Tooltip />
+                <Tooltip formatter={(value) => [`${Number(value).toLocaleString('pt-BR')} ${unit}`, unit]} />
                 <Bar dataKey="value" fill={color} radius={[4, 4, 0, 0]} />
               </BarChart>
             )}
@@ -58,6 +88,10 @@ function AiChart({ chart, color }: Readonly<{ chart: PrometheusChartData; color:
 export function DashboardAiMetrics(): ReactNode {
   const [charts, setCharts] = useState<PrometheusChartData[]>([]);
   const [failedCharts, setFailedCharts] = useState<string[]>([]);
+  const [kpis, setKpis] = useState<AdminAiKpisResponse | null>(null);
+  const [month, setMonth] = useState(currentMonth);
+  const [kpiLoading, setKpiLoading] = useState(true);
+  const [kpiError, setKpiError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -82,11 +116,48 @@ export function DashboardAiMetrics(): ReactNode {
     return () => controller.abort();
   }, []);
 
+  useEffect(() => {
+    const controller = new AbortController();
+    setKpiLoading(true);
+    setKpiError(null);
+    void getAdminAiKpis(month, controller.signal)
+      .then(setKpis)
+      .catch((cause: unknown) => {
+        if (!controller.signal.aborted) {
+          setKpiError(cause instanceof Error ? cause.message : 'Erro ao carregar KPIs de IA.');
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setKpiLoading(false);
+      });
+    return () => controller.abort();
+  }, [month]);
+
   return (
     <div className="dashboard-ai-metrics" aria-label="Observabilidade Midas AI">
       <p className="dashboard-ai-metrics__description">
-        Métricas operacionais do Midas AI consultadas diretamente no dashboard Prometheus.
+        Custos e tokens do mês selecionado e taxas operacionais do Prometheus; usuários ativos vêm do snapshot Analytics.
       </p>
+      <label className="dashboard-ai-metrics__month">
+        Mês dos KPIs
+        <input
+          aria-label="Mês dos KPIs"
+          type="month"
+          value={month}
+          required
+          onChange={(event) => setMonth(event.target.value || currentMonth)}
+        />
+      </label>
+      {kpiLoading && <output className="dashboard-ai-metrics__info">Carregando KPIs de IA…</output>}
+      {kpiError && <p role="alert" className="dashboard-ai-metrics__info">{kpiError}</p>}
+      {!kpiLoading && !kpiError && (
+        <div className="dashboard-ai-metrics__kpis">
+          <KpiCard label="Custo de tokens" item={kpis?.token_spend} showUnit={false} />
+          <KpiCard label="Tokens no mês" item={kpis?.total_tokens} />
+          <KpiCard label="Custo por 1k tokens" item={kpis?.unit_cost} />
+          <KpiCard label="Usuários ativos (snapshot)" item={kpis?.active_users} />
+        </div>
+      )}
       {loading && <output className="dashboard-ai-metrics__info">Carregando dados do Prometheus…</output>}
       {error && <p role="alert" className="dashboard-ai-metrics__info">{error}</p>}
       {!loading && !error && charts.length === 0 && (

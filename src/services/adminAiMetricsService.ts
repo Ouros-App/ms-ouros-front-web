@@ -58,3 +58,29 @@ export async function getPrometheusAiCharts(signal?: AbortSignal): Promise<Prome
   }
   return { charts, failures };
 }
+
+export interface AdminAiKpiItem {
+  value: number | null;
+  formatted: string;
+  unit: string | null;
+  year: number | null;
+  period: string | null;
+}
+
+export interface AdminAiKpisResponse {
+  token_spend: AdminAiKpiItem;
+  unit_cost: AdminAiKpiItem;
+  active_users: AdminAiKpiItem;
+  total_tokens: AdminAiKpiItem;
+}
+
+/** Fetches monthly AI totals already formatted by the telemetry API. */
+export async function getAdminAiKpis(month: string, signal?: AbortSignal): Promise<AdminAiKpisResponse> {
+  const params = new URLSearchParams({ month });
+  const url = `${TELEMETRY_API_URL}/v1/admin/ai-metrics/kpis?${params.toString()}`;
+  const response = await fetchComAuth(url.toString(), { signal });
+  if (!response.ok) {
+    throw new ServiceError(`Erro ao carregar KPIs de IA (${response.status})`, response.status);
+  }
+  return (await response.json()) as AdminAiKpisResponse;
+}
