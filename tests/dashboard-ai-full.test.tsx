@@ -79,9 +79,9 @@ describe('Dashboard IA e Governança ADM', () => {
 
     expect(await screen.findByRole('heading', { name: /Requests por segundo/ })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /Latência p95 por rota \(ms\)/ })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: /Chat por resultado/ })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: /Uso de agentes/ })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: /Uso de tools/ })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /Chat por resultado \(solicitações\/5 min\)/ })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /Uso de agentes \(eventos\/5 min\)/ })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /Uso de tools \(eventos\/5 min\)/ })).toBeTruthy();
     expect(await screen.findByText('1.250')).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Tokens no mês' })).toBeTruthy();
     expect(fetcher).toHaveBeenCalledTimes(6);

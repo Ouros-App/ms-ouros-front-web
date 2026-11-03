@@ -15,6 +15,14 @@ import { getAdminAiKpis, getPrometheusAiCharts } from '@/services/adminAiMetrics
 import type { AdminAiKpiItem, AdminAiKpisResponse, PrometheusChartData } from '@/services/adminAiMetricsService';
 import './DashboardAiMetrics.css';
 
+const chartUnits: Record<string, string> = {
+  'ai-request-rate': 'req/s',
+  'ai-p95-latency': 'ms',
+  'ai-chat-outcomes': 'solicitações/5 min',
+  'ai-agent-usage': 'eventos/5 min',
+  'ai-tool-usage': 'eventos/5 min',
+};
+
 const chartColors = ['#6750a4', '#d8a23a', '#299d8f', '#e76f51', '#4f7cac'];
 
 const currentMonth = new Date().toISOString().slice(0, 7);
@@ -40,12 +48,9 @@ function KpiCard({
 /** Renders the chart type and labels defined by a Prometheus chart payload. */
 function AiChart({ chart, color }: Readonly<{ chart: PrometheusChartData; color: string }>): ReactNode {
   const latency = chart.chart.id === 'ai-p95-latency';
-  const unit = latency
-    ? 'ms'
-    : chart.chart.id === 'ai-agent-usage' || chart.chart.id === 'ai-tool-usage'
-      ? 'events/s'
-      : 'req/s';
-  const title = `${chart.chart.title} (${unit})`;
+  const unit = chartUnits[chart.chart.id] ?? '';
+  const title = unit ? `${chart.chart.title} (${unit})` : chart.chart.title;
+
   const items = latency
     ? chart.items.map((item) => ({ ...item, value: Number(item.value) * 1000 }))
     : chart.items;
@@ -136,7 +141,7 @@ export function DashboardAiMetrics(): ReactNode {
   return (
     <div className="dashboard-ai-metrics" aria-label="Observabilidade Midas AI">
       <p className="dashboard-ai-metrics__description">
-        Custos e tokens do mês selecionado e taxas operacionais do Prometheus; usuários ativos vêm do snapshot Analytics.
+        Custos e tokens do mês selecionado, taxa HTTP e totais de eventos dos últimos 5 minutos; usuários ativos vêm do snapshot Analytics.
       </p>
       <label className="dashboard-ai-metrics__month">
         Mês dos KPIs
