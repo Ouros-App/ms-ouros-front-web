@@ -4,7 +4,11 @@ import type { MetasResumoProps } from '@/types/metas.types';
 import './MetasResumo.css';
 
 export function MetasResumo({ resumo, status, mensagemErro, onRecarregar, onLancar }: MetasResumoProps){
-    const progresso = resumo && resumo.total > 0 ? Math.round((resumo.concluidas / resumo.total) * 100) : 0;
+    const progresso = resumo
+        ? (Number.isFinite(resumo.percentual)
+            ? Math.round(resumo.percentual)
+            : (resumo.total > 0 ? Math.round((resumo.concluidas / resumo.total) * 100) : 0))
+        : 0;
     return(
         <section className="metas-resumo" aria-label="Resumo das metas">
             <div className="metas-resumo__progresso">
@@ -25,7 +29,7 @@ export function MetasResumo({ resumo, status, mensagemErro, onRecarregar, onLanc
 
             {status === 'pronto' && resumo &&(
             <>
-            <GraficoProgresso percentual={resumo.percentual} />
+            <GraficoProgresso percentual={progresso} />
 
             <div className="metas-resumo__contagem">
                 <p className="metas-resumo__numeros">
