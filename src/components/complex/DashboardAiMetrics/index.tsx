@@ -18,12 +18,12 @@ import './DashboardAiMetrics.css';
 const chartUnits: Record<string, string> = {
   'ai-request-rate': 'req/s',
   'ai-p95-latency': 'ms',
-  'ai-chat-outcomes': 'solicitações/5 min',
-  'ai-agent-usage': 'eventos/5 min',
-  'ai-tool-usage': 'eventos/5 min',
+  'ai-chat-outcomes': 'solicitações no mês',
+  'ai-agent-usage': 'eventos no mês',
+  'ai-tool-usage': 'eventos no mês',
 };
-
 const chartColors = ['#6750a4', '#d8a23a', '#299d8f', '#e76f51', '#4f7cac'];
+const INTERVALO_ATUALIZACAO_MS = 10_000;
 
 function getCurrentMonth(): string {
   return new Date().toISOString().slice(0, 7);
@@ -113,25 +113,39 @@ export function DashboardAiMetrics(): ReactNode {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const controller = new AbortController();
-    setLoading(true);
-    setError(null);
-    setFailedCharts([]);
-    void getPrometheusAiCharts(controller.signal)
-      .then((result) => {
-        setCharts(result.charts);
-        setFailedCharts(result.failures);
-      })
-      .catch((cause: unknown) => {
-        if (!controller.signal.aborted) {
+    let timer: number | undefined;
+    let controller: AbortController | undefined;
+    let disposed = false;
+
+    const atualizar = async () => {
+      const requestController = new AbortController();
+      controller = requestController;
+      try {
+        const result = await getPrometheusAiCharts(month, requestController.signal);
+        if (!disposed) {
+          setCharts(result.charts);
+          setFailedCharts(result.failures);
+          setError(null);
+        }
+      } catch (cause: unknown) {
+        if (!disposed && !requestController.signal.aborted) {
           setError(cause instanceof Error ? cause.message : 'Erro ao carregar telemetria Prometheus.');
         }
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setLoading(false);
-      });
-    return () => controller.abort();
-  }, []);
+      } finally {
+        if (!disposed && !requestController.signal.aborted) {
+          setLoading(false);
+          timer = window.setTimeout(() => void atualizar(), INTERVALO_ATUALIZACAO_MS);
+        }
+      }
+    };
+
+    void atualizar();
+    return () => {
+      disposed = true;
+      if (timer !== undefined) window.clearTimeout(timer);
+      controller?.abort();
+    };
+  }, [month]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -153,7 +167,7 @@ export function DashboardAiMetrics(): ReactNode {
   return (
     <div className="dashboard-ai-metrics" aria-label="Observabilidade Midas AI">
       <p className="dashboard-ai-metrics__description">
-        Custos e tokens do mês selecionado, taxa HTTP e totais de eventos dos últimos 5 minutos; usuários ativos vêm do snapshot Analytics.
+        Custos, tokens e gráficos do mês selecionado; req/s é média diária, latência p95 e eventos são agregados mensais. Usuários ativos vêm do snapshot Analytics.
       </p>
       <label className="dashboard-ai-metrics__month">
         Mês dos KPIs
