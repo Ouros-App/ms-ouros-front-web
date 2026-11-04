@@ -94,6 +94,36 @@ describe('Dashboard IA e Governança ADM', () => {
       expect(selectedMonthChartCalls).toHaveLength(5);
     });
   });
+  it('clears previous month charts while the selected month is loading', async () => {
+    const pending: (() => void)[] = [];
+    const fetcher = vi.fn((input: string | URL | Request) => {
+      const url = String(input);
+      if (url.includes('/v1/admin/ai-metrics/kpis')) return Promise.resolve(new Response('{}'));
+      const chartId = url.match(/charts\/([^/]+)\/data/)?.[1] ?? 'unknown';
+      const isNewMonth = url.includes('month=2024-02');
+      const response = new Response(JSON.stringify({
+        dashboard_id: 'prometheus-ai',
+        chart: { id: chartId, title: `${isNewMonth ? 'Novo' : 'Anterior'} ${chartId}`, type: 'bar' },
+        items: [{ label: 'item', value: 1 }],
+      }));
+      return isNewMonth
+        ? new Promise<Response>((resolve) => pending.push(() => resolve(response)))
+        : Promise.resolve(response);
+    });
+    vi.stubGlobal('fetch', fetcher);
+    const { container } = render(<DashboardAiMetrics />);
+
+    expect(await screen.findByRole('heading', { name: /Anterior ai-request-rate/ })).toBeTruthy();
+    fireEvent.change(screen.getByLabelText('Mês dos KPIs'), { target: { value: '2024-02' } });
+
+    expect(await screen.findByText('Carregando dados do Prometheus…')).toBeTruthy();
+    expect(container.querySelectorAll('.dashboard-ai-metrics__chart-card')).toHaveLength(0);
+    expect(pending).toHaveLength(5);
+
+    await act(async () => pending.forEach((resolve) => resolve()));
+    expect(await screen.findByRole('heading', { name: /Novo ai-request-rate/ })).toBeTruthy();
+  });
+
   it('atualiza os gráficos quando chegam novos dados do Prometheus', async () => {
     let toolRequests = 0;
     const fetcher = vi.fn(async (input: string | URL | Request) => {

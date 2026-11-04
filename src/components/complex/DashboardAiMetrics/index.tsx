@@ -113,6 +113,11 @@ export function DashboardAiMetrics(): ReactNode {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    setLoading(true);
+    setCharts([]);
+    setFailedCharts([]);
+    setError(null);
+
     let timer: number | undefined;
     let controller: AbortController | undefined;
     let disposed = false;
