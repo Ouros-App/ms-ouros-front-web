@@ -153,7 +153,7 @@ describe('Dashboard IA e Governança ADM', () => {
       await vi.advanceTimersByTimeAsync(0);
     });
     expect(screen.queryByText('Sem dados retornados pelo Prometheus.')).toBeNull();
-    expect(fetcher.mock.calls.filter(([url]) => String(url).includes('/charts/')).length).toBe(10);
+    expect(fetcher.mock.calls.filter(([url]) => String(url).includes('/charts/'))).toHaveLength(10);
   });
 
 
