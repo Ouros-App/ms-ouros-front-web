@@ -28,11 +28,11 @@ export interface PrometheusAiChartsResult {
   failures: string[];
 }
 
-/** Fetches every AI chart, retaining partial successes and propagating cancellation. */
-export async function getPrometheusAiCharts(signal?: AbortSignal): Promise<PrometheusAiChartsResult> {
+/** Fetches each AI chart for the selected month, retaining partial successes and propagating cancellation. */
+export async function getPrometheusAiCharts(month: string, signal?: AbortSignal): Promise<PrometheusAiChartsResult> {
   const results = await Promise.allSettled(
     AI_CHART_IDS.map(async (chartId) => {
-      const url = `${TELEMETRY_API_URL}/v1/dashboards/${AI_DASHBOARD_ID}/charts/${chartId}/data`;
+      const url = `${TELEMETRY_API_URL}/v1/dashboards/${AI_DASHBOARD_ID}/charts/${chartId}/data?month=${encodeURIComponent(month)}`;
       const response = await fetchComAuth(url, { signal });
       if (!response.ok) {
         throw new ServiceError(`Erro ao carregar dados Prometheus (${response.status})`, response.status);

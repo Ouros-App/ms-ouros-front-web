@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup, waitFor, act } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { DashboardAiMetrics } from '@/components/complex/DashboardAiMetrics';
 import { getPrometheusAiCharts } from '@/services/adminAiMetricsService';
@@ -80,17 +80,82 @@ describe('Dashboard IA e Governança ADM', () => {
 
     expect(await screen.findByRole('heading', { name: /Requests por segundo/ })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /Latência p95 por rota \(ms\)/ })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: /Chat por resultado \(solicitações\/5 min\)/ })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: /Uso de agentes \(eventos\/5 min\)/ })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: /Uso de tools \(eventos\/5 min\)/ })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /Chat por resultado \(solicitações no mês\)/ })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /Uso de agentes \(eventos no mês\)/ })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /Uso de tools \(eventos no mês\)/ })).toBeTruthy();
     expect(await screen.findByText('1.250')).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Tokens no mês' })).toBeTruthy();
     expect(fetcher).toHaveBeenCalledTimes(6);
     fireEvent.change(screen.getByLabelText('Mês dos KPIs'), { target: { value: '2024-02' } });
     await waitFor(() => {
-      expect(fetcher.mock.calls.some(([url]) => String(url).includes('month=2024-02'))).toBe(true);
+      const selectedMonthChartCalls = fetcher.mock.calls.filter(([url]) =>
+        String(url).includes('/charts/') && String(url).includes('month=2024-02'),
+      );
+      expect(selectedMonthChartCalls).toHaveLength(5);
     });
   });
+  it('clears previous month charts while the selected month is loading', async () => {
+    const pending: (() => void)[] = [];
+    const fetcher = vi.fn((input: string | URL | Request) => {
+      const url = String(input);
+      if (url.includes('/v1/admin/ai-metrics/kpis')) return Promise.resolve(new Response('{}'));
+      const chartId = url.match(/charts\/([^/]+)\/data/)?.[1] ?? 'unknown';
+      const isNewMonth = url.includes('month=2024-02');
+      const response = new Response(JSON.stringify({
+        dashboard_id: 'prometheus-ai',
+        chart: { id: chartId, title: `${isNewMonth ? 'Novo' : 'Anterior'} ${chartId}`, type: 'bar' },
+        items: [{ label: 'item', value: 1 }],
+      }));
+      return isNewMonth
+        ? new Promise<Response>((resolve) => pending.push(() => resolve(response)))
+        : Promise.resolve(response);
+    });
+    vi.stubGlobal('fetch', fetcher);
+    const { container } = render(<DashboardAiMetrics />);
+
+    expect(await screen.findByRole('heading', { name: /Anterior ai-request-rate/ })).toBeTruthy();
+    fireEvent.change(screen.getByLabelText('Mês dos KPIs'), { target: { value: '2024-02' } });
+
+    expect(await screen.findByText('Carregando dados do Prometheus…')).toBeTruthy();
+    expect(container.querySelectorAll('.dashboard-ai-metrics__chart-card')).toHaveLength(0);
+    expect(pending).toHaveLength(5);
+
+    await act(async () => pending.forEach((resolve) => resolve()));
+    expect(await screen.findByRole('heading', { name: /Novo ai-request-rate/ })).toBeTruthy();
+  });
+
+  it('atualiza os gráficos quando chegam novos dados do Prometheus', async () => {
+    let toolRequests = 0;
+    const fetcher = vi.fn(async (input: string | URL | Request) => {
+      const url = String(input);
+      if (url.includes('/v1/admin/ai-metrics/kpis')) return new Response('{}');
+      const chartId = url.match(/charts\/([^/]+)\/data/)?.[1] ?? 'unknown';
+      const items = chartId === 'ai-tool-usage' && toolRequests++ === 0
+        ? []
+        : [{ label: 'tool-a', value: 1 }];
+      return new Response(JSON.stringify({
+        dashboard_id: 'prometheus-ai',
+        chart: { id: chartId, title: chartId, type: 'bar' },
+        items,
+      }));
+    });
+    vi.stubGlobal('fetch', fetcher);
+    vi.useFakeTimers();
+
+    render(<DashboardAiMetrics />);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(0);
+    });
+    expect(screen.getByText('Sem dados retornados pelo Prometheus.')).toBeTruthy();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(10_000);
+      await vi.advanceTimersByTimeAsync(0);
+    });
+    expect(screen.queryByText('Sem dados retornados pelo Prometheus.')).toBeNull();
+    expect(fetcher.mock.calls.filter(([url]) => String(url).includes('/charts/'))).toHaveLength(10);
+  });
+
 
   it('uses the new current month when clearing the selector after a month rollover', async () => {
     vi.useFakeTimers({ toFake: ['Date'] });
@@ -158,7 +223,7 @@ describe('Dashboard IA e Governança ADM', () => {
   it('preserva o status HTTP quando todas as consultas Prometheus falham', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => new Response('{}', { status: 503 })));
 
-    await expect(getPrometheusAiCharts()).rejects.toMatchObject({
+    await expect(getPrometheusAiCharts('2024-02')).rejects.toMatchObject({
       status: 503,
       message: 'Erro ao carregar dados Prometheus (503)',
     } satisfies Partial<ServiceError>);
@@ -169,7 +234,7 @@ describe('Dashboard IA e Governança ADM', () => {
     const controller = new AbortController();
     controller.abort();
 
-    await expect(getPrometheusAiCharts(controller.signal)).rejects.toMatchObject({
+    await expect(getPrometheusAiCharts('2024-02', controller.signal)).rejects.toMatchObject({
       name: 'AbortError',
     });
   });
