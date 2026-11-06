@@ -14,9 +14,9 @@ import { useIndicadoresDashboard } from '@/hooks/useIndicadoresDashboard';
 import { asaFundo } from './dashboardAssets';
 import './Dashboard.css';
 
-type AbaDashboard = 'operacional' | 'ia';
+type AbaDashboard = 'operacional' | 'ia' | 'simulacao';
 
-/** Renders operational dashboards and the admin-only AI metrics tab. */
+/** Renders operational dashboards, AI metrics, and the admin-only simulation tab. */
 export default function DashboardPage() {
   const { user } = useAuth();
   const { empresaSelecionada } = useAdminEnterprise();
@@ -44,12 +44,18 @@ export default function DashboardPage() {
         <header className="dashboard-page__topo">
           <div>
             <h1 className="dashboard-page__titulo">
-              {abaAtiva === 'ia' && isAdmin ? 'Dashboard - Métricas' : 'Dashboard Corporativo'}
+              {isAdmin && abaAtiva === 'simulacao'
+                ? 'Simulação de IA'
+                : abaAtiva === 'ia' && isAdmin
+                  ? 'Dashboard - Métricas'
+                  : 'Dashboard Corporativo'}
             </h1>
             <p className="dashboard-page__subtitulo">
-              {abaAtiva === 'ia' && isAdmin
-                ? 'Painel de observabilidade técnica e financeira de Inteligência Artificial e LLMs'
-                : 'Acompanhamento integrado de custos, energia, água e mortalidade'}
+              {isAdmin && abaAtiva === 'simulacao'
+                ? 'Estimativa proporcional de uso de IA para novas bases de usuários'
+                : abaAtiva === 'ia' && isAdmin
+                  ? 'Painel de observabilidade técnica e financeira de Inteligência Artificial e LLMs'
+                  : 'Acompanhamento integrado de custos, energia, água e mortalidade'}
             </p>
           </div>
 
@@ -122,6 +128,31 @@ export default function DashboardPage() {
                 </svg>
                 Gerenciamento de IA
               </button>
+              <button
+                type="button"
+                role="tab"
+                id="aba-simulacao"
+                aria-selected={abaAtiva === 'simulacao'}
+                aria-controls="painel-simulacao"
+                className={`dashboard-page__aba-btn ${abaAtiva === 'simulacao' ? 'dashboard-page__aba-btn--ativo' : ''}`}
+                onClick={() => setAbaAtiva('simulacao')}
+              >
+                <svg
+                  className="dashboard-page__aba-icone"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="12" r="9" />
+                  <circle cx="12" cy="12" r="5" />
+                  <path d="M12 12 19 5" />
+                </svg>
+                Simulação de IA
+              </button>
             </div>
           )}
 
@@ -153,10 +184,13 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* Conteúdo da Aba 2: Gerenciamento de IA (Figma 6052:1721) */}
-          {isAdmin && abaAtiva === 'ia' && (
-            <div id="painel-ia" role="tabpanel" aria-labelledby="aba-ia">
-              <DashboardAiMetrics />
+          {isAdmin && (abaAtiva === 'ia' || abaAtiva === 'simulacao') && (
+            <div
+              id={abaAtiva === 'simulacao' ? 'painel-simulacao' : 'painel-ia'}
+              role="tabpanel"
+              aria-labelledby={abaAtiva === 'simulacao' ? 'aba-simulacao' : 'aba-ia'}
+            >
+              <DashboardAiMetrics simulation={abaAtiva === 'simulacao'} />
             </div>
           )}
         </main>

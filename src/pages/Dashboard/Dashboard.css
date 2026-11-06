@@ -141,9 +141,10 @@
     .dashboard-page__abas {
         width: 100%;
         display: flex;
+        flex-wrap: wrap;
     }
     .dashboard-page__aba-btn {
-        flex: 1;
+        flex: 1 1 calc(50% - 4px);
         justify-content: center;
         padding: 8px 10px;
         font-size: 12px;

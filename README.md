@@ -56,6 +56,7 @@ O **Ouros Web** foi desenvolvido para centralizar a tomada de decisão no agrone
 - **Dashboard de Métricas de IA (Visão Admin):**
   - KPIs mensais de custo, tokens consumidos e custo por mil tokens, com seletor de mês; usuários ativos são o snapshot Analytics atual, sem filtro mensal.
   - Custos e quantidades são exibidos conforme as unidades e a formatação retornadas pela API; latência p95 é convertida de segundos para milissegundos e taxas mostram suas unidades.
+  - **Simulação de IA:** informe uma quantidade absoluta de usuários; custos, tokens e eventos de agentes/tools são projetados proporcionalmente ao snapshot atual, enquanto latência permanece observada. A estimativa não substitui teste de carga.
 
 ### 2. 📋 Gestão de Registros de Campo (`/registros` e `/registros/:id`)
 - Listagem paginada e filtrável de registros diários de lotes e granjas.
