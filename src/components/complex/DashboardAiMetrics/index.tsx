@@ -33,15 +33,17 @@ function KpiCard({
   label,
   item,
   showUnit = true,
+  unavailableLabel = 'Sem dados',
 }: {
   label: string;
   item: AdminAiKpiItem | undefined;
   showUnit?: boolean;
+  unavailableLabel?: string;
 }): ReactNode {
   return (
     <section className="dashboard-ai-metrics__kpi-card" aria-label={label}>
       <h2>{label}</h2>
-      <strong>{!item || item.value === null ? 'Sem dados' : item.formatted}</strong>
+      <strong>{!item || item.value === null ? unavailableLabel : item.formatted}</strong>
       {showUnit && item?.unit && <span>{item.unit}</span>}
     </section>
   );
@@ -173,6 +175,8 @@ export function DashboardAiMetrics(): ReactNode {
           <KpiCard label="Tokens no mês" item={kpis?.total_tokens} />
           <KpiCard label="Custo por 1k tokens" item={kpis?.unit_cost} />
           <KpiCard label="Usuários ativos (snapshot)" item={kpis?.active_users} />
+          <KpiCard label="Custo por resolução" item={kpis?.cost_per_resolution} unavailableLabel="N/D" />
+          <KpiCard label="ROI estimado (valor do usuário/ecossistema; não ROI financeiro da Ouros)" item={kpis?.estimated_roi} unavailableLabel="N/D" />
         </div>
       )}
       {loading && <output className="dashboard-ai-metrics__info">Carregando dados do Prometheus…</output>}
