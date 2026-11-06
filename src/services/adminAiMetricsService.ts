@@ -71,6 +71,8 @@ export interface AdminAiKpisResponse {
   token_spend: AdminAiKpiItem;
   unit_cost: AdminAiKpiItem;
   active_users: AdminAiKpiItem;
+  cost_per_resolution?: AdminAiKpiItem;
+  estimated_roi?: AdminAiKpiItem;
   total_tokens: AdminAiKpiItem;
 }
 

@@ -63,6 +63,8 @@ describe('Dashboard IA e Governança ADM', () => {
           total_tokens: { value: 1250, formatted: '1.250', unit: 'tokens', year: null, period: '2026-11' },
           unit_cost: { value: 1, formatted: 'US$ 1,00', unit: 'US$/1k tokens', year: null, period: '2026-11' },
           active_users: { value: 2, formatted: '2', unit: 'usuários', year: 2026, period: null },
+          cost_per_resolution: { value: 3.5, formatted: 'R$ 3,50', unit: 'R$/resolução', year: null, period: '2026-11' },
+          estimated_roi: { value: 120, formatted: '120%', unit: '%', year: null, period: '2026-11' },
         }));
       }
       const chartId = charts.find(([id]) => url.includes(`/${id}/data`))?.[0];
@@ -85,6 +87,10 @@ describe('Dashboard IA e Governança ADM', () => {
     expect(screen.getByRole('heading', { name: /Uso de tools \(eventos\/5 min\)/ })).toBeTruthy();
     expect(await screen.findByText('1.250')).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Tokens no mês' })).toBeTruthy();
+    expect(await screen.findByText('R$ 3,50')).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Custo por resolução' })).toBeTruthy();
+    expect(screen.getByText('120%')).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /ROI estimado/ })).toBeTruthy();
     expect(fetcher).toHaveBeenCalledTimes(6);
     fireEvent.change(screen.getByLabelText('Mês dos KPIs'), { target: { value: '2024-02' } });
     await waitFor(() => {
@@ -136,6 +142,8 @@ describe('Dashboard IA e Governança ADM', () => {
           total_tokens: { value: null, formatted: 'Sem dados', unit: 'tokens', year: null, period: '2026-11' },
           unit_cost: { value: null, formatted: 'Sem dados', unit: 'US$/1k tokens', year: null, period: '2026-11' },
           active_users: { value: 2, formatted: '2', unit: 'usuários', year: 2026, period: null },
+          cost_per_resolution: { value: null, formatted: 'N/D', unit: 'R$/resolução', year: null, period: '2026-11' },
+          estimated_roi: { value: null, formatted: 'N/D', unit: '%', year: null, period: '2026-11' },
         }));
       }
       const chartId = url.match(/charts\/([^/]+)\/data/)?.[1];
@@ -151,6 +159,9 @@ describe('Dashboard IA e Governança ADM', () => {
     render(<DashboardAiMetrics />);
 
     expect(await screen.findByRole('heading', { name: /Requests por segundo/ })).toBeTruthy();
+    await waitFor(() => {
+      expect(screen.getAllByText('N/D')).toHaveLength(2);
+    });
     expect(screen.getByRole('list', { name: 'Gráficos com falha' }).textContent).toContain('ai-agent-usage');
     expect(screen.getByRole('heading', { name: /ai-chat-outcomes/ })).toBeTruthy();
   });
