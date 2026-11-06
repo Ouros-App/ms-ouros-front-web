@@ -71,6 +71,10 @@ export interface AdminAiKpisResponse {
   token_spend: AdminAiKpiItem;
   unit_cost: AdminAiKpiItem;
   active_users: AdminAiKpiItem;
+  inter_agent_latency: AdminAiKpiItem;
+  average_response_latency: AdminAiKpiItem;
+  total_response_time: AdminAiKpiItem;
+  error_rate: AdminAiKpiItem;
   cost_per_resolution?: AdminAiKpiItem;
   estimated_roi?: AdminAiKpiItem;
   total_tokens: AdminAiKpiItem;
