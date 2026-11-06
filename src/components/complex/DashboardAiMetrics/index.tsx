@@ -156,7 +156,7 @@ export function DashboardAiMetrics(): ReactNode {
   return (
     <div className="dashboard-ai-metrics" aria-label="Observabilidade Midas AI">
       <p className="dashboard-ai-metrics__description">
-        Custos e tokens do mês selecionado, taxa HTTP e totais de eventos dos últimos 5 minutos; usuários ativos vêm do snapshot Analytics.
+        Custos, tokens, latências, tempo total e erros do mês selecionado; usuários ativos vêm do snapshot Analytics.
       </p>
       <label className="dashboard-ai-metrics__month">
         Mês dos KPIs
@@ -176,6 +176,10 @@ export function DashboardAiMetrics(): ReactNode {
           <KpiCard label="Tokens no mês" item={kpis?.total_tokens} />
           <KpiCard label="Custo por 1k tokens" item={kpis?.unit_cost} />
           <KpiCard label="Usuários ativos (snapshot)" item={kpis?.active_users} />
+          <KpiCard label="Latência entre agentes" item={kpis?.inter_agent_latency} unavailableLabel="N/D" />
+          <KpiCard label="Latência média de resposta" item={kpis?.average_response_latency} unavailableLabel="N/D" />
+          <KpiCard label="Tempo total de resposta" item={kpis?.total_response_time} unavailableLabel="N/D" />
+          <KpiCard label="Índice de erros" item={kpis?.error_rate} unavailableLabel="N/D" />
           <KpiCard label="Custo por resolução" item={kpis?.cost_per_resolution} unavailableLabel="N/D" />
           <KpiCard label="ROI estimado (valor do usuário/ecossistema; não ROI financeiro da Ouros)" item={kpis?.estimated_roi} unavailableLabel="N/D" />
         </div>

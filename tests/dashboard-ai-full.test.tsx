@@ -63,6 +63,10 @@ describe('Dashboard IA e Governança ADM', () => {
           total_tokens: { value: 1250, formatted: '1.250', unit: 'tokens', year: null, period: '2026-11' },
           unit_cost: { value: 1, formatted: 'US$ 1,00', unit: 'US$/1k tokens', year: null, period: '2026-11' },
           active_users: { value: 2, formatted: '2', unit: 'usuários', year: 2026, period: null },
+          inter_agent_latency: { value: 1954.63, formatted: '1954.63', unit: 'ms', year: null, period: '2026-11' },
+          average_response_latency: { value: 1663.86, formatted: '1663.86', unit: 'ms', year: null, period: '2026-11' },
+          total_response_time: { value: 18.2, formatted: '18.20', unit: 's', year: null, period: '2026-11' },
+          error_rate: { value: 0, formatted: '0.00', unit: '%', year: null, period: '2026-11' },
           cost_per_resolution: { value: 3.5, formatted: 'R$ 3,50', unit: 'R$/resolução', year: null, period: '2026-11' },
           estimated_roi: { value: 120, formatted: '120%', unit: '%', year: null, period: '2026-11' },
         }));
@@ -91,6 +95,10 @@ describe('Dashboard IA e Governança ADM', () => {
     expect(screen.getByRole('heading', { name: 'Custo por resolução' })).toBeTruthy();
     expect(screen.getByText('120%')).toBeTruthy();
     expect(screen.getByRole('heading', { name: /ROI estimado/ })).toBeTruthy();
+    expect(screen.getByRole('region', { name: 'Latência entre agentes' }).textContent).toContain('1954.63');
+    expect(screen.getByRole('region', { name: 'Latência média de resposta' }).textContent).toContain('1663.86');
+    expect(screen.getByRole('region', { name: 'Tempo total de resposta' }).textContent).toContain('18.20');
+    expect(screen.getByRole('region', { name: 'Índice de erros' }).textContent).toContain('0.00');
     expect(fetcher).toHaveBeenCalledTimes(6);
     fireEvent.change(screen.getByLabelText('Mês dos KPIs'), { target: { value: '2024-02' } });
     await waitFor(() => {
@@ -142,6 +150,10 @@ describe('Dashboard IA e Governança ADM', () => {
           total_tokens: { value: null, formatted: 'Sem dados', unit: 'tokens', year: null, period: '2026-11' },
           unit_cost: { value: null, formatted: 'Sem dados', unit: 'US$/1k tokens', year: null, period: '2026-11' },
           active_users: { value: 2, formatted: '2', unit: 'usuários', year: 2026, period: null },
+          inter_agent_latency: { value: 180, formatted: '180.00', unit: 'ms', year: null, period: '2026-11' },
+          average_response_latency: { value: 250, formatted: '250.00', unit: 'ms', year: null, period: '2026-11' },
+          total_response_time: { value: 1, formatted: '1.00', unit: 's', year: null, period: '2026-11' },
+          error_rate: { value: 0, formatted: '0.00', unit: '%', year: null, period: '2026-11' },
           cost_per_resolution: { value: null, formatted: 'N/D', unit: 'R$/resolução', year: null, period: '2026-11' },
           estimated_roi: { value: null, formatted: 'N/D', unit: '%', year: null, period: '2026-11' },
         }));
