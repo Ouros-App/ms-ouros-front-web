@@ -29,6 +29,7 @@ function getCurrentMonth(): string {
   return new Date().toISOString().slice(0, 7);
 }
 
+/** Displays one dashboard KPI and its configured unavailable-value label. */
 function KpiCard({
   label,
   item,
@@ -103,7 +104,7 @@ function AiChart({ chart, color }: Readonly<{ chart: PrometheusChartData; color:
   );
 }
 
-/** Renders Prometheus charts and reports individual and total query failures. */
+/** Renders AI management KPIs and Prometheus telemetry charts. */
 export function DashboardAiMetrics(): ReactNode {
   const [charts, setCharts] = useState<PrometheusChartData[]>([]);
   const [failedCharts, setFailedCharts] = useState<string[]>([]);
