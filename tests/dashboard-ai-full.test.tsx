@@ -26,6 +26,10 @@ vi.mock('@/hooks/useAuth', () => ({
   }),
 }));
 
+vi.mock('@/components/complex/GraficosDashboard', () => ({
+  GraficosDashboard: () => null,
+}));
+
 // Mock Recharts ResponsiveContainer to avoid layout dimensions issues in JSDOM
 vi.mock('recharts', async () => {
   const original = await vi.importActual<Record<string, unknown>>('recharts');
@@ -104,6 +108,39 @@ describe('Dashboard IA e Governança ADM', () => {
     await waitFor(() => {
       expect(fetcher.mock.calls.some(([url]) => String(url).includes('month=2024-02'))).toBe(true);
     });
+  });
+
+  it('projects the target user count and marks only scalable charts as estimates', async () => {
+    const fetcher = vi.fn(async (input: string | URL | Request) => {
+      const url = String(input);
+      if (url.includes('/v1/admin/ai-metrics/kpis')) {
+        return new Response(JSON.stringify({
+          token_spend: { value: 1.25, formatted: 'US$ 1,25', unit: 'US$', year: null, period: '2026-11' },
+          total_tokens: { value: 1250, formatted: '1.250', unit: 'tokens', year: null, period: '2026-11' },
+          unit_cost: { value: 1, formatted: 'US$ 1,00', unit: 'US$/1k tokens', year: null, period: '2026-11' },
+          active_users: { value: 10, formatted: '10', unit: 'usuários', year: 2026, period: null },
+        }));
+      }
+      const chartId = url.split('/charts/')[1]?.split('/data')[0] ?? 'unknown';
+      return new Response(JSON.stringify({
+        dashboard_id: 'prometheus-ai',
+        chart: { id: chartId, title: chartId, type: 'bar' },
+        items: [{ label: 'success', value: 1 }],
+      }));
+    });
+    vi.stubGlobal('fetch', fetcher);
+
+    render(<DashboardAiMetrics simulation />);
+    fireEvent.change(screen.getByLabelText('Usuários na simulação'), { target: { value: '20' } });
+
+    expect((await screen.findByRole('region', { name: 'Custo estimado de tokens' })).textContent).toContain('2,50');
+    expect(screen.getByRole('region', { name: 'Tokens estimados' }).textContent).toContain('2.500');
+    expect(screen.getByRole('region', { name: 'Custo por 1k tokens' }).textContent).toContain('1,00');
+    expect(screen.getByRole('region', { name: 'Base simulada' }).textContent).toContain('20');
+    expect(screen.queryByRole('heading', { name: /ai-request-rate/ })).toBeNull();
+    expect(screen.queryByRole('heading', { name: /ai-chat-outcomes/ })).toBeNull();
+    expect(await screen.findByRole('heading', { name: /ai-agent-usage.*estimativa/ })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /ai-p95-latency/ })).toBeTruthy();
   });
 
   it('uses the new current month when clearing the selector after a month rollover', async () => {
@@ -223,13 +260,29 @@ describe('Dashboard IA e Governança ADM', () => {
     expect((select as HTMLSelectElement).value).toBe('2');
   });
 
-  it('DashboardPage alterna entre as abas Operacional e Gerenciamento de IA para admin', async () => {
+  it('DashboardPage exposes AI metrics and simulation tabs to admins', async () => {
     const kpi = { formatted: 'R$ 100', value: 100 };
     const fetcher = vi.fn().mockImplementation(async (input: string | URL | Request) => {
       const url = String(input);
       if (url.includes('corporate/kpis')) return new Response(JSON.stringify({ spend_current_year: kpi, spend_previous_year: kpi, avg_cost_per_bird: kpi, total_lots: kpi }));
       if (url.includes('corporate/filters')) return new Response(JSON.stringify({ states: ['SP'], months: ['2026-01'], managements: ['Norte'] }));
       if (url.includes('corporate/farms')) return new Response(JSON.stringify({ items: [], total: 0, page: 1, limit: 10 }));
+      if (url.includes('/v1/admin/ai-metrics/kpis')) {
+        return new Response(JSON.stringify({
+          token_spend: { value: 1, formatted: 'US$ 1,00', unit: 'US$', year: null, period: '2026-11' },
+          total_tokens: { value: 100, formatted: '100', unit: 'tokens', year: null, period: '2026-11' },
+          unit_cost: { value: 10, formatted: 'US$ 10,00', unit: 'US$/1k tokens', year: null, period: '2026-11' },
+          active_users: { value: 10, formatted: '10', unit: 'usuários', year: 2026, period: null },
+        }));
+      }
+      if (url.includes('/charts/')) {
+        const chartId = url.split('/charts/')[1]?.split('/data')[0] ?? 'unknown';
+        return new Response(JSON.stringify({
+          dashboard_id: 'prometheus-ai',
+          chart: { id: chartId, title: chartId, type: 'bar' },
+          items: [{ label: 'success', value: 1 }],
+        }));
+      }
       if (url.includes('/kpis')) return new Response(JSON.stringify({ tokenSpend: { formattedValue: 'R$ 1M' } }));
       if (url.includes('/sessions')) return new Response(JSON.stringify({ items: [], total: 0, page: 1, limit: 10 }));
       return new Response(JSON.stringify([]));
@@ -244,12 +297,13 @@ describe('Dashboard IA e Governança ADM', () => {
       </MemoryRouter>,
     );
 
-    // Deve conter as abas
     const abaIa = await screen.findByRole('tab', { name: /Gerenciamento de IA/i });
-    expect(abaIa).toBeTruthy();
-
     fireEvent.click(abaIa);
     expect(screen.getByRole('tab', { name: /Gerenciamento de IA/i, selected: true })).toBeTruthy();
+    const abaSimulacao = screen.getByRole('tab', { name: /Simulação de IA/i });
+    fireEvent.click(abaSimulacao);
+    expect(screen.getByRole('tab', { name: /Simulação de IA/i, selected: true })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: 'Cenário de usuários' })).toBeTruthy();
   });
 
   it('isFarmOwner identifica corretamente produtores e PrivateRoute bloqueia acesso', () => {

@@ -118,3 +118,71 @@
     grid-template-columns: 1fr;
   }
 }
+
+.dashboard-ai-metrics__simulacao {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid #cacaca;
+  border-radius: 15px;
+  background: #f8fafc;
+}
+
+.dashboard-ai-metrics__simulacao-intro {
+  grid-column: 1 / -1;
+}
+
+.dashboard-ai-metrics__simulacao-intro h2 {
+  margin: 0 0 6px;
+  color: #010b13;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.dashboard-ai-metrics__simulacao-intro p {
+  margin: 0;
+  color: #475569;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.dashboard-ai-metrics__simulacao-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  color: #334155;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.dashboard-ai-metrics__simulacao-campo input {
+  min-height: 42px;
+  border: 1px solid #94a3b8;
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: #ffffff;
+  color: #010b13;
+  font: inherit;
+}
+
+.dashboard-ai-metrics__simulacao-campo input:focus-visible {
+  outline: 3px solid rgba(216, 162, 58, 0.5);
+  outline-offset: 2px;
+  border-color: #b7831e;
+}
+
+.dashboard-ai-metrics__simulacao-resultado {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: #334155;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+@media (max-width: 560px) {
+  .dashboard-ai-metrics__simulacao {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+}
