@@ -95,10 +95,10 @@ describe('Dashboard IA e Governança ADM', () => {
     expect(screen.getByRole('heading', { name: 'Custo por resolução' })).toBeTruthy();
     expect(screen.getByText('120%')).toBeTruthy();
     expect(screen.getByRole('heading', { name: /ROI estimado/ })).toBeTruthy();
-    expect(screen.getByRole('region', { name: 'Latência entre agentes' }).textContent).toContain('1954.63');
+    expect(screen.getByRole('region', { name: 'Duração média de execução dos agentes' }).textContent).toContain('1954.63');
     expect(screen.getByRole('region', { name: 'Latência média de resposta' }).textContent).toContain('1663.86');
-    expect(screen.getByRole('region', { name: 'Tempo total de resposta' }).textContent).toContain('18.20');
-    expect(screen.getByRole('region', { name: 'Índice de erros' }).textContent).toContain('0.00');
+    expect(screen.getByRole('region', { name: 'Tempo acumulado das respostas do chat' }).textContent).toContain('18.20');
+    expect(screen.getByRole('region', { name: 'Taxa de erros 5xx do chat' }).textContent).toContain('0.00');
     expect(fetcher).toHaveBeenCalledTimes(6);
     fireEvent.change(screen.getByLabelText('Mês dos KPIs'), { target: { value: '2024-02' } });
     await waitFor(() => {

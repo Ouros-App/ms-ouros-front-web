@@ -176,10 +176,10 @@ export function DashboardAiMetrics(): ReactNode {
           <KpiCard label="Tokens no mês" item={kpis?.total_tokens} />
           <KpiCard label="Custo por 1k tokens" item={kpis?.unit_cost} />
           <KpiCard label="Usuários ativos (snapshot)" item={kpis?.active_users} />
-          <KpiCard label="Latência entre agentes" item={kpis?.inter_agent_latency} unavailableLabel="N/D" />
+          <KpiCard label="Duração média de execução dos agentes" item={kpis?.inter_agent_latency} unavailableLabel="N/D" />
           <KpiCard label="Latência média de resposta" item={kpis?.average_response_latency} unavailableLabel="N/D" />
-          <KpiCard label="Tempo total de resposta" item={kpis?.total_response_time} unavailableLabel="N/D" />
-          <KpiCard label="Índice de erros" item={kpis?.error_rate} unavailableLabel="N/D" />
+          <KpiCard label="Tempo acumulado das respostas do chat" item={kpis?.total_response_time} unavailableLabel="N/D" />
+          <KpiCard label="Taxa de erros 5xx do chat" item={kpis?.error_rate} unavailableLabel="N/D" />
           <KpiCard label="Custo por resolução" item={kpis?.cost_per_resolution} unavailableLabel="N/D" />
           <KpiCard label="ROI estimado (valor do usuário/ecossistema; não ROI financeiro da Ouros)" item={kpis?.estimated_roi} unavailableLabel="N/D" />
         </div>
